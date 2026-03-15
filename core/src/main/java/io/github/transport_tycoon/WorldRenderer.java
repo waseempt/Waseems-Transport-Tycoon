@@ -1,0 +1,159 @@
+package io.github.transport_tycoon;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
+
+public class WorldRenderer {
+
+    private SpriteBatch batch;
+    private OrthographicCamera mainCamera;
+    private Viewport viewport;
+
+    private TextureAtlas atlas;
+    private TextureRegion grassRegion;
+    private TextureRegion cityRegion;
+    private TextureRegion facilityRegion;
+
+    // Grid Size
+    private final float TILE_SIZE = 64f;
+
+    public WorldRenderer(SpriteBatch batch) {
+        this.batch = batch;
+
+        // Initialize the Camera and set the viewport to the window's current size
+        this.mainCamera = new OrthographicCamera();
+        this.mainCamera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+        // Prevent stretching
+        this.viewport = new ScreenViewport(this.mainCamera);
+
+        // Center the camera
+        this.mainCamera.position.set(1600f, 1600f, 0);
+        this.mainCamera.update();
+
+        // Load the Atlas and define atlas regions
+        this.atlas = new TextureAtlas(Gdx.files.internal("tycoon_atlas.atlas"));
+        this.grassRegion = atlas.findRegion("grass");
+        this.cityRegion = atlas.findRegion("city");
+        this.facilityRegion = atlas.findRegion("facility");
+
+        if (this.grassRegion == null) {
+            System.err.println("ERROR: Could not find 'grass' in the atlas. Check your original file name!");
+        }
+
+        System.out.println("View: WorldRenderer initialized with Camera and Assets.");
+    }
+
+    public void renderWorld(GameWorld world, float delta) {
+        // Prevent scrolling out of bounds, update camera
+        clampCamera();
+
+        // Tell the SpriteBatch to look through the camera's lens
+        batch.setProjectionMatrix(mainCamera.combined);
+
+        // Open the batch to render
+        batch.begin();
+
+        GameMap map = world.getMap();
+
+        // drawing grass tiles
+        for (int x = 0; x < 50; x++) {
+            for (int y = 0; y < 50; y++) {
+
+                // grid to pixels conversion
+                float drawX = x * TILE_SIZE;
+                float drawY = y * TILE_SIZE;
+
+                // Draw
+                if (grassRegion != null) {
+                    batch.draw(grassRegion, drawX, drawY, TILE_SIZE, TILE_SIZE);
+                }
+            }
+        }
+
+        // Draw facilities
+        for (Facility facility : world.getFacilities()) {
+            Tile anchor = facility.getAnchorTile();
+            if (anchor != null && facilityRegion != null) {
+                float drawX = anchor.getGridX() * TILE_SIZE;
+                float drawY = anchor.getGridY() * TILE_SIZE;
+
+                // Calculate pixel size
+                float pixelWidth = facility.getGridWidth() * TILE_SIZE;
+                float pixelHeight = facility.getGridHeight() * TILE_SIZE;
+
+                batch.draw(facilityRegion, drawX, drawY, pixelWidth, pixelHeight);
+            }
+        }
+
+        // Draw cities
+        for (City city : world.getCities()) {
+            Tile anchor = city.getAnchorTile();
+            if (anchor != null && cityRegion != null) {
+                float drawX = anchor.getGridX() * TILE_SIZE;
+                float drawY = anchor.getGridY() * TILE_SIZE;
+
+                float pixelWidth = city.getGridWidth() * TILE_SIZE;
+                float pixelHeight = city.getGridHeight() * TILE_SIZE;
+
+                batch.draw(cityRegion, drawX, drawY, pixelWidth, pixelHeight);
+            }
+        }
+
+        // Close the batch
+        batch.end();
+    }
+
+
+    // Prevents scrolling out of map bounds
+    private void clampCamera() {
+        // Calculate total map size in pixels
+        float mapWidthPixels = 50 * TILE_SIZE;
+        float mapHeightPixels = 50 * TILE_SIZE;
+
+        // Calculate how much the camera can see right now
+        float cameraHalfWidth = (mainCamera.viewportWidth * mainCamera.zoom) / 2f;
+        float cameraHalfHeight = (mainCamera.viewportHeight * mainCamera.zoom) / 2f;
+
+        float minX = cameraHalfWidth;
+        float maxX = mapWidthPixels - cameraHalfWidth;
+
+        if (maxX < minX) {
+            // If the user zoomed out so far that they can see the whole map, lock camera to center
+            mainCamera.position.x = mapWidthPixels / 2f;
+        } else {
+            // Otherwise, block them from crossing the left or right edges
+            if (mainCamera.position.x < minX) mainCamera.position.x = minX;
+            if (mainCamera.position.x > maxX) mainCamera.position.x = maxX;
+        }
+
+        float minY = cameraHalfHeight;
+        float maxY = mapHeightPixels - cameraHalfHeight;
+
+        if (maxY < minY) {
+            mainCamera.position.y = mapHeightPixels / 2f;
+        } else {
+            if (mainCamera.position.y < minY) mainCamera.position.y = minY;
+            if (mainCamera.position.y > maxY) mainCamera.position.y = maxY;
+        }
+
+        mainCamera.update();
+    }
+
+    public OrthographicCamera getMainCamera() {
+        return this.mainCamera;
+    }
+
+    public Viewport getViewport() {
+        return this.viewport;
+    }
+
+    public void dispose() {
+        if (atlas != null) atlas.dispose();
+    }
+}

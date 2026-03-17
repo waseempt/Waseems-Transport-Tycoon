@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class Zone {
     protected ArrayList<Tile> tiles;
-    protected int gridWidth;   // <-- Add this
+    protected int gridWidth;
     protected int gridHeight;
 
     public Zone() {

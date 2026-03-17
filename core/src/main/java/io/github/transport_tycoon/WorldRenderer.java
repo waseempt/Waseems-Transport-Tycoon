@@ -42,9 +42,7 @@ public class WorldRenderer {
         this.cityRegion = atlas.findRegion("city");
         this.facilityRegion = atlas.findRegion("facility");
 
-        if (this.grassRegion == null) {
-            System.err.println("ERROR: Could not find 'grass' in the atlas. Check your original file name!");
-        }
+        verifyAtlasRegions();
 
         System.out.println("View: WorldRenderer initialized with Camera and Assets.");
     }
@@ -154,6 +152,22 @@ public class WorldRenderer {
     }
 
     public void dispose() {
-        if (atlas != null) atlas.dispose();
+        if (atlas != null)
+            atlas.dispose();
+    }
+
+    private void verifyAtlasRegions() {
+
+        if (this.grassRegion == null) {
+            System.err.println("ERROR: Could not find 'grass' in the atlas. Check your original file name!");
+        }
+
+        if (this.cityRegion == null) {
+            System.err.println("ERROR: Could not find 'city' in the atlas. Check your original file name!");
+        }
+
+        if (this.facilityRegion == null) {
+            System.err.println("ERROR: Could not find 'facility' in the atlas. Check your original file name!");
+        }
     }
 }

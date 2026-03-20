@@ -29,7 +29,7 @@ public class GameWorld {
         cities.add(debrecen);
 
         City szentendre = new City("Szentendre");
-        assignZoneTiles(szentendre, 38, 12, 2, 2); // Tiny 2x2 town
+        assignZoneTiles(szentendre, 38, 12, 3, 3); // 3x3 city
         cities.add(szentendre);
 
         City pecs = new City("Pecs");
@@ -49,13 +49,13 @@ public class GameWorld {
         assignZoneTiles(steelMill, 20, 18, 4, 4);  // 4x4 Steel Mill
         facilities.add(steelMill);
 
-        Facility deepForest = new Facility("Lumber Camp");
-        assignZoneTiles(deepForest, 12, 5, 4, 4);  // 4x4 Lumber Camp
-        facilities.add(deepForest);
+        Facility lumberCamp = new Facility("Lumber Camp");
+        assignZoneTiles(lumberCamp, 12, 5, 4, 4);  // 4x4 Lumber Camp
+        facilities.add(lumberCamp);
 
-        Facility sawmill = new Facility("Sawmill");
-        assignZoneTiles(sawmill, 28, 8, 2, 2);     // Small 2x2 sawmill
-        facilities.add(sawmill);
+        Facility ironMine2 = new Facility("Iron Mine");
+        assignZoneTiles(ironMine2, 28, 8, 2, 2);   // 3x3 Iron Mine
+        facilities.add(ironMine2);
 
         System.out.println("Model: Organic map layout generated.");
     }

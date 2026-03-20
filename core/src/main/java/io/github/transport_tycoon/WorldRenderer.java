@@ -15,9 +15,36 @@ public class WorldRenderer {
     private Viewport viewport;
 
     private TextureAtlas atlas;
+
+    // Forest Tiles
     private TextureRegion grassRegion;
+    private TextureRegion oneTreeRegion;
+    private TextureRegion twoTreeRegion;
+    private TextureRegion threeTreeRegion;
+    private TextureRegion fourTreeRegion;
+
+    // Cities
     private TextureRegion cityRegion;
+    private TextureRegion sThreeCityRegion;
+    private TextureRegion sFourCityRegion;
+    private TextureRegion sFiveCityRegion;
+
+    // Facilities
     private TextureRegion facilityRegion;
+    private TextureRegion ironMineRegion;
+    private TextureRegion lumberCampRegion;
+    private TextureRegion steelMillRegion;
+    private TextureRegion coalMineRegion;
+
+    // Road Tiles
+    private TextureRegion roadRegion;
+    private TextureRegion twoIntersectRegion;
+    private TextureRegion threeIntersectRegion;
+    private TextureRegion fourIntersectRegion;
+
+    // Vehicles
+    private TextureRegion busRegion;
+    private TextureRegion truckRegion;
 
     // Grid Size
     private final float TILE_SIZE = 64f;
@@ -37,10 +64,37 @@ public class WorldRenderer {
         this.mainCamera.update();
 
         // Load the Atlas and define atlas regions
-        this.atlas = new TextureAtlas(Gdx.files.internal("tycoon_atlas.atlas"));
+        this.atlas = new TextureAtlas(Gdx.files.internal("Transport_Tycoon.atlas"));
+
+        // Define forest tiles
         this.grassRegion = atlas.findRegion("grass");
+        this.oneTreeRegion = atlas.findRegion("forest1");
+        this.twoTreeRegion = atlas.findRegion("forest2");
+        this.threeTreeRegion = atlas.findRegion("forest3");
+        this.fourTreeRegion = atlas.findRegion("forest4");
+
+        // Define cities
         this.cityRegion = atlas.findRegion("city");
+        this.sThreeCityRegion = atlas.findRegion("3x3city");
+        this.sFourCityRegion = atlas.findRegion("4x4city");
+        this.sFiveCityRegion = atlas.findRegion("5x5city");
+
+        // Define facilities
         this.facilityRegion = atlas.findRegion("facility");
+        this.ironMineRegion = atlas.findRegion("iron-mine");
+        this.lumberCampRegion = atlas.findRegion("lumber-camp");
+        this.steelMillRegion = atlas.findRegion("steel-mill");
+        this.coalMineRegion = atlas.findRegion("coal-mine");
+
+        // Define roads
+        this.roadRegion = atlas.findRegion("road");
+        this.twoIntersectRegion = atlas.findRegion("intersection2");
+        this.threeIntersectRegion = atlas.findRegion("intersection3");
+        this.fourIntersectRegion = atlas.findRegion("intersection4");
+
+        // Define vehicles
+        this.busRegion = atlas.findRegion("bus");
+        this.truckRegion = atlas.findRegion("truck");
 
         verifyAtlasRegions();
 
@@ -77,7 +131,26 @@ public class WorldRenderer {
         // Draw facilities
         for (Facility facility : world.getFacilities()) {
             Tile anchor = facility.getAnchorTile();
-            if (anchor != null && facilityRegion != null) {
+            TextureRegion region = null;
+
+            switch (facility.getFacilityType()) {
+                case "Coal Mine":
+                    region = coalMineRegion;
+                    break;
+                case "Iron Mine":
+                    region = ironMineRegion;
+                    break;
+                case "Steel Mill":
+                    region = steelMillRegion;
+                    break;
+                case "Lumber Camp":
+                    region = lumberCampRegion;
+                    break;
+                default:
+                    region = facilityRegion;
+
+            }
+            if (anchor != null && region != null) {
                 float drawX = anchor.getGridX() * TILE_SIZE;
                 float drawY = anchor.getGridY() * TILE_SIZE;
 
@@ -85,21 +158,21 @@ public class WorldRenderer {
                 float pixelWidth = facility.getGridWidth() * TILE_SIZE;
                 float pixelHeight = facility.getGridHeight() * TILE_SIZE;
 
-                batch.draw(facilityRegion, drawX, drawY, pixelWidth, pixelHeight);
+                batch.draw(region, drawX, drawY, pixelWidth, pixelHeight);
             }
         }
 
         // Draw cities
         for (City city : world.getCities()) {
             Tile anchor = city.getAnchorTile();
-            if (anchor != null && cityRegion != null) {
+            if (anchor != null && sThreeCityRegion != null) {
                 float drawX = anchor.getGridX() * TILE_SIZE;
                 float drawY = anchor.getGridY() * TILE_SIZE;
 
                 float pixelWidth = city.getGridWidth() * TILE_SIZE;
                 float pixelHeight = city.getGridHeight() * TILE_SIZE;
 
-                batch.draw(cityRegion, drawX, drawY, pixelWidth, pixelHeight);
+                batch.draw(sThreeCityRegion, drawX, drawY, pixelWidth, pixelHeight);
             }
         }
 
@@ -169,5 +242,6 @@ public class WorldRenderer {
         if (this.facilityRegion == null) {
             System.err.println("ERROR: Could not find 'facility' in the atlas. Check your original file name!");
         }
+
     }
 }

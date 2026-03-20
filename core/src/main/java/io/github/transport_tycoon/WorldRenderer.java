@@ -96,7 +96,6 @@ public class WorldRenderer {
         this.busRegion = atlas.findRegion("bus");
         this.truckRegion = atlas.findRegion("truck");
 
-        verifyAtlasRegions();
 
         System.out.println("View: WorldRenderer initialized with Camera and Assets.");
     }
@@ -147,7 +146,8 @@ public class WorldRenderer {
                     region = lumberCampRegion;
                     break;
                 default:
-                    region = facilityRegion;
+                    region = coalMineRegion;
+                    System.err.println("Could not find facility region");
 
             }
             if (anchor != null && region != null) {
@@ -165,14 +165,29 @@ public class WorldRenderer {
         // Draw cities
         for (City city : world.getCities()) {
             Tile anchor = city.getAnchorTile();
-            if (anchor != null && sThreeCityRegion != null) {
+            TextureRegion region = null;
+            switch (city.getGridWidth()) {
+                case 3:
+                    region = sThreeCityRegion;
+                    break;
+                case 4:
+                    region = sFourCityRegion;
+                    break;
+                case 5:
+                    region = sFiveCityRegion;
+                    break;
+                default:
+                    System.err.println("Could not find city region");
+
+            }
+            if (anchor != null && region != null) {
                 float drawX = anchor.getGridX() * TILE_SIZE;
                 float drawY = anchor.getGridY() * TILE_SIZE;
 
                 float pixelWidth = city.getGridWidth() * TILE_SIZE;
                 float pixelHeight = city.getGridHeight() * TILE_SIZE;
 
-                batch.draw(sThreeCityRegion, drawX, drawY, pixelWidth, pixelHeight);
+                batch.draw(region, drawX, drawY, pixelWidth, pixelHeight);
             }
         }
 
@@ -227,21 +242,5 @@ public class WorldRenderer {
     public void dispose() {
         if (atlas != null)
             atlas.dispose();
-    }
-
-    private void verifyAtlasRegions() {
-
-        if (this.grassRegion == null) {
-            System.err.println("ERROR: Could not find 'grass' in the atlas. Check your original file name!");
-        }
-
-        if (this.cityRegion == null) {
-            System.err.println("ERROR: Could not find 'city' in the atlas. Check your original file name!");
-        }
-
-        if (this.facilityRegion == null) {
-            System.err.println("ERROR: Could not find 'facility' in the atlas. Check your original file name!");
-        }
-
     }
 }

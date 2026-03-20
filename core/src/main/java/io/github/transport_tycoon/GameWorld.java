@@ -25,7 +25,7 @@ public class GameWorld {
         cities.add(budapest);
 
         City debrecen = new City("Debrecen");
-        assignZoneTiles(debrecen, 8, 24, 3, 3);   // 3x3 city
+        assignZoneTiles(debrecen, 8, 24, 4, 4);   // 4x4 city
         cities.add(debrecen);
 
         City szentendre = new City("Szentendre");
@@ -33,7 +33,7 @@ public class GameWorld {
         cities.add(szentendre);
 
         City pecs = new City("Pecs");
-        assignZoneTiles(pecs, 42, 36, 4, 4); // 4x4 city
+        assignZoneTiles(pecs, 42, 36, 3, 3); // 3x3 city
         cities.add(pecs);
 
         // Instantiate 5 Facilities

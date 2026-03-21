@@ -99,18 +99,49 @@ public class GameWorld {
             growForests();
         }
     }
-    // grows all forest tiles by +1 (max 4)...that it...
+    // grows all forest tiles by +1 (max 4)...that it... and now going around
     private void growForests() {
+
+        ArrayList<Tile> newForests = new ArrayList<>();
+
         for (int x = 0; x < 50; x++) {
             for (int y = 0; y < 50; y++) {
 
                 Tile tile = gameMap.getTile(x, y);
                 if (tile == null) continue;
 
-                if (tile.hasForest() && tile.getTreeCount() < 4) {
-                    tile.setTreeCount(tile.getTreeCount() + 1);
+                if (tile.hasForest()) {
+
+                    if (tile.getTreeCount() < 4) {
+                        tile.setTreeCount(tile.getTreeCount() + 1);
+                    }
+
+                    if (tile.getTreeCount() == 4) {
+                        addNeighbors(x, y, newForests);
+                    }
                 }
             }
+        }
+
+        for (Tile t : newForests) {
+            if (!t.hasForest()) {
+                t.setTreeCount(1);
+            }
+        }
+    }
+    //spreads trees to neighboring tiles if there are 4 trees on that tile
+    private void addNeighbors(int x, int y, ArrayList<Tile> list) {
+
+        addIfValid(x + 1, y, list);
+        addIfValid(x - 1, y, list);
+        addIfValid(x, y + 1, list);
+        addIfValid(x, y - 1, list);
+    }
+
+    private void addIfValid(int x, int y, ArrayList<Tile> list) {
+        Tile tile = gameMap.getTile(x, y);
+        if (tile != null) {
+            list.add(tile);
         }
     }
 

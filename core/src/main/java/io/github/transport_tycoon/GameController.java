@@ -28,4 +28,8 @@ public class GameController {
     public WorldRenderer getWorldRenderer() {
         return this.worldRenderer;
     }
+
+    public GameWorld getWorld() {
+        return this.world;
+    }
 }

@@ -89,6 +89,14 @@ public class SetupScreen implements Screen {
             }
         });
 
+        //returns the player to the main menu
+        menuButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                game.setScreen(new MainMenuScreen(game));
+            }
+        });
+
         table.add(startButton).width(300).height(50).padBottom(15).row();
         table.add(menuButton).width(300).height(50).row();
 

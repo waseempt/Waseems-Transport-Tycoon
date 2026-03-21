@@ -10,16 +10,17 @@ public class GameWorld {
     private ArrayList<Facility> facilities;
 
     public GameWorld() {
-        // Initialize a 50x50 map
+
         this.gameMap = new GameMap(50, 50);
         this.cities = new ArrayList<>();
         this.facilities = new ArrayList<>();
 
         defineZones();
+        generateInitialForests();
     }
 
     private void defineZones() {
-        // instantiate 4 cities
+
         City budapest = new City("Budapest");
         assignZoneTiles(budapest, 22, 38, 5, 5); // Massive 5x5 city
         cities.add(budapest);
@@ -60,6 +61,21 @@ public class GameWorld {
         System.out.println("Model: Organic map layout generated.");
     }
 
+    private void generateInitialForests() {
+        for (int x = 0; x < 50; x++) {
+            for (int y = 0; y < 50; y++) {
+
+                Tile tile = gameMap.getTile(x, y);
+                if (tile == null) continue;
+                //the first forest
+                if (Math.random() < 0.05) {
+                    int trees = 1 + (int)(Math.random() * 4);
+                    tile.setTreeCount(trees);
+                }
+            }
+        }
+    }
+
     private void assignZoneTiles(Zone zone, int startX, int startY, int width, int height) {
         zone.setDimensions(width, height);
 
@@ -88,6 +104,7 @@ public class GameWorld {
     public float getTimeScale() {
         return timeScale;
     }
+
     public GameMap getMap() {
         return gameMap;
     }

@@ -52,18 +52,14 @@ public class WorldRenderer {
     public WorldRenderer(SpriteBatch batch) {
         this.batch = batch;
 
-        // Initialize the Camera and set the viewport to the window's current size
         this.mainCamera = new OrthographicCamera();
         this.mainCamera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-        // Prevent stretching
         this.viewport = new ScreenViewport(this.mainCamera);
 
-        // Center the camera
         this.mainCamera.position.set(1600f, 1600f, 0);
         this.mainCamera.update();
 
-        // Load the Atlas and define atlas regions
         this.atlas = new TextureAtlas(Gdx.files.internal("Transport_Tycoon.atlas"));
 
         // Define forest tiles
@@ -96,33 +92,49 @@ public class WorldRenderer {
         this.busRegion = atlas.findRegion("bus");
         this.truckRegion = atlas.findRegion("truck");
 
-
         System.out.println("View: WorldRenderer initialized with Camera and Assets.");
     }
 
     public void renderWorld(GameWorld world, float delta) {
-        // Prevent scrolling out of bounds, update camera
         clampCamera();
 
-        // Tell the SpriteBatch to look through the camera's lens
         batch.setProjectionMatrix(mainCamera.combined);
-
-        // Open the batch to render
         batch.begin();
 
         GameMap map = world.getMap();
 
-        // drawing grass tiles
         for (int x = 0; x < 50; x++) {
             for (int y = 0; y < 50; y++) {
-
-                // grid to pixels conversion
                 float drawX = x * TILE_SIZE;
                 float drawY = y * TILE_SIZE;
 
-                // Draw
+                Tile tile = map.getTile(x, y);
+
                 if (grassRegion != null) {
                     batch.draw(grassRegion, drawX, drawY, TILE_SIZE, TILE_SIZE);
+                }
+
+                if (tile != null && tile.hasForest()) {
+                    TextureRegion forestRegion = null;
+
+                    switch (tile.getTreeCount()) {
+                        case 1:
+                            forestRegion = oneTreeRegion;
+                            break;
+                        case 2:
+                            forestRegion = twoTreeRegion;
+                            break;
+                        case 3:
+                            forestRegion = threeTreeRegion;
+                            break;
+                        case 4:
+                            forestRegion = fourTreeRegion;
+                            break;
+                    }
+
+                    if (forestRegion != null) {
+                        batch.draw(forestRegion, drawX, drawY, TILE_SIZE, TILE_SIZE);
+                    }
                 }
             }
         }
@@ -148,13 +160,12 @@ public class WorldRenderer {
                 default:
                     region = coalMineRegion;
                     System.err.println("Could not find facility region");
-
             }
+
             if (anchor != null && region != null) {
                 float drawX = anchor.getGridX() * TILE_SIZE;
                 float drawY = anchor.getGridY() * TILE_SIZE;
 
-                // Calculate pixel size
                 float pixelWidth = facility.getGridWidth() * TILE_SIZE;
                 float pixelHeight = facility.getGridHeight() * TILE_SIZE;
 
@@ -166,6 +177,7 @@ public class WorldRenderer {
         for (City city : world.getCities()) {
             Tile anchor = city.getAnchorTile();
             TextureRegion region = null;
+
             switch (city.getGridWidth()) {
                 case 3:
                     region = sThreeCityRegion;
@@ -178,8 +190,8 @@ public class WorldRenderer {
                     break;
                 default:
                     System.err.println("Could not find city region");
-
             }
+
             if (anchor != null && region != null) {
                 float drawX = anchor.getGridX() * TILE_SIZE;
                 float drawY = anchor.getGridY() * TILE_SIZE;
@@ -191,18 +203,13 @@ public class WorldRenderer {
             }
         }
 
-        // Close the batch
         batch.end();
     }
 
-
-    // Prevents scrolling out of map bounds
     private void clampCamera() {
-        // Calculate total map size in pixels
         float mapWidthPixels = 50 * TILE_SIZE;
         float mapHeightPixels = 50 * TILE_SIZE;
 
-        // Calculate how much the camera can see right now
         float cameraHalfWidth = (mainCamera.viewportWidth * mainCamera.zoom) / 2f;
         float cameraHalfHeight = (mainCamera.viewportHeight * mainCamera.zoom) / 2f;
 
@@ -210,10 +217,8 @@ public class WorldRenderer {
         float maxX = mapWidthPixels - cameraHalfWidth;
 
         if (maxX < minX) {
-            // If the user zoomed out so far that they can see the whole map, lock camera to center
             mainCamera.position.x = mapWidthPixels / 2f;
         } else {
-            // Otherwise, block them from crossing the left or right edges
             if (mainCamera.position.x < minX) mainCamera.position.x = minX;
             if (mainCamera.position.x > maxX) mainCamera.position.x = maxX;
         }

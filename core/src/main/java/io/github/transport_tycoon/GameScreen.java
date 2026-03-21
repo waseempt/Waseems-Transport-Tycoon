@@ -14,15 +14,16 @@ public class GameScreen implements Screen {
     private HUD hud;
     private MinimapRenderer minimapRenderer;
 
-    public GameScreen(TransportTycoon game) {
+    public GameScreen(TransportTycoon game,  String tycoonName) {
         this.game = game;
 
         // Instantiate the Controller, which instantiates the rest
-        this.controller = new GameController(game.batch);
+        this.controller = new GameController(game.batch, tycoonName);
 
-        // HUD overlay
+        //fixed size panel at the bottom of the screen
         this.controlPanel = new ControlPanel(game.batch);
 
+        //fixed size panel at the top of the screen
         this.hud = new HUD(game.batch);
 
         OrthographicCamera camera = controller.getWorldRenderer().getMainCamera();
@@ -62,7 +63,9 @@ public class GameScreen implements Screen {
         minimapRenderer.resize(width, height);
     }
 
-    @Override public void show() {}
+    @Override public void show() {
+        Gdx.input.setInputProcessor(inputHandler);
+    }
     @Override public void pause() {}
     @Override public void resume() {}
     @Override public void hide() {}

@@ -56,9 +56,7 @@ public class MainMenuScreen implements Screen {
         newGameButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                // Route to the actual game! (Or NewGameScreen later)
-                System.out.println("Routing to GameScreen...");
-                game.setScreen(new GameScreen(game));
+                game.setScreen(new SetupScreen(game));
             }
         });
 

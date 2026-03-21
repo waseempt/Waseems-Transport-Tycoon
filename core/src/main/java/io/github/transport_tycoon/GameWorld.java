@@ -11,7 +11,10 @@ public class GameWorld {
     private ArrayList<City> cities;
     private ArrayList<Facility> facilities;
 
-    public GameWorld() {
+    private String tycoonName;
+
+    public GameWorld(String tycoonName) {
+        this.tycoonName = tycoonName;
 
         this.gameMap = new GameMap(50, 50);
         this.cities = new ArrayList<>();
@@ -20,6 +23,10 @@ public class GameWorld {
         defineZones();
         generateInitialForests();
     }
+
+    public String getTycoonName() {
+        return tycoonName; }
+
 
     private void defineZones() {
 

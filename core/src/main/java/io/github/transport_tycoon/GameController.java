@@ -7,8 +7,8 @@ public class GameController {
     private GameWorld world;
     private WorldRenderer worldRenderer;
 
-    public GameController(SpriteBatch batch) {
-        this.world = new GameWorld();
+    public GameController(SpriteBatch batch, String tycoonName) {
+        this.world = new GameWorld(tycoonName);
         this.worldRenderer = new WorldRenderer(batch);
         System.out.println("Controller: Architecture linked successfully.");
     }

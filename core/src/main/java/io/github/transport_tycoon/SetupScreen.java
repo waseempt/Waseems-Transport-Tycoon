@@ -14,6 +14,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 
 public class SetupScreen implements Screen {
@@ -22,45 +24,16 @@ public class SetupScreen implements Screen {
     private Stage stage;
     private Skin skin;
 
+    private TextField tycoonField;
+
 
     public SetupScreen(TransportTycoon game) {
         this.game = game;
         this.stage = new Stage(new ScreenViewport(), game.batch);
         this.skin = createBasicSkin();
         buildUI();
-        Gdx.input.setInputProcessor(stage);
     }
 
-    private void buildUI() {
-        Table table = new Table();
-        table.setFillParent(true);
-        stage.addActor(table);
-
-        //title
-        Label titleLabel = new Label("Game Setup", skin, "title");
-        table.add(titleLabel).padBottom(40).row();
-
-        //Tycoon name
-        Label tycoonLabel = new Label("Tycoon Name:", skin);
-        table.add(tycoonLabel).left().padBottom(5).row();
-        TextField tycoonField = new TextField("", skin);
-        tycoonField.setMessageText("Enter your name...");
-        table.add(tycoonField).width(300).padBottom(20).row();
-
-        //company name
-        Label companyLabel = new Label("Company Name:", skin);
-        table.add(companyLabel).left().padBottom(5).row();
-        TextField companyField = new TextField("", skin);
-        companyField.setMessageText("Enter company name...");
-        table.add(companyField).width(300).padBottom(30).row();
-
-        //buttons
-        TextButton startButton = new TextButton("Start Game", skin);
-        TextButton menuButton = new TextButton("Return to Menu", skin);
-
-        table.add(startButton).width(300).height(50).padBottom(15).row();
-        table.add(menuButton).width(300).height(50).row();
-    }
 
     @Override
     public void render(float delta) {
@@ -73,6 +46,39 @@ public class SetupScreen implements Screen {
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
+    }
+
+    private void buildUI() {
+        Table table = new Table();
+        table.setFillParent(true);
+        stage.addActor(table);
+
+        // Title
+        Label titleLabel = new Label("Game Setup", skin, "title");
+        table.add(titleLabel).padBottom(40).row();
+
+        // Tycoon name
+        Label tycoonLabel = new Label("Tycoon Name:", skin);
+        table.add(tycoonLabel).left().padBottom(5).row();
+        tycoonField = new TextField("", skin);
+        tycoonField.setMessageText("Enter your name...");
+        table.add(tycoonField).width(300).padBottom(20).row();
+
+        // Buttons
+        TextButton startButton = new TextButton("Start Game", skin);
+        TextButton menuButton = new TextButton("Return to Menu", skin);
+
+        startButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                String tycoonName = tycoonField.getText().trim();
+                System.out.println("Starting game as: " + tycoonName);
+                game.setScreen(new GameScreen(game, tycoonName));
+            }
+        });
+
+        table.add(startButton).width(300).height(50).padBottom(15).row();
+        table.add(menuButton).width(300).height(50).row();
     }
 
     @Override
@@ -127,7 +133,9 @@ public class SetupScreen implements Screen {
         return tempSkin;
     }
 
-    @Override public void show() {}
+    @Override public void show() {
+        Gdx.input.setInputProcessor(stage);
+    }
     @Override public void pause() {}
     @Override public void resume() {}
     @Override public void hide() {}

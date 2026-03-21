@@ -15,11 +15,11 @@ public class GameScreen implements Screen {
 
 
 
-    public GameScreen(TransportTycoon game) {
+    public GameScreen(TransportTycoon game,  String tycoonName) {
         this.game = game;
 
         // Instantiate the Controller, which instantiates the rest
-        this.controller = new GameController(game.batch);
+        this.controller = new GameController(game.batch, tycoonName);
 
         //HUD overlay
         this.controlPanel = new ControlPanel(game.batch);
@@ -29,7 +29,6 @@ public class GameScreen implements Screen {
         OrthographicCamera camera = controller.getWorldRenderer().getMainCamera();
         this.inputHandler = new InputHandler(camera);
 
-        Gdx.input.setInputProcessor(this.inputHandler);
     }
 
     @Override
@@ -59,7 +58,9 @@ public class GameScreen implements Screen {
 
     }
 
-    @Override public void show() {}
+    @Override public void show() {
+        Gdx.input.setInputProcessor(inputHandler);
+    }
     @Override public void pause() {}
     @Override public void resume() {}
     @Override public void hide() {}

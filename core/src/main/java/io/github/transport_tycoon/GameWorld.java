@@ -25,6 +25,12 @@ public class GameWorld {
         generateInitialForests();
     }
 
+    //pauses the simulation and sets the time to 0
+    public void pause() {
+        timeScale = 0f;
+        System.out.println("Model: Simulation paused.");
+    }
+
     public String getTycoonName() {
         return tycoonName; }
 

@@ -28,8 +28,10 @@ public class GameScreen implements Screen {
         this.hud = new HUD(game.batch);
 
         this.pauseMenu = new PauseMenu(game.batch);
-        hud.setPauseListener(() -> pauseMenu.show());
-
+        hud.setPauseListener(() -> {
+            controller.getWorld().pause();
+            pauseMenu.show();
+        });
 
         OrthographicCamera camera = controller.getWorldRenderer().getMainCamera();
         this.inputHandler = new InputHandler(camera);

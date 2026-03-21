@@ -24,6 +24,8 @@ public class PauseMenu {
 
     private boolean visible = false;
 
+    private ResumeListener resumeListener;
+
 
     public PauseMenu(SpriteBatch batch) {
         this.stage = new Stage(new ScreenViewport(), batch);
@@ -58,6 +60,16 @@ public class PauseMenu {
         panel.add(exitButton).width(200).height(50).row();
 
         outer.add(panel);
+
+        //ResumeListener callback when clicked, it handles restoring time and hiding the menu
+        resumeButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (resumeListener != null) {
+                    resumeListener.onResume();
+                }
+            }
+        });
     }
 
     //renders the pause menu only if it is currently visible
@@ -67,6 +79,24 @@ public class PauseMenu {
         stage.draw();
     }
 
+
+    //hides the pause menu and returns the input normally to the game
+    public void hide(InputHandler inputHandler, Stage hudStage) {
+        visible = false;
+        com.badlogic.gdx.InputMultiplexer multiplexer = new com.badlogic.gdx.InputMultiplexer();
+        multiplexer.addProcessor(hudStage);
+        multiplexer.addProcessor(inputHandler);
+        Gdx.input.setInputProcessor(multiplexer);
+    }
+
+    //notifies the GameScreen when the resume button is clicked
+    public interface ResumeListener {
+        void onResume();
+    }
+
+    public void setResumeListener(ResumeListener listener) {
+        this.resumeListener = listener;
+    }
 
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);

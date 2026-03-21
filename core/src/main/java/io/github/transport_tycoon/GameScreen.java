@@ -33,6 +33,12 @@ public class GameScreen implements Screen {
             pauseMenu.show();
         });
 
+        //restores simulation speed and hides the pause menu when resumed
+        pauseMenu.setResumeListener(() -> {
+            controller.getWorld().resume();
+            pauseMenu.hide(inputHandler, hud.getStage());
+        });
+
         OrthographicCamera camera = controller.getWorldRenderer().getMainCamera();
         this.inputHandler = new InputHandler(camera);
 

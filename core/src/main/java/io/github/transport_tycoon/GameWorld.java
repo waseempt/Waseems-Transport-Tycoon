@@ -31,6 +31,11 @@ public class GameWorld {
         System.out.println("Model: Simulation paused.");
     }
 
+    //resumes the game and restores the time scale to x1
+    public void resume() {
+        timeScale = 1.0f;
+    }
+
     public String getTycoonName() {
         return tycoonName; }
 

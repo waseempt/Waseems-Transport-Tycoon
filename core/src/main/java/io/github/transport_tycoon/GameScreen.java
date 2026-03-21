@@ -12,8 +12,7 @@ public class GameScreen implements Screen {
     private InputHandler inputHandler;
     private ControlPanel controlPanel;
     private HUD hud;
-
-
+    private MinimapRenderer minimapRenderer;
 
     public GameScreen(TransportTycoon game) {
         this.game = game;
@@ -21,13 +20,16 @@ public class GameScreen implements Screen {
         // Instantiate the Controller, which instantiates the rest
         this.controller = new GameController(game.batch);
 
-        //HUD overlay
+        // HUD overlay
         this.controlPanel = new ControlPanel(game.batch);
 
         this.hud = new HUD(game.batch);
 
         OrthographicCamera camera = controller.getWorldRenderer().getMainCamera();
         this.inputHandler = new InputHandler(camera);
+
+        // Minimap now belongs to GameScreen
+        this.minimapRenderer = new MinimapRenderer();
 
         Gdx.input.setInputProcessor(this.inputHandler);
     }
@@ -38,35 +40,37 @@ public class GameScreen implements Screen {
         Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-
         controller.render(delta);
+
+        // Render minimap on top of world
+        minimapRenderer.render(controller.getWorld());
 
         hud.render();
 
-
-        //draws the UI on top
+        // draws the UI on top
         controlPanel.render();
-
     }
 
     @Override
     public void resize(int width, int height) {
-        //Prevent stretching when resizing viewport
+        // Prevent stretching when resizing viewport
         controller.getWorldRenderer().getViewport().update(width, height, false);
         controlPanel.resize(width, height);
 
         hud.resize(width, height);
 
+        minimapRenderer.resize(width, height);
     }
 
     @Override public void show() {}
     @Override public void pause() {}
     @Override public void resume() {}
     @Override public void hide() {}
-    @Override public void dispose() {
+
+    @Override
+    public void dispose() {
         controlPanel.dispose();
         hud.dispose();
-
+        minimapRenderer.dispose();
     }
-
 }

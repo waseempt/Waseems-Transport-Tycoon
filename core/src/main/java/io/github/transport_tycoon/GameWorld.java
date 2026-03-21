@@ -5,21 +5,24 @@ import java.util.ArrayList;
 public class GameWorld {
     private GameMap gameMap;
     private float timeScale = 1.0f; // Default 1x speed
-
+    private float forestGrowthTimer = 0f;
+    private static final float FOREST_GROWTH_INTERVAL = 60f;
+    //speed for tree
     private ArrayList<City> cities;
     private ArrayList<Facility> facilities;
 
     public GameWorld() {
-        // Initialize a 50x50 map
+
         this.gameMap = new GameMap(50, 50);
         this.cities = new ArrayList<>();
         this.facilities = new ArrayList<>();
 
         defineZones();
+        generateInitialForests();
     }
 
     private void defineZones() {
-        // instantiate 4 cities
+
         City budapest = new City("Budapest");
         assignZoneTiles(budapest, 22, 38, 5, 5); // Massive 5x5 city
         cities.add(budapest);
@@ -60,6 +63,21 @@ public class GameWorld {
         System.out.println("Model: Organic map layout generated.");
     }
 
+    private void generateInitialForests() {
+        for (int x = 0; x < 50; x++) {
+            for (int y = 0; y < 50; y++) {
+
+                Tile tile = gameMap.getTile(x, y);
+                if (tile == null) continue;
+                //the first forest
+                if (Math.random() < 0.05) {
+                    int trees = 1 + (int)(Math.random() * 4);
+                    tile.setTreeCount(trees);
+                }
+            }
+        }
+    }
+
     private void assignZoneTiles(Zone zone, int startX, int startY, int width, int height) {
         zone.setDimensions(width, height);
 
@@ -72,9 +90,59 @@ public class GameWorld {
             }
         }
     }
-
+    // with time is gonna be more with this part...
     public void updateSimulation(float delta) {
-        // tree growth, vehicle movement, etc..
+        forestGrowthTimer += delta;
+
+        if (forestGrowthTimer >= FOREST_GROWTH_INTERVAL) {
+            forestGrowthTimer = 0f;
+            growForests();
+        }
+    }
+    // grows all forest tiles by +1 (max 4)...that it... and now going around
+    private void growForests() {
+
+        ArrayList<Tile> newForests = new ArrayList<>();
+
+        for (int x = 0; x < 50; x++) {
+            for (int y = 0; y < 50; y++) {
+
+                Tile tile = gameMap.getTile(x, y);
+                if (tile == null) continue;
+
+                if (tile.hasForest()) {
+
+                    if (tile.getTreeCount() < 4) {
+                        tile.setTreeCount(tile.getTreeCount() + 1);
+                    }
+
+                    if (tile.getTreeCount() == 4) {
+                        addNeighbors(x, y, newForests);
+                    }
+                }
+            }
+        }
+
+        for (Tile t : newForests) {
+            if (!t.hasForest()) {
+                t.setTreeCount(1);
+            }
+        }
+    }
+    //spreads trees to neighboring tiles if there are 4 trees on that tile
+    private void addNeighbors(int x, int y, ArrayList<Tile> list) {
+
+        addIfValid(x + 1, y, list);
+        addIfValid(x - 1, y, list);
+        addIfValid(x, y + 1, list);
+        addIfValid(x, y - 1, list);
+    }
+
+    private void addIfValid(int x, int y, ArrayList<Tile> list) {
+        Tile tile = gameMap.getTile(x, y);
+        if (tile != null) {
+            list.add(tile);
+        }
     }
 
     public ArrayList<City> getCities() {
@@ -88,6 +156,7 @@ public class GameWorld {
     public float getTimeScale() {
         return timeScale;
     }
+
     public GameMap getMap() {
         return gameMap;
     }

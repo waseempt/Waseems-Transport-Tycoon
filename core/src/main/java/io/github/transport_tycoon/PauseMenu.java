@@ -26,6 +26,9 @@ public class PauseMenu {
 
     private ResumeListener resumeListener;
 
+    private ExitListener exitListener;
+
+
 
     public PauseMenu(SpriteBatch batch) {
         this.stage = new Stage(new ScreenViewport(), batch);
@@ -70,6 +73,16 @@ public class PauseMenu {
                 }
             }
         });
+
+        //Fires the ExitListener callback when clicked
+        exitButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (exitListener != null) {
+                    exitListener.onExit();
+                }
+            }
+        });
     }
 
     //renders the pause menu only if it is currently visible
@@ -79,6 +92,17 @@ public class PauseMenu {
         stage.draw();
     }
 
+
+    //Interface is used to notify GameScreen when the exit button is clicked
+
+    public interface ExitListener {
+        void onExit();
+    }
+
+    //sets the ExitListerner so gameScreen reacts when the player clicks Exit
+    public void setExitListener(ExitListener listener) {
+        this.exitListener = listener;
+    }
 
     //hides the pause menu and returns the input normally to the game
     public void hide(InputHandler inputHandler, Stage hudStage) {

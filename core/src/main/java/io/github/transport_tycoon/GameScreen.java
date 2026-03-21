@@ -28,6 +28,7 @@ public class GameScreen implements Screen {
         this.hud = new HUD(game.batch);
 
         this.pauseMenu = new PauseMenu(game.batch);
+        //stops the simulation and shows the pause menu when game paused
         hud.setPauseListener(() -> {
             controller.getWorld().pause();
             pauseMenu.show();
@@ -37,6 +38,11 @@ public class GameScreen implements Screen {
         pauseMenu.setResumeListener(() -> {
             controller.getWorld().resume();
             pauseMenu.hide(inputHandler, hud.getStage());
+        });
+
+        //routes the player back to the main menu when exiting
+        pauseMenu.setExitListener(() -> {
+            game.setScreen(new MainMenuScreen(game));
         });
 
         OrthographicCamera camera = controller.getWorldRenderer().getMainCamera();

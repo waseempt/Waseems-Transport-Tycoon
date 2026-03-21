@@ -14,8 +14,11 @@ public class GameWorld {
     //the tycoon name is entered on the SetupScreen
     private String tycoonName;
 
+    private float playerBalance;
+
     public GameWorld(String tycoonName) {
         this.tycoonName = tycoonName;
+        this.playerBalance = 5000;
 
         this.gameMap = new GameMap(50, 50);
         this.cities = new ArrayList<>();
@@ -178,5 +181,20 @@ public class GameWorld {
 
     public GameMap getMap() {
         return gameMap;
+    }
+
+    public float getPlayerBalance() {
+        return playerBalance;
+    }
+
+    public void setPlayerBalance(float b) {
+        playerBalance = b;
+    }
+
+    public boolean isBankrupt () {
+        if (playerBalance < 0 )
+            return true;
+
+        return false;
     }
 }

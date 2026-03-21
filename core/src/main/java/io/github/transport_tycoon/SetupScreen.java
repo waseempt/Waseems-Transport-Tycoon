@@ -66,7 +66,7 @@ public class SetupScreen implements Screen {
         Label tycoonLabel = new Label("Tycoon Name:", skin);
         table.add(tycoonLabel).left().padBottom(5).row();
         tycoonField = new TextField("", skin);
-        tycoonField.setMessageText("Enter your name...");
+        tycoonField.setMessageText("Enter tycoon name...");
         table.add(tycoonField).width(300).padBottom(20).row();
 
         // Buttons

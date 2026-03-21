@@ -19,7 +19,11 @@ public class GameController {
         float simulationDelta = delta * world.getTimeScale();
         world.updateSimulation(simulationDelta);
 
-        //Logic goes here...
+        // Check for bankruptcy
+        if (world.isBankrupt()) {
+            System.out.println("BANKRUPT! Game Over.");
+            // TODO: Switch to game over screen
+        }
 
         // Render
         worldRenderer.renderWorld(world, delta);

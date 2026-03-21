@@ -25,6 +25,10 @@ public class HUD {
 
     private PauseListener pauseListener;
 
+    //Labels
+    private Label balanceLabel;
+    private Label timeLabel;
+
 
     public HUD(SpriteBatch batch) {
         this.stage = new Stage(new ScreenViewport(), batch);
@@ -46,10 +50,10 @@ public class HUD {
         background.pad(8);
 
         //shows the Balance on the left
-        Label balanceLabel = new Label("Balance: [placeholder]", skin);
+        this.balanceLabel = new Label("Balance: [placeholder]", skin);
 
         //shows the time in the middle
-        Label timeLabel = new Label("Time: [placeholder]", skin);
+        this.timeLabel = new Label("Time: [placeholder]", skin);
 
         //shows the pause button on the right
         Label pauseLabel = new Label("Pause Game: [placeholder]", skin);
@@ -74,8 +78,13 @@ public class HUD {
         panel.add(background).growX().height(40);
     }
 
+    public void updateBalance(float balanceAmount) {
+        // Updates the text on the screen
+        this.balanceLabel.setText("Balance: $" + balanceAmount);
+    }
 
-    //updates all teh UI logic, it draws the stage to the screen so that the HUD appears on top of the game
+
+    //updates all the UI logic, it draws the stage to the screen so that the HUD appears on top of the game
     public void render() {
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
         stage.draw();

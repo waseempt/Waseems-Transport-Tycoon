@@ -65,6 +65,10 @@ public class GameScreen implements Screen {
         // Render minimap on top of world
         minimapRenderer.render(controller.getWorld());
 
+        // Update HUD values
+        float currentBalance = controller.getWorld().getPlayerBalance();
+
+        hud.updateBalance(currentBalance);
         hud.render();
 
         // draws the UI on top

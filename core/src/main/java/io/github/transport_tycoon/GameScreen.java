@@ -21,9 +21,10 @@ public class GameScreen implements Screen {
         // Instantiate the Controller, which instantiates the rest
         this.controller = new GameController(game.batch, tycoonName);
 
-        //HUD overlay
+        //fixed size panel at the bottom of the screen
         this.controlPanel = new ControlPanel(game.batch);
 
+        //fixed size panel at the top of the screen
         this.hud = new HUD(game.batch);
 
         OrthographicCamera camera = controller.getWorldRenderer().getMainCamera();

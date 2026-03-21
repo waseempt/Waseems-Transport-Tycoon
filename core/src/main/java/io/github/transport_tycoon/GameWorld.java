@@ -11,6 +11,7 @@ public class GameWorld {
     private ArrayList<City> cities;
     private ArrayList<Facility> facilities;
 
+    //the tycoon name is entered on the SetupScreen
     private String tycoonName;
 
     public GameWorld(String tycoonName) {

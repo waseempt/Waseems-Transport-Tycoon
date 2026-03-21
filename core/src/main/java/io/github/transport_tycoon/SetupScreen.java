@@ -24,7 +24,11 @@ public class SetupScreen implements Screen {
     private Stage stage;
     private Skin skin;
 
+    //stores the tycoon name
     private TextField tycoonField;
+    //displays error when the player try to start the game without a name
+    private Label errorLabel;
+
 
 
     public SetupScreen(TransportTycoon game) {
@@ -49,6 +53,7 @@ public class SetupScreen implements Screen {
     }
 
     private void buildUI() {
+        //fills the entire screen and centers all the elements
         Table table = new Table();
         table.setFillParent(true);
         stage.addActor(table);
@@ -68,10 +73,17 @@ public class SetupScreen implements Screen {
         TextButton startButton = new TextButton("Start Game", skin);
         TextButton menuButton = new TextButton("Return to Menu", skin);
 
+        //makes sure that the name is not empty before starting the game
         startButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 String tycoonName = tycoonField.getText().trim();
+
+                if (tycoonName.isEmpty()) {
+                    errorLabel.setText("Please enter your tycoon name.");
+                    return;
+                }
+
                 System.out.println("Starting game as: " + tycoonName);
                 game.setScreen(new GameScreen(game, tycoonName));
             }
@@ -79,6 +91,9 @@ public class SetupScreen implements Screen {
 
         table.add(startButton).width(300).height(50).padBottom(15).row();
         table.add(menuButton).width(300).height(50).row();
+
+        errorLabel = new Label("", skin, "error");
+        table.add(errorLabel).padTop(10).row();
     }
 
     @Override
@@ -129,6 +144,11 @@ public class SetupScreen implements Screen {
         textFieldStyle.messageFontColor = Color.GRAY;
         textFieldStyle.messageFont = tempSkin.getFont("default");
         tempSkin.add("default", textFieldStyle);
+
+        Label.LabelStyle errorLabelStyle = new Label.LabelStyle();
+        errorLabelStyle.font = tempSkin.getFont("default");
+        errorLabelStyle.fontColor = Color.RED;
+        tempSkin.add("error", errorLabelStyle);
 
         return tempSkin;
     }

@@ -13,6 +13,7 @@ public class GameScreen implements Screen {
     private ControlPanel controlPanel;
     private HUD hud;
     private MinimapRenderer minimapRenderer;
+    private PauseMenu pauseMenu;
 
     public GameScreen(TransportTycoon game,  String tycoonName) {
         this.game = game;
@@ -25,6 +26,24 @@ public class GameScreen implements Screen {
 
         //fixed size panel at the top of the screen
         this.hud = new HUD(game.batch);
+
+        this.pauseMenu = new PauseMenu(game.batch);
+        //stops the simulation and shows the pause menu when game paused
+        hud.setPauseListener(() -> {
+            controller.getWorld().pause();
+            pauseMenu.show();
+        });
+
+        //restores simulation speed and hides the pause menu when resumed
+        pauseMenu.setResumeListener(() -> {
+            controller.getWorld().resume();
+            pauseMenu.hide(inputHandler, hud.getStage());
+        });
+
+        //routes the player back to the main menu when exiting
+        pauseMenu.setExitListener(() -> {
+            game.setScreen(new MainMenuScreen(game));
+        });
 
         OrthographicCamera camera = controller.getWorldRenderer().getMainCamera();
         this.inputHandler = new InputHandler(camera);
@@ -50,6 +69,9 @@ public class GameScreen implements Screen {
 
         // draws the UI on top
         controlPanel.render();
+
+        pauseMenu.render();
+
     }
 
     @Override
@@ -61,10 +83,18 @@ public class GameScreen implements Screen {
         hud.resize(width, height);
 
         minimapRenderer.resize(width, height);
+
+        pauseMenu.resize(width, height);
+
     }
 
-    @Override public void show() {
-        Gdx.input.setInputProcessor(inputHandler);
+    //sets up InputMultiplexer  so teh HUD stage receives button clicks
+    @Override
+    public void show() {
+        com.badlogic.gdx.InputMultiplexer multiplexer = new com.badlogic.gdx.InputMultiplexer();
+        multiplexer.addProcessor(hud.getStage());
+        multiplexer.addProcessor(inputHandler);
+        Gdx.input.setInputProcessor(multiplexer);
     }
     @Override public void pause() {}
     @Override public void resume() {}
@@ -75,5 +105,6 @@ public class GameScreen implements Screen {
         controlPanel.dispose();
         hud.dispose();
         minimapRenderer.dispose();
+        pauseMenu.dispose();
     }
 }

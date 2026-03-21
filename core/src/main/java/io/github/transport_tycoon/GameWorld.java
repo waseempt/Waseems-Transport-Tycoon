@@ -5,7 +5,9 @@ import java.util.ArrayList;
 public class GameWorld {
     private GameMap gameMap;
     private float timeScale = 1.0f; // Default 1x speed
-
+    private float forestGrowthTimer = 0f;
+    private static final float FOREST_GROWTH_INTERVAL = 60f;
+    //speed for tree
     private ArrayList<City> cities;
     private ArrayList<Facility> facilities;
 
@@ -88,9 +90,28 @@ public class GameWorld {
             }
         }
     }
-
+    // with time is gonna be more with this part...
     public void updateSimulation(float delta) {
-        // tree growth, vehicle movement, etc..
+        forestGrowthTimer += delta;
+
+        if (forestGrowthTimer >= FOREST_GROWTH_INTERVAL) {
+            forestGrowthTimer = 0f;
+            growForests();
+        }
+    }
+    // grows all forest tiles by +1 (max 4)...that it...
+    private void growForests() {
+        for (int x = 0; x < 50; x++) {
+            for (int y = 0; y < 50; y++) {
+
+                Tile tile = gameMap.getTile(x, y);
+                if (tile == null) continue;
+
+                if (tile.hasForest() && tile.getTreeCount() < 4) {
+                    tile.setTreeCount(tile.getTreeCount() + 1);
+                }
+            }
+        }
     }
 
     public ArrayList<City> getCities() {

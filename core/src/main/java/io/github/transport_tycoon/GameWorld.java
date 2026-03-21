@@ -54,7 +54,7 @@ public class GameWorld {
         facilities.add(lumberCamp);
 
         Facility ironMine2 = new Facility("Iron Mine");
-        assignZoneTiles(ironMine2, 28, 8, 2, 2);   // 3x3 Iron Mine
+        assignZoneTiles(ironMine2, 28, 8, 3, 3);   // 3x3 Iron Mine
         facilities.add(ironMine2);
 
         System.out.println("Model: Organic map layout generated.");

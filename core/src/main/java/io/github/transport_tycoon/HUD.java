@@ -11,6 +11,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+
 
 
 public class HUD {
@@ -18,6 +22,8 @@ public class HUD {
     private Stage stage;
     //fonts, colors, etc.
     private Skin skin;
+
+    private PauseListener pauseListener;
 
 
     public HUD(SpriteBatch batch) {
@@ -48,10 +54,21 @@ public class HUD {
         //shows the pause button on the right
         Label pauseLabel = new Label("Pause Game: [placeholder]", skin);
 
+        //pause button
+        TextButton pauseButton = new TextButton("Pause Game", skin);
+        pauseButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (pauseListener != null) {
+                    pauseListener.onPause();
+                }
+            }
+        });
+
         //where every label is placed
         background.add(balanceLabel).expandX().left();
         background.add(timeLabel).expandX().center();
-        background.add(pauseLabel).expandX().right();
+        background.add(pauseButton).expandX().right();
 
         //placeholder labels
         panel.add(background).growX().height(40);
@@ -64,17 +81,29 @@ public class HUD {
         stage.draw();
     }
 
+    //allows the HUD buttons to reveive click events
+    public Stage getStage() {
+        return stage;
+    }
+
     //makes sure that the size doesnt change as we zoom-in or out
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
-
 
     public void dispose() {
         stage.dispose();
         skin.dispose();
     }
 
+    //notifies the GameScreen when the pause button is clicked
+    public void setPauseListener(PauseListener listener) {
+        this.pauseListener = listener;
+    }
+
+    public interface PauseListener {
+        void onPause();
+    }
 
     private Skin createBasicSkin() {
         Skin tempSkin = new Skin();
@@ -90,6 +119,14 @@ public class HUD {
         labelStyle.font = tempSkin.getFont("default");
         labelStyle.fontColor = Color.WHITE;
         tempSkin.add("default", labelStyle);
+
+        //defines how buttons look in their 3 stages
+        TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
+        buttonStyle.up = tempSkin.newDrawable("background", Color.DARK_GRAY);
+        buttonStyle.down = tempSkin.newDrawable("background", Color.GRAY);
+        buttonStyle.over = tempSkin.newDrawable("background", Color.LIGHT_GRAY);
+        buttonStyle.font = tempSkin.getFont("default");
+        tempSkin.add("default", buttonStyle);
 
         return tempSkin;
     }

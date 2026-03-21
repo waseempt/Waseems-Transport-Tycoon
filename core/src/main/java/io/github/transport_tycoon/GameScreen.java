@@ -13,6 +13,7 @@ public class GameScreen implements Screen {
     private ControlPanel controlPanel;
     private HUD hud;
     private MinimapRenderer minimapRenderer;
+    private PauseMenu pauseMenu;
 
     public GameScreen(TransportTycoon game,  String tycoonName) {
         this.game = game;
@@ -25,6 +26,10 @@ public class GameScreen implements Screen {
 
         //fixed size panel at the top of the screen
         this.hud = new HUD(game.batch);
+
+        this.pauseMenu = new PauseMenu(game.batch);
+        hud.setPauseListener(() -> pauseMenu.show());
+
 
         OrthographicCamera camera = controller.getWorldRenderer().getMainCamera();
         this.inputHandler = new InputHandler(camera);
@@ -50,6 +55,9 @@ public class GameScreen implements Screen {
 
         // draws the UI on top
         controlPanel.render();
+
+        pauseMenu.render();
+
     }
 
     @Override
@@ -61,10 +69,18 @@ public class GameScreen implements Screen {
         hud.resize(width, height);
 
         minimapRenderer.resize(width, height);
+
+        pauseMenu.resize(width, height);
+
     }
 
-    @Override public void show() {
-        Gdx.input.setInputProcessor(inputHandler);
+    //sets up InputMultiplexer  so teh HUD stage receives button clicks
+    @Override
+    public void show() {
+        com.badlogic.gdx.InputMultiplexer multiplexer = new com.badlogic.gdx.InputMultiplexer();
+        multiplexer.addProcessor(hud.getStage());
+        multiplexer.addProcessor(inputHandler);
+        Gdx.input.setInputProcessor(multiplexer);
     }
     @Override public void pause() {}
     @Override public void resume() {}
@@ -75,5 +91,6 @@ public class GameScreen implements Screen {
         controlPanel.dispose();
         hud.dispose();
         minimapRenderer.dispose();
+        pauseMenu.dispose();
     }
 }

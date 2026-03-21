@@ -10,12 +10,17 @@ public class GameScreen implements Screen {
     private final TransportTycoon game;
     private GameController controller;
     private InputHandler inputHandler;
+    private ControlPanel controlPanel;
+
 
     public GameScreen(TransportTycoon game) {
         this.game = game;
 
         // Instantiate the Controller, which instantiates the rest
         this.controller = new GameController(game.batch);
+
+        //HUD overlay
+        this.controlPanel = new ControlPanel(game.batch);
 
         OrthographicCamera camera = controller.getWorldRenderer().getMainCamera();
         this.inputHandler = new InputHandler(camera);
@@ -31,17 +36,25 @@ public class GameScreen implements Screen {
 
 
         controller.render(delta);
+
+        //draws the UI on top
+        controlPanel.render();
+
     }
 
     @Override
     public void resize(int width, int height) {
-        // Prevent stretching when resizing viewport
+        //Prevent stretching when resizing viewport
         controller.getWorldRenderer().getViewport().update(width, height, false);
+        controlPanel.resize(width, height);
     }
 
     @Override public void show() {}
     @Override public void pause() {}
     @Override public void resume() {}
     @Override public void hide() {}
-    @Override public void dispose() {}
+    @Override public void dispose() {
+        controlPanel.dispose();
+    }
+
 }

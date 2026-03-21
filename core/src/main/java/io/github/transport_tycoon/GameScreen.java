@@ -11,6 +11,8 @@ public class GameScreen implements Screen {
     private GameController controller;
     private InputHandler inputHandler;
     private ControlPanel controlPanel;
+    private HUD hud;
+
 
 
     public GameScreen(TransportTycoon game) {
@@ -21,6 +23,8 @@ public class GameScreen implements Screen {
 
         //HUD overlay
         this.controlPanel = new ControlPanel(game.batch);
+
+        this.hud = new HUD(game.batch);
 
         OrthographicCamera camera = controller.getWorldRenderer().getMainCamera();
         this.inputHandler = new InputHandler(camera);
@@ -37,6 +41,9 @@ public class GameScreen implements Screen {
 
         controller.render(delta);
 
+        hud.render();
+
+
         //draws the UI on top
         controlPanel.render();
 
@@ -47,6 +54,9 @@ public class GameScreen implements Screen {
         //Prevent stretching when resizing viewport
         controller.getWorldRenderer().getViewport().update(width, height, false);
         controlPanel.resize(width, height);
+
+        hud.resize(width, height);
+
     }
 
     @Override public void show() {}
@@ -55,6 +65,8 @@ public class GameScreen implements Screen {
     @Override public void hide() {}
     @Override public void dispose() {
         controlPanel.dispose();
+        hud.dispose();
+
     }
 
 }

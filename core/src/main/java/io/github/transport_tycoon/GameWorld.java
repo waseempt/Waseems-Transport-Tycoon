@@ -18,6 +18,7 @@ public class GameWorld {
 
     public GameWorld(String tycoonName) {
         this.tycoonName = tycoonName;
+        this.playerBalance = 5000;
 
         this.gameMap = new GameMap(50, 50);
         this.cities = new ArrayList<>();
@@ -178,6 +179,10 @@ public class GameWorld {
         return timeScale;
     }
 
+    public GameMap getMap() {
+        return gameMap;
+    }
+
     public float getPlayerBalance() {
         return playerBalance;
     }
@@ -186,7 +191,10 @@ public class GameWorld {
         playerBalance = b;
     }
 
-    public GameMap getMap() {
-        return gameMap;
+    public boolean isBankrupt () {
+        if (playerBalance < 0 )
+            return true;
+
+        return false;
     }
 }

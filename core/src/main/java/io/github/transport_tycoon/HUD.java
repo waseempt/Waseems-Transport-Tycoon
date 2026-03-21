@@ -39,6 +39,20 @@ public class HUD {
         background.setBackground(skin.newDrawable("background", new Color(0.1f, 0.1f, 0.1f, 0.85f)));
         background.pad(8);
 
+        //shows the Balance on the left
+        Label balanceLabel = new Label("Balance: [placeholder]", skin);
+
+        //shows the time in the middle
+        Label timeLabel = new Label("Time: [placeholder]", skin);
+
+        //shows the pause button on the right
+        Label pauseLabel = new Label("Pause Game: [placeholder]", skin);
+
+        //where every label is placed
+        background.add(balanceLabel).expandX().left();
+        background.add(timeLabel).expandX().center();
+        background.add(pauseLabel).expandX().right();
+
         //placeholder labels
         panel.add(background).growX().height(40);
     }

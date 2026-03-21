@@ -26,28 +26,38 @@ public class ControlPanel {
     }
 
     private void buildUI() {
+        //the layout container
         Table panel = new Table();
         panel.setFillParent(true);
         panel.bottom().left();
         panel.pad(10);
         stage.addActor(panel);
 
+        //the visible dark panel
         Table background = new Table(skin);
         background.setBackground(skin.newDrawable("background", new Color(0.1f, 0.1f, 0.1f, 0.85f)));
         background.pad(12);
         background.defaults().left().padRight(20);
 
+        //where the speed shows
+        Label speedLabel = new Label("Speed: [placeholder]", skin);
+        background.add(speedLabel);
 
+        //shows the build mode
+        Label buildLabel = new Label("Build Mode: [placeholder]", skin);
+        background.add(buildLabel);
 
-        // Wide horizontal bar: ~75% of viewport width, fixed height
+        //the size of the panel
         panel.add(background).width(1100).height(60);
     }
 
+    //updates all the UI logic
     public void render() {
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
         stage.draw();
     }
 
+    // to make sure that the size doesnt change as we zoom-in or out
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }

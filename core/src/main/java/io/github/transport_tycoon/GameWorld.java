@@ -14,6 +14,8 @@ public class GameWorld {
     //the tycoon name is entered on the SetupScreen
     private String tycoonName;
 
+    private float playerBalance;
+
     public GameWorld(String tycoonName) {
         this.tycoonName = tycoonName;
 
@@ -174,6 +176,14 @@ public class GameWorld {
 
     public float getTimeScale() {
         return timeScale;
+    }
+
+    public float getPlayerBalance() {
+        return playerBalance;
+    }
+
+    public void setPlayerBalance(float b) {
+        playerBalance = b;
     }
 
     public GameMap getMap() {

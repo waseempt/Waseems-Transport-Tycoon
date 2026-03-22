@@ -252,8 +252,32 @@ public class GameWorld {
         }
     }
 
+    // Enforces building a road only if it connects to another road tile
+    private boolean isValidBuildLocation(int x, int y) {
+        Tile north = gameMap.getTile(x, y + 1);
+        Tile south = gameMap.getTile(x, y - 1);
+        Tile east = gameMap.getTile(x + 1, y);
+        Tile west = gameMap.getTile(x - 1, y);
+
+        if (north != null && (north.hasRoad() || north.getZoneConnectionMask() == 4)) return true;
+
+        if (east != null && (east.hasRoad() || east.getZoneConnectionMask() == 8)) return true;
+
+        if (south != null && (south.hasRoad() || south.getZoneConnectionMask() == 1)) return true;
+
+        if (west != null && (west.hasRoad() || west.getZoneConnectionMask() == 2)) return true;
+
+        // If we check all 4 sides and find nothing, building is blocked
+        return false;
+    }
+
     public void buildRoad(int x, int y) {
         Tile tile = gameMap.getTile(x, y);
+
+        if (!isValidBuildLocation(x, y)) {
+            System.out.println("Cannot build here, roads connect to an existing road, city or facility.");
+            return; // Stop the method instantly
+        }
 
         // Ensure the tile exists and doesn't ALREADY have a road
         if (tile != null && !tile.hasRoad()) {

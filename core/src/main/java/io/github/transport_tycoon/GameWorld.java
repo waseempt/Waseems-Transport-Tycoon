@@ -9,9 +9,10 @@ public class GameWorld {
     private static final float FOREST_GROWTH_INTERVAL = 60f;
     //speed for tree
 
-    //Cost of building a road
+    //Building costs
     private static final float ROAD_COST = 100f;
     private static final float ROAD_REFUND = 50f;
+    private static final float TREE_CLEAR_COST = 20f;
 
     private ArrayList<City> cities;
     private ArrayList<Facility> facilities;
@@ -286,15 +287,18 @@ public class GameWorld {
             return; // Stop the method instantly
         }
 
+        float totalCost = ROAD_COST + (tile.getTreeCount() * TREE_CLEAR_COST);
+
         // Ensure the tile exists and doesn't ALREADY have a road
         if (tile != null && !tile.hasRoad()) {
-            if (playerBalance >= ROAD_COST) {
-                playerBalance -= ROAD_COST;
+            if (playerBalance >= totalCost) {
+                playerBalance -= totalCost;
                 tile.setHasRoad(true);
+                tile.setTreeCount(0);
 
                 updateTileAndNeighbors(x, y);
 
-                if (balanceListener != null) balanceListener.onBalanceChanged(-ROAD_COST);
+                if (balanceListener != null) balanceListener.onBalanceChanged(-totalCost);
 
                 System.out.println("Built road at " + x + ", " + y + " | Balance: $" + playerBalance);
             } else {

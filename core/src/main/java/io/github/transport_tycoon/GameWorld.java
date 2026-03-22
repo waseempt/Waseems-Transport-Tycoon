@@ -8,6 +8,10 @@ public class GameWorld {
     private float forestGrowthTimer = 0f;
     private static final float FOREST_GROWTH_INTERVAL = 60f;
     //speed for tree
+
+    //Cost of building a road
+    private static final float ROAD_COST = 100f;
+
     private ArrayList<City> cities;
     private ArrayList<Facility> facilities;
 
@@ -164,6 +168,21 @@ public class GameWorld {
         Tile tile = gameMap.getTile(x, y);
         if (tile != null) {
             list.add(tile);
+        }
+    }
+
+    public void buildRoad(int x, int y) {
+        Tile tile = gameMap.getTile(x, y);
+
+        // Ensure the tile exists and doesn't ALREADY have a road
+        if (tile != null && !tile.hasRoad()) {
+            if (playerBalance >= ROAD_COST) {
+                playerBalance -= ROAD_COST;
+                tile.setHasRoad(true);
+                System.out.println("Built road at " + x + ", " + y + " | Balance: $" + playerBalance);
+            } else {
+                System.out.println("Not enough money to build a road!");
+            }
         }
     }
 

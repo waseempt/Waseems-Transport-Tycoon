@@ -41,7 +41,7 @@ public class GameScreen implements Screen {
         //restores simulation speed and hides the pause menu when resumed
         pauseMenu.setResumeListener(() -> {
             controller.getWorld().resume();
-            pauseMenu.hide(inputHandler, hud.getStage());
+            pauseMenu.hide(inputHandler, hud.getStage(), controlPanel.getStage());
         });
 
         //routes the player back to the main menu when exiting
@@ -53,10 +53,11 @@ public class GameScreen implements Screen {
         this.controlPanel.setBuildListener(() -> {
             isBuildMode = !isBuildMode;
             hud.setBuildModeActive(isBuildMode);
+            inputHandler.setBuildMode(isBuildMode);
         });
 
         OrthographicCamera camera = controller.getWorldRenderer().getMainCamera();
-        this.inputHandler = new InputHandler(camera);
+        this.inputHandler = new InputHandler(camera, controller.getWorld());
 
         // Minimap now belongs to GameScreen
         this.minimapRenderer = new MinimapRenderer();

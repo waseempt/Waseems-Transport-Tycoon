@@ -3,6 +3,7 @@ package io.github.transport_tycoon;
 public class Tile {
     private int gridX;
     private int gridY;
+    private boolean hasRoad = false;
 
     private int treeCount;
 
@@ -22,10 +23,16 @@ public class Tile {
     public boolean hasForest() {
         return treeCount > 0;
     }
+    public boolean hasRoad() { return hasRoad; }
+
 
     public void setTreeCount(int treeCount) {
         if (treeCount < 0) treeCount = 0;
         if (treeCount > 4) treeCount = 4;
         this.treeCount = treeCount;
+    }
+
+    public void setHasRoad(boolean hasRoad) {
+        this.hasRoad = hasRoad;
     }
 }

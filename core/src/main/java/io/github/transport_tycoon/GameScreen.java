@@ -10,10 +10,14 @@ public class GameScreen implements Screen {
     private final TransportTycoon game;
     private GameController controller;
     private InputHandler inputHandler;
+
     private ControlPanel controlPanel;
     private HUD hud;
-    private MinimapRenderer minimapRenderer;
     private PauseMenu pauseMenu;
+
+    private MinimapRenderer minimapRenderer;
+
+    private boolean isBuildMode = false;
 
     public GameScreen(TransportTycoon game,  String tycoonName) {
         this.game = game;
@@ -37,7 +41,7 @@ public class GameScreen implements Screen {
         //restores simulation speed and hides the pause menu when resumed
         pauseMenu.setResumeListener(() -> {
             controller.getWorld().resume();
-            pauseMenu.hide(inputHandler, hud.getStage());
+            pauseMenu.hide(inputHandler, hud.getStage(), controlPanel.getStage());
         });
 
         //routes the player back to the main menu when exiting
@@ -45,8 +49,15 @@ public class GameScreen implements Screen {
             game.setScreen(new MainMenuScreen(game));
         });
 
+        //Build mode listener
+        this.controlPanel.setBuildListener(() -> {
+            isBuildMode = !isBuildMode;
+            hud.setBuildModeActive(isBuildMode);
+            inputHandler.setBuildMode(isBuildMode);
+        });
+
         OrthographicCamera camera = controller.getWorldRenderer().getMainCamera();
-        this.inputHandler = new InputHandler(camera);
+        this.inputHandler = new InputHandler(camera, controller.getWorld());
 
         // Minimap now belongs to GameScreen
         this.minimapRenderer = new MinimapRenderer();
@@ -97,6 +108,7 @@ public class GameScreen implements Screen {
     public void show() {
         com.badlogic.gdx.InputMultiplexer multiplexer = new com.badlogic.gdx.InputMultiplexer();
         multiplexer.addProcessor(hud.getStage());
+        multiplexer.addProcessor(controlPanel.getStage());
         multiplexer.addProcessor(inputHandler);
         Gdx.input.setInputProcessor(multiplexer);
     }

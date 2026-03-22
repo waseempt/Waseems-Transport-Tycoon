@@ -105,10 +105,11 @@ public class PauseMenu {
     }
 
     //hides the pause menu and returns the input normally to the game
-    public void hide(InputHandler inputHandler, Stage hudStage) {
+    public void hide(InputHandler inputHandler, Stage hudStage, Stage controlPanelStage) {
         visible = false;
         com.badlogic.gdx.InputMultiplexer multiplexer = new com.badlogic.gdx.InputMultiplexer();
         multiplexer.addProcessor(hudStage);
+        multiplexer.addProcessor(controlPanelStage);
         multiplexer.addProcessor(inputHandler);
         Gdx.input.setInputProcessor(multiplexer);
     }

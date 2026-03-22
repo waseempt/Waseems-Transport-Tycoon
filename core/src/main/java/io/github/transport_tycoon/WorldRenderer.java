@@ -136,6 +136,12 @@ public class WorldRenderer {
                         batch.draw(forestRegion, drawX, drawY, TILE_SIZE, TILE_SIZE);
                     }
                 }
+
+                if (tile != null && tile.hasRoad()) {
+                    if (roadRegion != null) {
+                        batch.draw(roadRegion, drawX, drawY, TILE_SIZE, TILE_SIZE);
+                    }
+                }
             }
         }
 

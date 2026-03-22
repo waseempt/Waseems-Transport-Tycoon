@@ -6,7 +6,9 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -87,6 +89,32 @@ public class HUD {
     public void updateBalance(float balanceAmount) {
         // Updates the text on the screen
         this.balanceLabel.setText("Balance: $" + balanceAmount);
+    }
+
+    public void showBalanceChange(float amount) {
+        // Format text and color
+        String text = amount > 0 ? "+$" + (int)amount : "-$" + (int)Math.abs(amount);
+        Color color = amount > 0 ? Color.GREEN : Color.RED;
+
+        Label changeLabel = new Label(text, skin);
+        changeLabel.setColor(color);
+
+        // Find exactly where the main balance label is on the screen
+        Vector2 pos = balanceLabel.localToStageCoordinates(new Vector2(0, 0));
+
+        // Offset it slightly to the right of the main balance
+        changeLabel.setPosition(pos.x + 100, pos.y);
+
+        // Create the Floating Animation (Move Up + Fade Out over 1.5 seconds)
+        changeLabel.addAction(Actions.sequence(
+            Actions.parallel(
+                Actions.moveBy(0, 30, 1.5f),
+                Actions.fadeOut(1.5f)
+            ),
+            Actions.removeActor() // Destroys the label so it doesn't lag the game!
+        ));
+
+        stage.addActor(changeLabel);
     }
 
     //Shows build mode message when active

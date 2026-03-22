@@ -21,6 +21,13 @@ public class GameWorld {
 
     private float playerBalance;
 
+    //Indicates when balance is changed
+    public interface BalanceChangeListener {
+        void onBalanceChanged(float changeAmount);
+    }
+
+    private BalanceChangeListener balanceListener;
+
     public GameWorld(String tycoonName) {
         this.tycoonName = tycoonName;
         this.playerBalance = 5000;
@@ -287,6 +294,8 @@ public class GameWorld {
 
                 updateTileAndNeighbors(x, y);
 
+                if (balanceListener != null) balanceListener.onBalanceChanged(-ROAD_COST);
+
                 System.out.println("Built road at " + x + ", " + y + " | Balance: $" + playerBalance);
             } else {
                 System.out.println("Not enough money to build a road!");
@@ -308,6 +317,8 @@ public class GameWorld {
 
             tile.setRoadMask(0);
             updateTileAndNeighbors(x, y);
+
+            if (balanceListener != null) balanceListener.onBalanceChanged(ROAD_REFUND);
 
             // logging
             System.out.println("Bulldozed road at " + x + ", " + y + " | Refunded $50 | Balance: $" + playerBalance);
@@ -378,6 +389,9 @@ public class GameWorld {
 
     public void setPlayerBalance(float b) {
         playerBalance = b;
+    }
+    public void setBalanceChangeListener(BalanceChangeListener listener) {
+        this.balanceListener = listener;
     }
 
     public boolean isBankrupt () {

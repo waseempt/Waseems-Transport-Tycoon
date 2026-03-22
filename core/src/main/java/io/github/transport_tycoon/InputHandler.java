@@ -90,7 +90,15 @@ public class InputHandler implements InputProcessor {
             int gridX = (int) (worldCoords.x / 64f);
             int gridY = (int) (worldCoords.y / 64f);
 
-            world.buildRoad(gridX, gridY);
+            // Build if left mouse button
+            if (button == Input.Buttons.LEFT) {
+                world.buildRoad(gridX, gridY);
+            }
+
+            // Remove if right mouse button
+            else if (button == Input.Buttons.RIGHT) {
+                world.removeRoad(gridX, gridY);
+            }
 
         }
 

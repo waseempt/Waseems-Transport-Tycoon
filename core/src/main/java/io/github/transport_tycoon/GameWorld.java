@@ -52,39 +52,119 @@ public class GameWorld {
 
         City budapest = new City("Budapest");
         assignZoneTiles(budapest, 22, 38, 5, 5); // Massive 5x5 city
+
+        Tile budapestSouth = gameMap.getTile(22 + 2, 38 + 0);
+        if (budapestSouth != null) {
+            budapestSouth.setZoneConnection(4, budapest);
+        }
+
+        Tile budapestEast = gameMap.getTile(22 + 4, 38 + 1);
+        if (budapestEast != null) {
+            budapestEast.setZoneConnection(2, budapest);
+        }
+
+        Tile budapestEast2 = gameMap.getTile(22 + 4, 38 + 3);
+        if (budapestEast2 != null) {
+            budapestEast2.setZoneConnection(2, budapest);
+        }
+
+        Tile budapestWest = gameMap.getTile(22, 38 + 1);
+        if (budapestWest != null) {
+            budapestWest.setZoneConnection(8, budapest);
+        }
+
+        Tile budapestWest2 = gameMap.getTile(22, 38 + 3);
+        if (budapestWest2 != null) {
+            budapestWest2.setZoneConnection(8, budapest);
+        }
         cities.add(budapest);
 
         City debrecen = new City("Debrecen");
         assignZoneTiles(debrecen, 8, 24, 4, 4);   // 4x4 city
+
+        Tile debrecenEast = gameMap.getTile(8 + 3, 24 + 3);
+        if (debrecenEast != null) {
+            debrecenEast.setZoneConnection(2, debrecen);
+        }
+
+        Tile debrecenEast2 = gameMap.getTile(8 + 3, 24);
+        if (debrecenEast2 != null) {
+            debrecenEast2.setZoneConnection(2, debrecen);
+        }
         cities.add(debrecen);
 
         City szentendre = new City("Szentendre");
         assignZoneTiles(szentendre, 38, 12, 3, 3); // 3x3 city
+
+        Tile szentendreWest = gameMap.getTile(38 + 0, 12 + 1);
+        if (szentendreWest != null) {
+            szentendreWest.setZoneConnection(8, szentendre);
+        }
+
+        Tile szentendreSouth = gameMap.getTile(38 + 2, 12 + 0);
+        if (szentendreSouth != null) {
+            szentendreSouth.setZoneConnection(4, szentendre);
+        }
         cities.add(szentendre);
 
         City pecs = new City("Pecs");
         assignZoneTiles(pecs, 42, 36, 3, 3); // 3x3 city
+
+        Tile pecsWest = gameMap.getTile(42 + 0, 36 + 1);
+        if (pecsWest != null) {
+            pecsWest.setZoneConnection(8, pecs);
+        }
+
+        Tile pecsSouth = gameMap.getTile(42 + 2, 36 + 0);
+        if (pecsSouth != null) {
+            pecsSouth.setZoneConnection(4, pecs);
+        }
         cities.add(pecs);
 
         // Instantiate 5 Facilities
         Facility coalMine = new Facility("Coal Mine");
         assignZoneTiles(coalMine, 5, 42, 3, 3);    // 3x3 Coal Mine
+
+        Tile coalMineSouth = gameMap.getTile(5 + 2, 42 + 0);
+        if (coalMineSouth != null) {
+            coalMineSouth.setZoneConnection(4, coalMine);
+        }
         facilities.add(coalMine);
 
         Facility ironMine = new Facility("Iron Mine");
         assignZoneTiles(ironMine, 38, 26, 3, 3);   // 3x3 Iron Mine
+
+        Tile ironMineSouth = gameMap.getTile(38 + 2, 26 + 0);
+        if (ironMineSouth != null) {
+            ironMineSouth.setZoneConnection(4, ironMine);
+        }
         facilities.add(ironMine);
 
         Facility steelMill = new Facility("Steel Mill");
         assignZoneTiles(steelMill, 20, 18, 4, 4);  // 4x4 Steel Mill
+
+        Tile steelMillWest = gameMap.getTile(20, 18);
+        if (steelMillWest != null) {
+            steelMillWest.setZoneConnection(8, steelMill);
+        }
         facilities.add(steelMill);
 
         Facility lumberCamp = new Facility("Lumber Camp");
         assignZoneTiles(lumberCamp, 12, 5, 4, 4);  // 4x4 Lumber Camp
+
+        Tile lumberCampSouth = gameMap.getTile(12, 5);
+        if (lumberCampSouth != null) {
+            lumberCampSouth.setZoneConnection(4, lumberCamp);
+        }
         facilities.add(lumberCamp);
 
         Facility ironMine2 = new Facility("Iron Mine");
         assignZoneTiles(ironMine2, 28, 8, 3, 3);   // 3x3 Iron Mine
+
+        Tile ironMine2South = gameMap.getTile(28 + 2, 8 + 0);
+        if (ironMine2South != null) {
+            ironMine2South.setZoneConnection(4, ironMine2);
+        }
         facilities.add(ironMine2);
 
         System.out.println("Model: Organic map layout generated.");
@@ -180,6 +260,9 @@ public class GameWorld {
             if (playerBalance >= ROAD_COST) {
                 playerBalance -= ROAD_COST;
                 tile.setHasRoad(true);
+
+                updateTileAndNeighbors(x, y);
+
                 System.out.println("Built road at " + x + ", " + y + " | Balance: $" + playerBalance);
             } else {
                 System.out.println("Not enough money to build a road!");
@@ -199,11 +282,54 @@ public class GameWorld {
             // Give the refund
             playerBalance += ROAD_REFUND;
 
+            tile.setRoadMask(0);
+            updateTileAndNeighbors(x, y);
+
             // logging
             System.out.println("Bulldozed road at " + x + ", " + y + " | Refunded $50 | Balance: $" + playerBalance);
         } else {
             System.out.println("Bulldoze failed");
         }
+    }
+
+    // Neighbor-finding algorithm
+    private void updateRoadTile(int x, int y) {
+        Tile tile = gameMap.getTile(x, y);
+        if (tile == null || !tile.hasRoad()) return;
+
+        int mask = 0;
+
+        // Check all 4 neighbors
+        Tile north = gameMap.getTile(x, y + 1);
+        Tile south = gameMap.getTile(x, y - 1);
+        Tile east = gameMap.getTile(x + 1, y);
+        Tile west = gameMap.getTile(x - 1, y);
+
+        // Each type and orientation of road has a different mask
+        // Check North: Is it a road? OR Is it a Zone Entry facing South (4)?
+        if (north != null && (north.hasRoad() || north.getZoneConnectionMask() == 4)) mask += 1;
+
+        // Check East: Is it a road? OR Is it a Zone Entry facing West (8)?
+        if (east != null && (east.hasRoad() || east.getZoneConnectionMask() == 8)) mask += 2;
+
+        // Check South: Is it a road? OR Is it a Zone Entry facing North (1)?
+        if (south != null && (south.hasRoad() || south.getZoneConnectionMask() == 1)) mask += 4;
+
+        // Check West: Is it a road? OR Is it a Zone Entry facing East (2)?
+        if (west != null && (west.hasRoad() || west.getZoneConnectionMask() == 2)) mask += 8;
+
+        tile.setRoadMask(mask);
+    }
+
+    // updates a tile and it's neighbors, called on build or remove
+    private void updateTileAndNeighbors(int x, int y) {
+
+        updateRoadTile(x, y);
+
+        updateRoadTile(x, y + 1);
+        updateRoadTile(x, y - 1);
+        updateRoadTile(x + 1, y);
+        updateRoadTile(x - 1, y);
     }
 
     public ArrayList<City> getCities() {

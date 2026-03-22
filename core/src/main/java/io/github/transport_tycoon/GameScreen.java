@@ -10,10 +10,14 @@ public class GameScreen implements Screen {
     private final TransportTycoon game;
     private GameController controller;
     private InputHandler inputHandler;
+
     private ControlPanel controlPanel;
     private HUD hud;
-    private MinimapRenderer minimapRenderer;
     private PauseMenu pauseMenu;
+
+    private MinimapRenderer minimapRenderer;
+
+    private boolean isBuildMode = false;
 
     public GameScreen(TransportTycoon game,  String tycoonName) {
         this.game = game;
@@ -43,6 +47,12 @@ public class GameScreen implements Screen {
         //routes the player back to the main menu when exiting
         pauseMenu.setExitListener(() -> {
             game.setScreen(new MainMenuScreen(game));
+        });
+
+        //Build mode listener
+        this.controlPanel.setBuildListener(() -> {
+            isBuildMode = !isBuildMode;
+            hud.setBuildModeActive(isBuildMode);
         });
 
         OrthographicCamera camera = controller.getWorldRenderer().getMainCamera();
@@ -97,6 +107,7 @@ public class GameScreen implements Screen {
     public void show() {
         com.badlogic.gdx.InputMultiplexer multiplexer = new com.badlogic.gdx.InputMultiplexer();
         multiplexer.addProcessor(hud.getStage());
+        multiplexer.addProcessor(controlPanel.getStage());
         multiplexer.addProcessor(inputHandler);
         Gdx.input.setInputProcessor(multiplexer);
     }

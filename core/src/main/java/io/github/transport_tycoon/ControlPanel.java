@@ -6,10 +6,13 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -17,6 +20,8 @@ public class ControlPanel {
 
     private Stage stage;
     private Skin skin;
+
+    private BuildModeListener buildListener;
 
     public ControlPanel(SpriteBatch batch) {
         this.stage = new Stage(new ScreenViewport(), batch);
@@ -44,8 +49,18 @@ public class ControlPanel {
         background.add(speedLabel);
 
         //shows the build mode
-        Label buildLabel = new Label("Build Mode: [placeholder]", skin);
-        background.add(buildLabel);
+        TextButton buildButton = new TextButton("Build Mode", skin);
+        background.add(buildButton);
+
+        // Build mode ClickListener
+        buildButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (buildListener != null) {
+                    buildListener.onBuildToggle();
+                }
+            }
+        });
 
         //the size of the panel
         panel.add(background).width(1100).height(60);
@@ -64,6 +79,14 @@ public class ControlPanel {
 
     public Stage getStage() {
         return stage;
+    }
+
+    public interface BuildModeListener {
+        void onBuildToggle();
+    }
+
+    public void setBuildListener(BuildModeListener listener) {
+        this.buildListener = listener;
     }
 
     public void dispose() {
@@ -85,6 +108,14 @@ public class ControlPanel {
         labelStyle.font = tempSkin.getFont("default");
         labelStyle.fontColor = Color.WHITE;
         tempSkin.add("default", labelStyle);
+
+        TextButton.TextButtonStyle buttonStyle =
+            new TextButton.TextButtonStyle();
+        buttonStyle.up = tempSkin.newDrawable("background", Color.DARK_GRAY);
+        buttonStyle.down = tempSkin.newDrawable("background", Color.GRAY);
+        buttonStyle.over = tempSkin.newDrawable("background", Color.LIGHT_GRAY);
+        buttonStyle.font = tempSkin.getFont("default");
+        tempSkin.add("default", buttonStyle);
 
         return tempSkin;
     }

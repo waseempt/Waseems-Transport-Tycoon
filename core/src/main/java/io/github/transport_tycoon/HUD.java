@@ -28,6 +28,7 @@ public class HUD {
     //Labels
     private Label balanceLabel;
     private Label timeLabel;
+    private Label buildModeIndicator;
 
 
     public HUD(SpriteBatch batch) {
@@ -55,6 +56,10 @@ public class HUD {
         //shows the time in the middle
         this.timeLabel = new Label("Time: [placeholder]", skin);
 
+        //build mode indicator
+        this.buildModeIndicator = new Label("", skin);
+        this.buildModeIndicator.setColor(Color.YELLOW);
+
         //shows the pause button on the right
         Label pauseLabel = new Label("Pause Game: [placeholder]", skin);
 
@@ -72,6 +77,7 @@ public class HUD {
         //where every label is placed
         background.add(balanceLabel).expandX().left();
         background.add(timeLabel).expandX().center();
+        background.add(buildModeIndicator).expandX().center();
         background.add(pauseButton).expandX().right();
 
         //placeholder labels
@@ -81,6 +87,15 @@ public class HUD {
     public void updateBalance(float balanceAmount) {
         // Updates the text on the screen
         this.balanceLabel.setText("Balance: $" + balanceAmount);
+    }
+
+    //Shows build mode message when active
+    public void setBuildModeActive(boolean active) {
+        if (active) {
+            this.buildModeIndicator.setText("BUILD MODE ACTIVE");
+        } else {
+            this.buildModeIndicator.setText("");
+        }
     }
 
 

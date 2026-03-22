@@ -114,6 +114,7 @@ public class WorldRenderer {
                     batch.draw(grassRegion, drawX, drawY, TILE_SIZE, TILE_SIZE);
                 }
 
+                // Draw forests
                 if (tile != null && tile.hasForest()) {
                     TextureRegion forestRegion = null;
 
@@ -137,9 +138,39 @@ public class WorldRenderer {
                     }
                 }
 
+                // Draw roads
                 if (tile != null && tile.hasRoad()) {
-                    if (roadRegion != null) {
-                        batch.draw(roadRegion, drawX, drawY, TILE_SIZE, TILE_SIZE);
+                    TextureRegion region = roadRegion;
+                    int rotation = 0;
+
+                    switch (tile.getRoadMask()) {
+                        // Straight roads
+                        case 0: case 1: case 4: case 5:
+                            region = roadRegion; break; // Vertical
+                        case 2: case 8: case 10:
+                            region = roadRegion; rotation = 90; break; // Horizontal
+
+                        //Corners
+                        case 6:  region = twoIntersectRegion; break;   // East & South
+                        case 12: region = twoIntersectRegion; rotation = 270; break; // South & West
+                        case 9:  region = twoIntersectRegion; rotation = 180; break; // West & North
+                        case 3:  region = twoIntersectRegion; rotation = 90; break;  // North & East
+
+                        // 3-way intersections
+                        case 14: region = threeIntersectRegion; break;   // East, South, West
+                        case 13: region = threeIntersectRegion; rotation = 270; break; // South, West, North
+                        case 11: region = threeIntersectRegion; rotation = 180; break; // West, North, East
+                        case 7:  region = threeIntersectRegion; rotation = 90; break;  // North, East, South
+
+                        // 4-way intersection
+                        case 15: region = fourIntersectRegion; break;
+                    }
+
+                    if (region != null) {
+                        batch.draw(region, drawX, drawY,
+                            TILE_SIZE / 2, TILE_SIZE / 2,
+                            TILE_SIZE, TILE_SIZE,
+                            1, 1, rotation);
                     }
                 }
             }

@@ -56,6 +56,11 @@ public class GameScreen implements Screen {
             inputHandler.setBuildMode(isBuildMode);
         });
 
+        // When controller tells the screen balance was changed, balance tells the hud to activate the animation
+        controller.getWorld().setBalanceChangeListener(amount -> {
+            hud.showBalanceChange(amount);
+        });
+
         OrthographicCamera camera = controller.getWorldRenderer().getMainCamera();
         this.inputHandler = new InputHandler(camera, controller.getWorld());
 

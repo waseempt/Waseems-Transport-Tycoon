@@ -40,7 +40,6 @@ public class MinimapRenderer {
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
-
         for (int x = 0; x < MAP_SIZE; x++) {
             for (int y = 0; y < MAP_SIZE; y++) {
 
@@ -65,7 +64,6 @@ public class MinimapRenderer {
             }
         }
 
-
         shapeRenderer.setColor(Color.GRAY);
         for (Facility facility : world.getFacilities()) {
             for (Tile tile : facility.getTiles()) {
@@ -74,7 +72,6 @@ public class MinimapRenderer {
                 shapeRenderer.rect(drawX, drawY, MINI_TILE_SIZE, MINI_TILE_SIZE);
             }
         }
-
 
         shapeRenderer.setColor(Color.GOLD);
         for (City city : world.getCities()) {
@@ -87,11 +84,43 @@ public class MinimapRenderer {
 
         shapeRenderer.end();
 
-
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(Color.BLACK);
         shapeRenderer.rect(startX, startY, minimapWidth, minimapHeight);
         shapeRenderer.end();
+    }
+
+    // checks if click is inside minimap
+    public boolean isInsideMinimap(int screenX, int screenY) {
+        float minimapWidth = MAP_SIZE * MINI_TILE_SIZE;
+        float minimapHeight = MAP_SIZE * MINI_TILE_SIZE;
+
+        float startX = viewport.getWorldWidth() - minimapWidth - PADDING;
+        float startY = PADDING;
+
+        float fixedY = Gdx.graphics.getHeight() - screenY;
+
+        return screenX >= startX && screenX <= startX + minimapWidth &&
+            fixedY >= startY && fixedY <= startY + minimapHeight;
+    }
+
+    // converts minimap click to world position
+    public float[] screenToWorld(int screenX, int screenY) {
+        float minimapWidth = MAP_SIZE * MINI_TILE_SIZE;
+        float minimapHeight = MAP_SIZE * MINI_TILE_SIZE;
+
+        float startX = viewport.getWorldWidth() - minimapWidth - PADDING;
+        float startY = PADDING;
+
+        float fixedY = Gdx.graphics.getHeight() - screenY;
+
+        float localX = screenX - startX;
+        float localY = fixedY - startY;
+
+        float worldX = (localX / minimapWidth) * (MAP_SIZE * 64f);
+        float worldY = (localY / minimapHeight) * (MAP_SIZE * 64f);
+
+        return new float[]{worldX, worldY};
     }
 
     public void resize(int width, int height) {

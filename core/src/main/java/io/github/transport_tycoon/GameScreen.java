@@ -61,11 +61,13 @@ public class GameScreen implements Screen {
             hud.showBalanceChange(amount);
         });
 
-        OrthographicCamera camera = controller.getWorldRenderer().getMainCamera();
-        this.inputHandler = new InputHandler(camera, controller.getWorld());
-
         // Minimap now belongs to GameScreen
         this.minimapRenderer = new MinimapRenderer();
+
+        OrthographicCamera camera = controller.getWorldRenderer().getMainCamera();
+
+        // pass minimap to input handler
+        this.inputHandler = new InputHandler(camera, controller.getWorld(), minimapRenderer);
 
         Gdx.input.setInputProcessor(this.inputHandler);
     }

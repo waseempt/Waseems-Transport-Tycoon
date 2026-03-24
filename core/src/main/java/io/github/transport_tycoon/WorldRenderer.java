@@ -49,6 +49,9 @@ public class WorldRenderer {
     // Grid Size
     private final float TILE_SIZE = 64f;
 
+
+
+
     public WorldRenderer(SpriteBatch batch) {
         this.batch = batch;
 

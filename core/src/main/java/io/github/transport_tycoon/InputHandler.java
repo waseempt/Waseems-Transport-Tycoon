@@ -23,9 +23,13 @@ public class InputHandler implements InputProcessor {
     private GameWorld world;
     private boolean isBuildMode = false;
 
-    public InputHandler(OrthographicCamera camera, GameWorld world) {
+    // minimap reference
+    private MinimapRenderer minimap;
+
+    public InputHandler(OrthographicCamera camera, GameWorld world, MinimapRenderer minimap) {
         this.camera = camera;
         this.world = world;
+        this.minimap = minimap;
         System.out.println("Control: InputHandler initialized and linked to Camera.");
     }
 
@@ -41,7 +45,6 @@ public class InputHandler implements InputProcessor {
         initialClickX = screenX;
         initialClickY = screenY;
         wasDragging = false;
-
 
         return true;
     }
@@ -79,6 +82,14 @@ public class InputHandler implements InputProcessor {
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+
+        // check if click is on minimap
+        if (minimap.isInsideMinimap(screenX, screenY)) {
+            float[] worldPos = minimap.screenToWorld(screenX, screenY);
+            camera.position.set(worldPos[0], worldPos[1], 0);
+            camera.update();
+            return true;
+        }
 
         if (isBuildMode && !wasDragging) {
 

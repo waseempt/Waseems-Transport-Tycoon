@@ -72,6 +72,42 @@ public class ControlPanel {
         TextButton buildButton = new TextButton("Build Mode", skin);
         background.add(buildButton);
 
+        pauseButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (speedChangeListener != null) {
+                    speedChangeListener.onPauseToggle();
+                }
+            }
+        });
+
+        normalSpeedButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (speedChangeListener != null) {
+                    speedChangeListener.onSpeedSelected(1f);
+                }
+            }
+        });
+
+        fastSpeedButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (speedChangeListener != null) {
+                    speedChangeListener.onSpeedSelected(2f);
+                }
+            }
+        });
+
+        veryFastSpeedButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (speedChangeListener != null) {
+                    speedChangeListener.onSpeedSelected(4f);
+                }
+            }
+        });
+
         // Build mode ClickListener
         buildButton.addListener(new ClickListener() {
             @Override

@@ -32,7 +32,11 @@ public class GameScreen implements Screen {
         controlPanel.setSpeedChangeListener(new ControlPanel.SpeedChangeListener() {
             @Override
             public void onPauseToggle() {
-                controller.getWorld().pause();
+                if (controller.getWorld().isPaused()) {
+                    controller.getWorld().resume();
+                } else {
+                    controller.getWorld().pause();
+                }
             }
 
             @Override

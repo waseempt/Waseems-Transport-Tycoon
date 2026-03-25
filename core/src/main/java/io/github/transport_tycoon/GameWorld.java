@@ -217,7 +217,10 @@ public class GameWorld {
     }
     // with time is gonna be more with this part...
     public void updateSimulation(float delta) {
-        forestGrowthTimer += delta;
+        float scaledDelta = delta * timeScale;
+        System.out.println("speed: " + timeScale + " | scaledDelta: " + scaledDelta);
+
+        forestGrowthTimer += scaledDelta;
 
         if (forestGrowthTimer >= FOREST_GROWTH_INTERVAL) {
             forestGrowthTimer = 0f;

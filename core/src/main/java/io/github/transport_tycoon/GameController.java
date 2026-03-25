@@ -7,8 +7,8 @@ public class GameController {
     private GameWorld world;
     private WorldRenderer worldRenderer;
 
-    public GameController(SpriteBatch batch) {
-        this.world = new GameWorld();
+    public GameController(SpriteBatch batch, String tycoonName) {
+        this.world = new GameWorld(tycoonName);
         this.worldRenderer = new WorldRenderer(batch);
         System.out.println("Controller: Architecture linked successfully.");
     }
@@ -19,7 +19,11 @@ public class GameController {
         float simulationDelta = delta * world.getTimeScale();
         world.updateSimulation(simulationDelta);
 
-        //Logic goes here...
+        // Check for bankruptcy
+        if (world.isBankrupt()) {
+            System.out.println("BANKRUPT! Game Over.");
+            // TODO: Switch to game over screen
+        }
 
         // Render
         worldRenderer.renderWorld(world, delta);
@@ -27,5 +31,9 @@ public class GameController {
 
     public WorldRenderer getWorldRenderer() {
         return this.worldRenderer;
+    }
+
+    public GameWorld getWorld() {
+        return this.world;
     }
 }

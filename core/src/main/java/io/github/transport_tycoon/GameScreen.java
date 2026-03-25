@@ -28,6 +28,23 @@ public class GameScreen implements Screen {
         //fixed size panel at the bottom of the screen
         this.controlPanel = new ControlPanel(game.batch);
 
+        // connect speed controls to simulation
+        controlPanel.setSpeedChangeListener(new ControlPanel.SpeedChangeListener() {
+            @Override
+            public void onPauseToggle() {
+                if (controller.getWorld().isPaused()) {
+                    controller.getWorld().resume();
+                } else {
+                    controller.getWorld().pause();
+                }
+            }
+
+            @Override
+            public void onSpeedSelected(float speed) {
+                controller.getWorld().setTimeScale(speed);
+            }
+        });
+
         //fixed size panel at the top of the screen
         this.hud = new HUD(game.batch);
 
@@ -74,6 +91,8 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
+
+
         // Clear screen
         Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -87,6 +106,7 @@ public class GameScreen implements Screen {
         float currentBalance = controller.getWorld().getPlayerBalance();
 
         hud.updateBalance(currentBalance);
+        hud.updateTime(controller.getWorld().getFormattedGameTime());
         hud.render();
 
         // draws the UI on top

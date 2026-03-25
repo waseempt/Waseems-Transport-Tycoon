@@ -6,8 +6,20 @@ public class GameWorld {
     private GameMap gameMap;
     private float timeScale = 1.0f; // Default 1x speed
     private float forestGrowthTimer = 0f;
-    private static final float FOREST_GROWTH_INTERVAL = 60f;
     //speed for tree
+    private static final float FOREST_GROWTH_INTERVAL = 60f;
+    //game time
+    private float elapsedGameTime = 0f;
+    //
+    public void setTimeScale(float timeScale) {
+        this.timeScale = timeScale;
+    }
+
+    public boolean isPaused() {
+        return timeScale == 0f;
+    }
+
+    //
 
     //Building costs
     private static final float ROAD_COST = 100f;
@@ -207,7 +219,11 @@ public class GameWorld {
     }
     // with time is gonna be more with this part...
     public void updateSimulation(float delta) {
-        forestGrowthTimer += delta;
+        float scaledDelta = delta * timeScale;
+        elapsedGameTime += scaledDelta;
+        System.out.println("speed: " + timeScale + " | scaledDelta: " + scaledDelta);
+
+        forestGrowthTimer += scaledDelta;
 
         if (forestGrowthTimer >= FOREST_GROWTH_INTERVAL) {
             forestGrowthTimer = 0f;
@@ -381,6 +397,14 @@ public class GameWorld {
 
     public float getTimeScale() {
         return timeScale;
+    }
+
+    public String getFormattedGameTime() {
+        int totalSeconds = (int) elapsedGameTime;
+        int seconds = totalSeconds % 60;
+        int minutes = (totalSeconds / 60) % 60;
+        int hours = (totalSeconds / 3600) % 24;
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
     }
 
     public GameMap getMap() {

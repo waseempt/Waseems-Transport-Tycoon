@@ -17,7 +17,15 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 public class ControlPanel {
-
+    //speed 3
+    private SpeedChangeListener speedChangeListener;
+    public void setSpeedChangeListener(SpeedChangeListener listener) {
+        this.speedChangeListener = listener;
+    }
+    public interface SpeedChangeListener {
+        void onPauseToggle();
+        void onSpeedSelected(float speed);
+    }
     private Stage stage;
     private Skin skin;
 
@@ -45,12 +53,60 @@ public class ControlPanel {
         background.defaults().left().padRight(20);
 
         //where the speed shows
-        Label speedLabel = new Label("Speed: [placeholder]", skin);
+        Label speedLabel = new Label("Speed:", skin);
         background.add(speedLabel);
+
+        TextButton pauseButton = new TextButton("Pause", skin);
+        background.add(pauseButton);
+
+        TextButton normalSpeedButton = new TextButton("x1", skin);
+        background.add(normalSpeedButton);
+
+        TextButton fastSpeedButton = new TextButton("x2", skin);
+        background.add(fastSpeedButton);
+
+        TextButton veryFastSpeedButton = new TextButton("x4", skin);
+        background.add(veryFastSpeedButton);
 
         //shows the build mode
         TextButton buildButton = new TextButton("Build Mode", skin);
         background.add(buildButton);
+
+        pauseButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (speedChangeListener != null) {
+                    speedChangeListener.onPauseToggle();
+                }
+            }
+        });
+
+        normalSpeedButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (speedChangeListener != null) {
+                    speedChangeListener.onSpeedSelected(1f);
+                }
+            }
+        });
+
+        fastSpeedButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (speedChangeListener != null) {
+                    speedChangeListener.onSpeedSelected(2f);
+                }
+            }
+        });
+
+        veryFastSpeedButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (speedChangeListener != null) {
+                    speedChangeListener.onSpeedSelected(4f);
+                }
+            }
+        });
 
         // Build mode ClickListener
         buildButton.addListener(new ClickListener() {

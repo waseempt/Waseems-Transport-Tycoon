@@ -17,8 +17,6 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
-
-
 public class HUD {
     //a place where all the HUD widgets are held/placed
     private Stage stage;
@@ -31,7 +29,6 @@ public class HUD {
     private Label balanceLabel;
     private Label timeLabel;
     private Label buildModeIndicator;
-
 
     public HUD(SpriteBatch batch) {
         this.stage = new Stage(new ScreenViewport(), batch);
@@ -91,6 +88,10 @@ public class HUD {
         this.balanceLabel.setText("Balance: $" + balanceAmount);
     }
 
+    public void updateTime(String timeText) {
+        this.timeLabel.setText("Time: " + timeText);
+    }
+
     public void showBalanceChange(float amount) {
         // Format text and color
         String text = amount > 0 ? "+$" + (int)amount : "-$" + (int)Math.abs(amount);
@@ -125,7 +126,6 @@ public class HUD {
             this.buildModeIndicator.setText("");
         }
     }
-
 
     //updates all the UI logic, it draws the stage to the screen so that the HUD appears on top of the game
     public void render() {

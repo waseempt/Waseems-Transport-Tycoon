@@ -6,8 +6,18 @@ public class GameWorld {
     private GameMap gameMap;
     private float timeScale = 1.0f; // Default 1x speed
     private float forestGrowthTimer = 0f;
-    private static final float FOREST_GROWTH_INTERVAL = 60f;
     //speed for tree
+    private static final float FOREST_GROWTH_INTERVAL = 60f;
+     //
+     public void setTimeScale(float timeScale) {
+         this.timeScale = timeScale;
+     }
+
+    public boolean isPaused() {
+        return timeScale == 0f;
+    }
+
+     //
 
     //Building costs
     private static final float ROAD_COST = 100f;

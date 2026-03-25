@@ -28,6 +28,19 @@ public class GameScreen implements Screen {
         //fixed size panel at the bottom of the screen
         this.controlPanel = new ControlPanel(game.batch);
 
+        // connect speed controls to simulation
+        controlPanel.setSpeedChangeListener(new ControlPanel.SpeedChangeListener() {
+            @Override
+            public void onPauseToggle() {
+                controller.getWorld().pause();
+            }
+
+            @Override
+            public void onSpeedSelected(float speed) {
+                controller.getWorld().setTimeScale(speed);
+            }
+        });
+
         //fixed size panel at the top of the screen
         this.hud = new HUD(game.batch);
 

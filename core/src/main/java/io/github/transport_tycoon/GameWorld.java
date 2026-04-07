@@ -28,7 +28,7 @@ public class GameWorld {
 
     private ArrayList<City> cities;
     private ArrayList<Facility> facilities;
-
+    private ArrayList<Vehicle> unassignedVehicles = new ArrayList<>();
     //the tycoon name is entered on the SetupScreen
     private String tycoonName;
 
@@ -509,6 +509,16 @@ public class GameWorld {
 
     public float getPlayerBalance() {
         return playerBalance;
+    }
+
+    public ArrayList<Vehicle> getUnassignedVehicles() {
+        return unassignedVehicles;
+    }
+
+    // Adds a newly purchased vehicle to the unassigned vehicles list.
+    public void addVehicle(Vehicle vehicle) {
+        unassignedVehicles.add(vehicle);
+        System.out.println("Model of Vehicle added - " + vehicle.getName() + " , Total unassigned: " + unassignedVehicles.size());
     }
 
     public void setPlayerBalance(float b) {

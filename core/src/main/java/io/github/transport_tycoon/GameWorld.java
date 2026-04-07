@@ -463,6 +463,13 @@ public class GameWorld {
         if (west != null && (west.hasRoad() || west.getZoneConnectionMask() == 2)) mask += 8;
 
         tile.setRoadMask(mask);
+
+        // Update whether this tile is an intersection tile or not
+        if (mask == 7 || mask == 11 || mask == 13 || mask == 14 || mask == 15) {
+            tile.setIntersection(new Intersection());
+        } else {
+            tile.setIntersection(null);
+        }
     }
 
     // updates a tile and it's neighbors, called on build or remove

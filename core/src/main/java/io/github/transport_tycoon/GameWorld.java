@@ -68,6 +68,97 @@ public class GameWorld {
         return tycoonName; }
 
 
+    // Whether the player is currently in stop-building mode
+    private boolean buildStopMode = false;
+
+    // All stop tiles placed on the map
+    private ArrayList<StopTile> stopTiles = new ArrayList<>();
+    // All routes currently defined in the game
+    private ArrayList<Route> routes = new ArrayList<>();
+
+    ArrayList<Tile> newForests = new ArrayList<>();
+
+
+
+    public boolean isBuildStopMode() { return buildStopMode; }
+    public void setBuildStopMode(boolean mode) { this.buildStopMode = mode; }
+    public ArrayList<StopTile> getStopTiles() { return stopTiles; }
+    public ArrayList<Route> getRoutes() { return routes; }
+
+
+    //place a stop tile at the given grid coordinates.
+    public boolean tryPlaceStop(int gridX, int gridY) {
+        Tile tile = gameMap.getTile(gridX, gridY);
+        if (tile == null) return false;
+
+        // Check the tile is not already a stop
+        for (StopTile stop : stopTiles) {
+            if (stop.getTile() == tile) {
+                System.out.println("Model: Tile already has a stop.");
+                return false;
+            }
+        }
+
+        // Must be adjacent to a road
+        if (!isAdjacentToRoad(gridX, gridY)) {
+            System.out.println("Model: Stop must be adjacent to a road.");
+            return false;
+        }
+
+        // Must be adjacent to a zone
+        Zone adjacentZone = findAdjacentZone(gridX, gridY);
+        if (adjacentZone == null) {
+            System.out.println("Model: Stop must be adjacent to a zone.");
+            return false;
+        }
+
+        // Check funds
+        if (playerBalance < 60) {
+            System.out.println("Model: Not enough money to build a stop.");
+            return false;
+        }
+
+        // Deduct cost
+        playerBalance -= 60;
+        if (balanceListener != null) balanceListener.onBalanceChanged(-60);
+
+        // Place the stop
+        StopTile stop = new StopTile(tile, adjacentZone);
+        stopTiles.add(stop);
+        buildStopMode = false;
+        System.out.println("Model: Stop placed at (" + gridX + ", " + gridY + ") linked to " + adjacentZone.getClass().getSimpleName());
+        return true;
+    }
+
+    // Checks if any of the 4 neighboring tiles has a road.
+    private boolean isAdjacentToRoad(int x, int y) {
+        Tile north = gameMap.getTile(x, y + 1);
+        Tile south = gameMap.getTile(x, y - 1);
+        Tile east  = gameMap.getTile(x + 1, y);
+        Tile west  = gameMap.getTile(x - 1, y);
+
+        return (north != null && north.hasRoad()) ||
+            (south != null && south.hasRoad()) ||
+            (east  != null && east.hasRoad())  ||
+            (west  != null && west.hasRoad());
+    }
+
+    // Searches the 4 neighboring tiles for one that belongs to a city or facility zone.
+    private Zone findAdjacentZone(int x, int y) {
+        int[][] neighbors = {{x+1,y},{x-1,y},{x,y+1},{x,y-1}};
+        for (int[] n : neighbors) {
+            Tile neighbor = gameMap.getTile(n[0], n[1]);
+            if (neighbor == null) continue;
+            for (City city : cities) {
+                if (city.getTiles().contains(neighbor)) return city;
+            }
+            for (Facility facility : facilities) {
+                if (facility.getTiles().contains(neighbor)) return facility;
+            }
+        }
+        return null;
+    }
+
     private void defineZones() {
 
         City budapest = new City("Budapest");
@@ -232,8 +323,6 @@ public class GameWorld {
     }
     // grows all forest tiles by +1 (max 4)...that it... and now going around
     private void growForests() {
-
-        ArrayList<Tile> newForests = new ArrayList<>();
 
         for (int x = 0; x < 50; x++) {
             for (int y = 0; y < 50; y++) {
@@ -427,5 +516,12 @@ public class GameWorld {
             return true;
 
         return false;
+    }
+
+    public Route createRoute() {
+        Route route = new Route();
+        routes.add(route);
+        System.out.println("Model: Route registered. Total routes: " + routes.size());
+        return route;
     }
 }

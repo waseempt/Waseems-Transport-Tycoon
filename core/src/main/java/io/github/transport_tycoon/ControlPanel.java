@@ -72,6 +72,18 @@ public class ControlPanel {
         TextButton buildButton = new TextButton("Build Mode", skin);
         background.add(buildButton);
 
+        // Build Stops button — costs $60 per stop placed
+        TextButton buildStopButton = new TextButton("Build Stop ($60)", skin);
+        buildStopButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (buildStopListener != null) {
+                    buildStopListener.onBuildStop();
+                }
+            }
+        });
+        background.add(buildStopButton);
+
         pauseButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -143,6 +155,17 @@ public class ControlPanel {
 
     public void setBuildListener(BuildModeListener listener) {
         this.buildListener = listener;
+    }
+
+    // Callback triggered when the Build Stops button is clicked
+    public interface BuildStopListener {
+        void onBuildStop();
+    }
+
+    private BuildStopListener buildStopListener;
+
+    public void setBuildStopListener(BuildStopListener listener) {
+        this.buildStopListener = listener;
     }
 
     public void dispose() {

@@ -112,6 +112,13 @@ public class InputHandler implements InputProcessor {
             }
 
         }
+        // Place stop if in stop build mode
+        if (world.isBuildStopMode() && !wasDragging) {            Vector3 worldCoords = new Vector3(screenX, screenY, 0);
+            camera.unproject(worldCoords);
+            int gridX = (int)(worldCoords.x / 64f);
+            int gridY = (int)(worldCoords.y / 64f);
+            world.tryPlaceStop(gridX, gridY);
+        }
 
         // Reset the drag flag
         wasDragging = false;

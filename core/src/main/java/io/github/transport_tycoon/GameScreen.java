@@ -10,7 +10,7 @@ public class GameScreen implements Screen {
     private final TransportTycoon game;
     private GameController controller;
     private InputHandler inputHandler;
-
+    private VehicleWindow vehicleWindow;
     private ControlPanel controlPanel;
     private HUD hud;
     private PauseMenu pauseMenu;
@@ -53,6 +53,14 @@ public class GameScreen implements Screen {
         hud.setPauseListener(() -> {
             controller.getWorld().pause();
             pauseMenu.show();
+        });
+
+        // shows all owned vehicles
+        this.vehicleWindow = new VehicleWindow(game.batch, controller.getWorld());
+
+        // Opens vehicle window when Vehicles button clicked
+        controlPanel.setVehicleWindowListener(() -> {
+            vehicleWindow.show();
         });
 
         //restores simulation speed and hides the pause menu when resumed
@@ -120,6 +128,8 @@ public class GameScreen implements Screen {
 
         pauseMenu.render();
 
+        vehicleWindow.render();
+
     }
 
     @Override
@@ -134,12 +144,15 @@ public class GameScreen implements Screen {
 
         pauseMenu.resize(width, height);
 
+        vehicleWindow.resize(width, height);
+
     }
 
     //sets up InputMultiplexer  so teh HUD stage receives button clicks
     @Override
     public void show() {
         com.badlogic.gdx.InputMultiplexer multiplexer = new com.badlogic.gdx.InputMultiplexer();
+        multiplexer.addProcessor(vehicleWindow.getStage());
         multiplexer.addProcessor(hud.getStage());
         multiplexer.addProcessor(controlPanel.getStage());
         multiplexer.addProcessor(inputHandler);
@@ -155,5 +168,6 @@ public class GameScreen implements Screen {
         hud.dispose();
         minimapRenderer.dispose();
         pauseMenu.dispose();
+        vehicleWindow.dispose();
     }
 }

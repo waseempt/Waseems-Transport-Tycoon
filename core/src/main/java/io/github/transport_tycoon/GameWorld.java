@@ -73,10 +73,18 @@ public class GameWorld {
 
     // All stop tiles placed on the map
     private ArrayList<StopTile> stopTiles = new ArrayList<>();
+    // All routes currently defined in the game
+    private ArrayList<Route> routes = new ArrayList<>();
+
+    ArrayList<Tile> newForests = new ArrayList<>();
+
+
 
     public boolean isBuildStopMode() { return buildStopMode; }
     public void setBuildStopMode(boolean mode) { this.buildStopMode = mode; }
     public ArrayList<StopTile> getStopTiles() { return stopTiles; }
+    public ArrayList<Route> getRoutes() { return routes; }
+
 
     //place a stop tile at the given grid coordinates.
     public boolean tryPlaceStop(int gridX, int gridY) {
@@ -316,8 +324,6 @@ public class GameWorld {
     // grows all forest tiles by +1 (max 4)...that it... and now going around
     private void growForests() {
 
-        ArrayList<Tile> newForests = new ArrayList<>();
-
         for (int x = 0; x < 50; x++) {
             for (int y = 0; y < 50; y++) {
 
@@ -510,5 +516,12 @@ public class GameWorld {
             return true;
 
         return false;
+    }
+
+    public Route createRoute() {
+        Route route = new Route();
+        routes.add(route);
+        System.out.println("Model: Route registered. Total routes: " + routes.size());
+        return route;
     }
 }

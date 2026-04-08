@@ -30,6 +30,8 @@ public class ControlPanel {
     private Skin skin;
 
     private BuildModeListener buildListener;
+    private VehicleWindowListener vehicleWindowListener;
+
 
     public ControlPanel(SpriteBatch batch) {
         this.stage = new Stage(new ScreenViewport(), batch);
@@ -83,6 +85,18 @@ public class ControlPanel {
             }
         });
         background.add(buildStopButton);
+
+        // opens the vehicle list window
+        TextButton vehiclesButton = new TextButton("Vehicles", skin);
+        vehiclesButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (vehicleWindowListener != null) {
+                    vehicleWindowListener.onVehicleWindow();
+                }
+            }
+        });
+        background.add(vehiclesButton);
 
         pauseButton.addListener(new ClickListener() {
             @Override
@@ -166,6 +180,15 @@ public class ControlPanel {
 
     public void setBuildStopListener(BuildStopListener listener) {
         this.buildStopListener = listener;
+    }
+
+    // Callback triggered when the Vehicles button is clicked
+    public interface VehicleWindowListener {
+        void onVehicleWindow();
+    }
+
+    public void setVehicleWindowListener(VehicleWindowListener listener) {
+        this.vehicleWindowListener = listener;
     }
 
     public void dispose() {

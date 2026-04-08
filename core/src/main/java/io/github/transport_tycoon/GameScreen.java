@@ -14,6 +14,7 @@ public class GameScreen implements Screen {
     private ControlPanel controlPanel;
     private HUD hud;
     private PauseMenu pauseMenu;
+    private PurchaseVehicle purchaseVehicleScreen;
 
     private MinimapRenderer minimapRenderer;
 
@@ -67,6 +68,40 @@ public class GameScreen implements Screen {
         pauseMenu.setResumeListener(() -> {
             controller.getWorld().resume();
             pauseMenu.hide(inputHandler, hud.getStage(), controlPanel.getStage());
+        });
+
+        this.purchaseVehicleScreen = new PurchaseVehicle(game.batch);
+
+        vehicleWindow.setPurchaseListener(() -> {
+            System.out.println("Switching to Purchase Screen");
+            vehicleWindow.hide();
+            purchaseVehicleScreen.show();
+        });
+
+        purchaseVehicleScreen.setCloseListener(() -> {
+            purchaseVehicleScreen.hide();
+            vehicleWindow.show();
+        });
+
+        purchaseVehicleScreen.setConfirmListener((name, type, cargo) -> {
+            GameWorld world = controller.getWorld();
+
+            if (world.getPlayerBalance() < 200) {
+                System.out.println("Model: Not enough money to build a vehicle.");
+                return;
+            }
+
+            world.setPlayerBalance(world.getPlayerBalance() - 200);
+
+            hud.showBalanceChange(-200);
+
+            Vehicle newVehicle = type.equals("Bus") ? new Bus(name) : new Truck(name, cargo);
+            world.addVehicle(newVehicle);
+
+            System.out.println("Model: Purchased " + name + " for $200.");
+
+            purchaseVehicleScreen.hide();
+            vehicleWindow.show();
         });
 
         //routes the player back to the main menu when exiting
@@ -129,6 +164,7 @@ public class GameScreen implements Screen {
         pauseMenu.render();
 
         vehicleWindow.render();
+        purchaseVehicleScreen.render();
 
     }
 
@@ -146,12 +182,15 @@ public class GameScreen implements Screen {
 
         vehicleWindow.resize(width, height);
 
+        purchaseVehicleScreen.resize(width, height);
+
     }
 
     //sets up InputMultiplexer  so teh HUD stage receives button clicks
     @Override
     public void show() {
         com.badlogic.gdx.InputMultiplexer multiplexer = new com.badlogic.gdx.InputMultiplexer();
+        multiplexer.addProcessor(purchaseVehicleScreen.getStage());
         multiplexer.addProcessor(vehicleWindow.getStage());
         multiplexer.addProcessor(hud.getStage());
         multiplexer.addProcessor(controlPanel.getStage());
@@ -169,5 +208,7 @@ public class GameScreen implements Screen {
         minimapRenderer.dispose();
         pauseMenu.dispose();
         vehicleWindow.dispose();
+        purchaseVehicleScreen.dispose();
     }
+
 }

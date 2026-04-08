@@ -49,6 +49,7 @@ public class VehicleWindow {
         stage.clear();
         buildUI();
         visible = true;
+        stage.getViewport().apply();
     }
 
     //hides the vehicle window
@@ -125,8 +126,11 @@ public class VehicleWindow {
         purchaseButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                System.out.println("Purchase Button Clicked!");
                 if (purchaseListener != null) {
                     purchaseListener.onPurchase();
+                }else {
+                    System.out.println("Error: purchaseListener is null!");
                 }
             }
         });

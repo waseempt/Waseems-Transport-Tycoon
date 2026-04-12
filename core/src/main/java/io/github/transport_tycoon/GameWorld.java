@@ -234,6 +234,8 @@ public class GameWorld {
 
         // Instantiate 5 Facilities
         Facility coalMine = new Facility("Coal Mine");
+        coalMine.setProduces(GoodType.COAL);
+        coalMine.setConsumes(null);
         assignZoneTiles(coalMine, 5, 42, 3, 3);    // 3x3 Coal Mine
 
         Tile coalMineSouth = gameMap.getTile(5 + 2, 42 + 0);
@@ -243,6 +245,8 @@ public class GameWorld {
         facilities.add(coalMine);
 
         Facility ironMine = new Facility("Iron Mine");
+        ironMine.setProduces(GoodType.IRON);
+        ironMine.setConsumes(null);
         assignZoneTiles(ironMine, 38, 26, 3, 3);   // 3x3 Iron Mine
 
         Tile ironMineSouth = gameMap.getTile(38 + 2, 26 + 0);
@@ -252,6 +256,8 @@ public class GameWorld {
         facilities.add(ironMine);
 
         Facility steelMill = new Facility("Steel Mill");
+        steelMill.setProduces(GoodType.STEEL);
+        steelMill.setConsumes(GoodType.IRON);
         assignZoneTiles(steelMill, 20, 18, 4, 4);  // 4x4 Steel Mill
 
         Tile steelMillWest = gameMap.getTile(20, 18);
@@ -261,6 +267,8 @@ public class GameWorld {
         facilities.add(steelMill);
 
         Facility lumberCamp = new Facility("Lumber Camp");
+        lumberCamp.setProduces(GoodType.WOOD);
+        lumberCamp.setConsumes(null);
         assignZoneTiles(lumberCamp, 12, 5, 4, 4);  // 4x4 Lumber Camp
 
         Tile lumberCampSouth = gameMap.getTile(12, 5);
@@ -270,6 +278,8 @@ public class GameWorld {
         facilities.add(lumberCamp);
 
         Facility ironMine2 = new Facility("Iron Mine");
+        ironMine2.setProduces(GoodType.IRON);
+        ironMine2.setConsumes(null);
         assignZoneTiles(ironMine2, 28, 8, 3, 3);   // 3x3 Iron Mine
 
         Tile ironMine2South = gameMap.getTile(28 + 2, 8 + 0);

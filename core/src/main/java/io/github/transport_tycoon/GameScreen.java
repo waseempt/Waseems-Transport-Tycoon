@@ -112,14 +112,22 @@ public class GameScreen implements Screen {
         //Build mode listener
         this.controlPanel.setBuildListener(() -> {
             isBuildMode = !isBuildMode;
+            if (inputHandler.getBuildStopMode()){
+                inputHandler.setBuildStopMode(false);
+                hud.setStopBuildModeActive(false);
+            }
             hud.setBuildModeActive(isBuildMode);
             inputHandler.setBuildMode(isBuildMode);
         });
 
         // Activates stop-building mode when Build Stop button is clicked
         controlPanel.setBuildStopListener(() -> {
-            controller.getWorld().setBuildStopMode(true);
-            System.out.println("Stop build mode activated. Click a tile to place a stop for $60.");
+            if (isBuildMode){
+                isBuildMode = false;
+                hud.setBuildModeActive(false);
+            }
+            inputHandler.setBuildStopMode(!inputHandler.getBuildStopMode());
+            hud.setStopBuildModeActive(inputHandler.getBuildStopMode());
         });
 
         // When controller tells the screen balance was changed, balance tells the hud to activate the animation

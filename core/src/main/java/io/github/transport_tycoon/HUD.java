@@ -29,6 +29,7 @@ public class HUD {
     private Label balanceLabel;
     private Label timeLabel;
     private Label buildModeIndicator;
+    private Label stopBuildModeIndicator;
 
     public HUD(SpriteBatch batch) {
         this.stage = new Stage(new ScreenViewport(), batch);
@@ -59,10 +60,11 @@ public class HUD {
         this.buildModeIndicator = new Label("", skin);
         this.buildModeIndicator.setColor(Color.YELLOW);
 
-        //shows the pause button on the right
-        Label pauseLabel = new Label("Pause Game: [placeholder]", skin);
+        //stop build mode indicator — shown when the player is placing a stop
+        this.stopBuildModeIndicator = new Label("", skin);
+        this.stopBuildModeIndicator.setColor(Color.CYAN);
 
-        //pause button
+        //shows the pause button on the right
         TextButton pauseButton = new TextButton("Pause Game", skin);
         pauseButton.addListener(new ClickListener() {
             @Override
@@ -77,6 +79,7 @@ public class HUD {
         background.add(balanceLabel).expandX().left();
         background.add(timeLabel).expandX().center();
         background.add(buildModeIndicator).expandX().center();
+        background.add(stopBuildModeIndicator).expandX().center();
         background.add(pauseButton).expandX().right();
 
         //placeholder labels
@@ -121,9 +124,18 @@ public class HUD {
     //Shows build mode message when active
     public void setBuildModeActive(boolean active) {
         if (active) {
-            this.buildModeIndicator.setText("BUILD MODE ACTIVE");
+            this.buildModeIndicator.setText("BUILD MODE ACTIVE - Left Click: Build - Right Click: Remove");
         } else {
             this.buildModeIndicator.setText("");
+        }
+    }
+
+    // Shows stop build mode message when the player is about to place a stop
+    public void setStopBuildModeActive(boolean active) {
+        if (active) {
+            this.stopBuildModeIndicator.setText("STOP BUILD MODE ACTIVE - Left Click: Build - Right Click: Remove");
+        } else {
+            this.stopBuildModeIndicator.setText("");
         }
     }
 

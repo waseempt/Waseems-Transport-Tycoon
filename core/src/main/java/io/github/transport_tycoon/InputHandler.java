@@ -22,6 +22,7 @@ public class InputHandler implements InputProcessor {
     // For build mode
     private GameWorld world;
     private boolean isBuildMode = false;
+    private boolean isBuildStopMode = false;
 
     // minimap reference
     private MinimapRenderer minimap;
@@ -33,8 +34,20 @@ public class InputHandler implements InputProcessor {
         System.out.println("Control: InputHandler initialized and linked to Camera.");
     }
 
+    public void setBuildStopMode(boolean active) {
+        isBuildStopMode = active;
+        if (active)
+            isBuildMode = false;
+    }
+
+    public boolean getBuildStopMode() {
+        return isBuildStopMode;
+    }
+
     public void setBuildMode(boolean active) {
-        this.isBuildMode = active;
+        isBuildMode = active;
+        if (active)
+            isBuildStopMode = false;
     }
 
     @Override
@@ -91,6 +104,7 @@ public class InputHandler implements InputProcessor {
             return true;
         }
 
+        // Build road if build mode and not dragging
         if (isBuildMode && !wasDragging) {
 
             // convert pixels to Map Math
@@ -112,12 +126,22 @@ public class InputHandler implements InputProcessor {
             }
 
         }
-        // Place stop if in stop build mode
-        if (world.isBuildStopMode() && !wasDragging) {            Vector3 worldCoords = new Vector3(screenX, screenY, 0);
+        // Place stop if in stop build mode and not dragging
+        if (isBuildStopMode && !wasDragging) {
+            Vector3 worldCoords = new Vector3(screenX, screenY, 0);
             camera.unproject(worldCoords);
             int gridX = (int)(worldCoords.x / 64f);
             int gridY = (int)(worldCoords.y / 64f);
-            world.tryPlaceStop(gridX, gridY);
+
+            // Build stop if left mouse button
+            if (button == Input.Buttons.LEFT) {
+                world.tryPlaceStop(gridX, gridY);
+            }
+
+            // Remove if right mouse button
+            else if (button == Input.Buttons.RIGHT) {
+                world.removeStop(gridX,gridY);
+            }
         }
 
         // Reset the drag flag

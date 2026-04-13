@@ -71,11 +71,11 @@ public class ControlPanel {
         background.add(veryFastSpeedButton);
 
         //shows the build mode
-        TextButton buildButton = new TextButton("Build Mode", skin);
+        TextButton buildButton = new TextButton("Build Roads", skin);
         background.add(buildButton);
 
         // Build Stops button — costs $60 per stop placed
-        TextButton buildStopButton = new TextButton("Build Stop ($60)", skin);
+        TextButton buildStopButton = new TextButton("Build Stops", skin);
         buildStopButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {

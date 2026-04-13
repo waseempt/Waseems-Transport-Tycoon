@@ -68,8 +68,6 @@ public class GameWorld {
         return tycoonName; }
 
 
-    // Whether the player is currently in stop-building mode
-    private boolean buildStopMode = false;
 
     // All stop tiles placed on the map
     private ArrayList<StopTile> stopTiles = new ArrayList<>();
@@ -79,9 +77,6 @@ public class GameWorld {
     ArrayList<Tile> newForests = new ArrayList<>();
 
 
-
-    public boolean isBuildStopMode() { return buildStopMode; }
-    public void setBuildStopMode(boolean mode) { this.buildStopMode = mode; }
     public ArrayList<StopTile> getStopTiles() { return stopTiles; }
     public ArrayList<Route> getRoutes() { return routes; }
 
@@ -97,6 +92,12 @@ public class GameWorld {
                 System.out.println("Model: Tile already has a stop.");
                 return false;
             }
+        }
+
+        // Check that tile is not a road
+        if (tile.hasRoad()) {
+            System.out.println("Model: Stop must be placed on empty tile.");
+            return false;
         }
 
         // Must be adjacent to a road
@@ -125,9 +126,23 @@ public class GameWorld {
         // Place the stop
         StopTile stop = new StopTile(tile, adjacentZone);
         stopTiles.add(stop);
-        buildStopMode = false;
         System.out.println("Model: Stop placed at (" + gridX + ", " + gridY + ") linked to " + adjacentZone.getClass().getSimpleName());
         return true;
+    }
+
+    public boolean removeStop(int gridX, int gridY){
+        for (StopTile stop : stopTiles) {
+            Tile tile = stop.getTile();
+            if (tile.getGridX() == gridX && tile.getGridY() == gridY){
+                stopTiles.remove(stop);
+
+                // partial refund
+                playerBalance += 30;
+                if (balanceListener != null) balanceListener.onBalanceChanged(30);
+                return true;
+            }
+        }
+        return false;
     }
 
     // Checks if any of the 4 neighboring tiles has a road.

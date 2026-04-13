@@ -42,6 +42,9 @@ public class WorldRenderer {
     private TextureRegion threeIntersectRegion;
     private TextureRegion fourIntersectRegion;
 
+    // Stop Tile
+    private TextureRegion stopRegion;
+
     // Vehicles
     private TextureRegion busRegion;
     private TextureRegion truckRegion;
@@ -90,6 +93,9 @@ public class WorldRenderer {
         this.twoIntersectRegion = atlas.findRegion("intersection2");
         this.threeIntersectRegion = atlas.findRegion("intersection3");
         this.fourIntersectRegion = atlas.findRegion("intersection4");
+
+        // Define stop tile
+        this.stopRegion = atlas.findRegion("stop");
 
         // Define vehicles
         this.busRegion = atlas.findRegion("bus");
@@ -240,6 +246,18 @@ public class WorldRenderer {
                 float pixelHeight = city.getGridHeight() * TILE_SIZE;
 
                 batch.draw(region, drawX, drawY, pixelWidth, pixelHeight);
+            }
+        }
+
+        // Draw stop tiles
+        if (stopRegion != null) {
+            for (StopTile stop : world.getStopTiles()) {
+                Tile tile = stop.getTile();
+                if (tile != null) {
+                    float drawX = tile.getGridX() * TILE_SIZE;
+                    float drawY = tile.getGridY() * TILE_SIZE;
+                    batch.draw(stopRegion, drawX, drawY, TILE_SIZE, TILE_SIZE);
+                }
             }
         }
 

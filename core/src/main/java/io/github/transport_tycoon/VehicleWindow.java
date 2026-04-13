@@ -55,6 +55,7 @@ public class VehicleWindow {
     //hides the vehicle window
     public void hide() {
         visible = false;
+        stage.clear();
     }
 
     //Returns whether the window is currently visible

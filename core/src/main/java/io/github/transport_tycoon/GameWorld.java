@@ -339,6 +339,10 @@ public class GameWorld {
         elapsedGameTime += scaledDelta;
         System.out.println("speed: " + timeScale + " | scaledDelta: " + scaledDelta);
 
+        for (Facility facility : facilities) {
+            facility.processGoods(scaledDelta);
+        }
+
         forestGrowthTimer += scaledDelta;
 
         if (forestGrowthTimer >= FOREST_GROWTH_INTERVAL) {

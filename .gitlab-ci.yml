@@ -3,6 +3,10 @@ image: eclipse-temurin:17-jdk-jammy
 variables:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
+# Ensure gradlew always has execute permission
+before_script:
+  - chmod +x gradlew
+
 # Cache dependencies for subsequent builds
 cache:
   key: "$CI_COMMIT_REF_NAME"
@@ -20,8 +24,6 @@ stages:
 build_job:
   stage: build
   script:
-    # Ensures gradle is executable
-    - chmod +x gradlew
     - ./gradlew classes
 
 # Job 2: Test, Stage: test

@@ -18,6 +18,8 @@ public class GameScreen implements Screen {
 
     private MinimapRenderer minimapRenderer;
 
+    private TrafficLightUI trafficLightUI;
+
     private boolean isBuildMode = false;
 
     public GameScreen(TransportTycoon game,  String tycoonName) {
@@ -148,6 +150,39 @@ public class GameScreen implements Screen {
             hud.updateTooltip(zone, screenX, screenY);
         });
 
+        // TrafficLight UI
+        this.trafficLightUI = new TrafficLightUI(game.batch);
+
+        trafficLightUI.setCloseListener(() -> {
+            trafficLightUI.hide();
+        });
+
+        trafficLightUI.setPurchaseListener(intersection -> {
+            GameWorld world = controller.getWorld();
+
+            if (world.getPlayerBalance() >= 200) {
+                // Deduct the money
+                world.setPlayerBalance(world.getPlayerBalance() - 200);
+
+                // Trigger balance hud animation
+                hud.showBalanceChange(-200);
+
+                // Install the lights
+                intersection.installLights();
+
+                // Refresh the UI to immediately show the configuration menu
+                trafficLightUI.show(intersection);
+            } else {
+                // Tell the UI to display the error text
+                trafficLightUI.showError("Not enough money! ($200 required)");
+            }
+        });
+
+
+        this.inputHandler.setIntersectionListener(intersection -> {
+            trafficLightUI.show(intersection);
+        });
+
         Gdx.input.setInputProcessor(this.inputHandler);
     }
 
@@ -179,6 +214,8 @@ public class GameScreen implements Screen {
         vehicleWindow.render();
         purchaseVehicleScreen.render();
 
+        trafficLightUI.render();
+
     }
 
     @Override
@@ -197,12 +234,15 @@ public class GameScreen implements Screen {
 
         purchaseVehicleScreen.resize(width, height);
 
+        trafficLightUI.resize(width, height);
+
     }
 
     //sets up InputMultiplexer  so teh HUD stage receives button clicks
     @Override
     public void show() {
         com.badlogic.gdx.InputMultiplexer multiplexer = new com.badlogic.gdx.InputMultiplexer();
+        multiplexer.addProcessor(trafficLightUI.getStage());
         multiplexer.addProcessor(purchaseVehicleScreen.getStage());
         multiplexer.addProcessor(vehicleWindow.getStage());
         multiplexer.addProcessor(hud.getStage());
@@ -222,6 +262,7 @@ public class GameScreen implements Screen {
         pauseMenu.dispose();
         vehicleWindow.dispose();
         purchaseVehicleScreen.dispose();
+        trafficLightUI.dispose();
     }
 
 }

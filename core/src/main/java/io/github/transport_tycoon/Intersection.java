@@ -1,43 +1,73 @@
 package io.github.transport_tycoon;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class Intersection {
     private boolean hasTrafficLights = false;
+    private int roadMask;
 
-    // Integers for directions: 0=North, 1=East, 2=South, 3=West
-    private Map<Integer, TrafficLight> trafficLights;
+    // Array to hold the duration of each phase
+    // 4-Way: [0] = Vertical, [1] = Horizontal
+    // 3-Way: [0] = Left, [1] = Right, [2] = Bottom
+    private float[] phaseDurations;
 
-    public Intersection() {
-        this.trafficLights = new HashMap<>();
+    private int currentPhase = 0;
+    private float timer = 0f;
+    private float clearanceBuffer = 1.5f;
+
+    public Intersection(int roadMask) {
+        this.roadMask = roadMask;
+
+        // 15 is the 4-way mask. Anything else reaching here is a 3-way.
+        if (this.roadMask == 15) {
+            this.phaseDurations = new float[]{10f, 10f};
+        } else {
+            this.phaseDurations = new float[]{10f, 10f, 10f};
+        }
     }
 
     public void installLights() {
         this.hasTrafficLights = true;
-
-        // Initial states: North/South Green, East/West Red
-        trafficLights.put(0, new TrafficLight(LightState.GREEN));
-        trafficLights.put(2, new TrafficLight(LightState.GREEN));
-
-        trafficLights.put(1, new TrafficLight(LightState.RED));
-        trafficLights.put(3, new TrafficLight(LightState.RED));
+        this.currentPhase = 0;
+        this.timer = phaseDurations[0];
     }
 
-    public boolean hasLights() {
-        return hasTrafficLights;
-    }
+    public boolean hasLights() { return hasTrafficLights; }
+    public int getRoadMask() { return roadMask; }
+    public int getPhaseCount() { return phaseDurations.length; }
 
-    public void setGreenDuration(int direction, float seconds) {
-        // Will be implemented in milestone 4
-    }
-
-    public void updateLights(float delta) {
-        // Do nothing if the player hasn't bought the upgrade
-        if (!hasTrafficLights) {
-            return;
+    public void setPhaseDuration(int phase, float duration) {
+        if (phase >= 0 && phase < phaseDurations.length) {
+            phaseDurations[phase] = duration;
         }
+    }
 
-        // Logic...
+    public float getPhaseDuration(int phase) {
+        if (phase >= 0 && phase < phaseDurations.length) {
+            return phaseDurations[phase];
+        }
+        return 10f;
+    }
+
+    // handles the automatic switching of the lights
+    public void updateLights(float delta) {
+        if (!hasTrafficLights) return;
+
+        timer -= delta;
+        if (timer <= 0) {
+            currentPhase = (currentPhase + 1) % phaseDurations.length;
+            timer = phaseDurations[currentPhase];
+        }
+    }
+
+    // Returns a simple string for the Renderer to know what to draw
+    public String getVisualState() {
+        if (!hasTrafficLights || timer > phaseDurations[currentPhase] - clearanceBuffer) return "none";
+
+        if (roadMask == 15) { // 4-Way states
+            return currentPhase == 0 ? "v" : "h";
+        } else { // 3-Way states
+            if (currentPhase == 0) return "l";
+            if (currentPhase == 1) return "r";
+            else return "b";
+        }
     }
 }

@@ -45,7 +45,7 @@ test_job:
 deploy_job:
   stage: deploy
   script:
-    - ./gradlew desktop:dist
+    - ./gradlew lwjgl3:dist
   artifacts:
     name: "Mini-Transport-Tycoon-Build"
     expire_in: 1 week

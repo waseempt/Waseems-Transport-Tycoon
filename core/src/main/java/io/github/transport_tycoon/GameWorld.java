@@ -350,18 +350,24 @@ public class GameWorld {
         return null;
     }
 
-    // with time is gonna be more with this part...
+
     public void updateSimulation(float delta) {
         float scaledDelta = delta * timeScale;
         elapsedGameTime += scaledDelta;
         System.out.println("speed: " + timeScale + " | scaledDelta: " + scaledDelta);
 
+        // Process input and output of Facilities
         for (Facility facility : facilities) {
             facility.processGoods(scaledDelta);
         }
 
-        forestGrowthTimer += scaledDelta;
+        // Process input and output of Cities
+        for (City city : cities) {
+            city.updateDemands(scaledDelta);
+        }
 
+        // Forest Growth
+        forestGrowthTimer += scaledDelta;
         if (forestGrowthTimer >= FOREST_GROWTH_INTERVAL) {
             forestGrowthTimer = 0f;
             growForests();

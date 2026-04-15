@@ -61,7 +61,7 @@ public class Facility extends Zone {
     public void processGoods(float scaledDelta) {
         productionTimer += scaledDelta;
 
-        if (productionTimer >= 3.0f) {
+        if (productionTimer >= 5.0f) {
             productionTimer = 0f;
 
             if (consumes == null) {

@@ -24,7 +24,7 @@ public class GameScreen implements Screen {
         this.game = game;
 
         // Instantiate the Controller, which instantiates the rest
-        this.controller = new GameController(game.batch, tycoonName);
+        this.controller = new GameController(game.batch, tycoonName, game);
 
         //fixed size panel at the bottom of the screen
         this.controlPanel = new ControlPanel(game.batch);

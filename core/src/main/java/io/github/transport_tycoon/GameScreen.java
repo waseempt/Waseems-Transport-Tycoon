@@ -143,6 +143,11 @@ public class GameScreen implements Screen {
         // pass minimap to input handler
         this.inputHandler = new InputHandler(camera, controller.getWorld(), minimapRenderer);
 
+
+        this.inputHandler.setHoverListener((zone, screenX, screenY) -> {
+            hud.updateTooltip(zone, screenX, screenY);
+        });
+
         Gdx.input.setInputProcessor(this.inputHandler);
     }
 

@@ -333,18 +333,41 @@ public class GameWorld {
             }
         }
     }
-    // with time is gonna be more with this part...
+
+    // Finds the zone a tile with (gridx, gridy) belongs to
+    public Zone getZoneAt(int gridX, int gridY) {
+        Tile tile = gameMap.getTile(gridX, gridY);
+        if (tile == null) return null;
+
+        for (City city : cities) {
+            if (city.getTiles().contains(tile)) return city;
+        }
+
+        for (Facility facility : facilities) {
+            if (facility.getTiles().contains(tile)) return facility;
+        }
+
+        return null;
+    }
+
+
     public void updateSimulation(float delta) {
         float scaledDelta = delta * timeScale;
         elapsedGameTime += scaledDelta;
         System.out.println("speed: " + timeScale + " | scaledDelta: " + scaledDelta);
 
+        // Process input and output of Facilities
         for (Facility facility : facilities) {
             facility.processGoods(scaledDelta);
         }
 
-        forestGrowthTimer += scaledDelta;
+        // Process input and output of Cities
+        for (City city : cities) {
+            city.updateDemands(scaledDelta);
+        }
 
+        // Forest Growth
+        forestGrowthTimer += scaledDelta;
         if (forestGrowthTimer >= FOREST_GROWTH_INTERVAL) {
             forestGrowthTimer = 0f;
             growForests();

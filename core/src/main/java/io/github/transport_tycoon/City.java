@@ -9,7 +9,7 @@ public class City extends Zone {
     private Map<GoodType, Integer> demands;
 
     private float demandTimer = 0f;
-    private static final float DEMAND_UPDATE_INTERVAL = 5f;
+    private static final float DEMAND_UPDATE_INTERVAL = 10f;
 
     public City(String name) {
         super();

@@ -163,19 +163,18 @@ public class HUD {
         if (zone instanceof City) {
             City c = (City) zone;
 
-            // --- Title Label ---
+            // Title Label
             Label title = new Label(c.getName() + " (City)", skin);
             title.setFontScale(1.3f);
             title.setColor(Color.GOLD);
             tooltipTable.add(title).left().padBottom(5).row();
 
-            // --- Size Label ---
+            // Size Label
             Label size = new Label("Size: " + c.getGridWidth() + "x" + c.getGridHeight(), skin);
             size.setColor(Color.LIGHT_GRAY);
             tooltipTable.add(size).left().padBottom(10).row();
 
-            // --- Output (Passengers) ---
-            // Pull passengers out of the demands map to display as output
+            // Passengers
             int waitingPassengers = c.getDemands().getOrDefault(GoodType.PASSENGERS, 0);
             tooltipTable.add(new Label("Produces (Waiting):", skin)).left().row();
 
@@ -183,10 +182,10 @@ public class HUD {
             passLabel.setColor(Color.LIGHT_GRAY);
             tooltipTable.add(passLabel).left().padBottom(5).row();
 
-            // --- Demands Header ---
+            // Demands Header
             tooltipTable.add(new Label("Demands:", skin)).left().row();
 
-            // --- Demands List ---
+            // Demands List
             for (Map.Entry<GoodType, Integer> entry : c.getDemands().entrySet()) {
                 // Skip passengers since we already displayed them above
                 if (entry.getKey() == GoodType.PASSENGERS) {
@@ -201,18 +200,18 @@ public class HUD {
         } else if (zone instanceof Facility) {
             Facility f = (Facility) zone;
 
-            // --- Title Label ---
+            // Title Label
             Label title = new Label(f.getFacilityType() + " (Facility)", skin);
             title.setFontScale(1.3f);
             title.setColor(Color.CYAN);
             tooltipTable.add(title).left().padBottom(5).row();
 
-            // --- Size Label ---
+            // Size Label
             Label size = new Label("Size: " + f.getGridWidth() + "x" + f.getGridHeight(), skin);
             size.setColor(Color.LIGHT_GRAY);
             tooltipTable.add(size).left().padBottom(10).row();
 
-            // --- Produces ---
+            // Produces
             String producesText = f.getProduces() != null ? f.getProduces().name() : "None";
             tooltipTable.add(new Label("Produces: " + producesText, skin)).left().row();
 
@@ -220,7 +219,7 @@ public class HUD {
             outLabel.setColor(Color.LIGHT_GRAY);
             tooltipTable.add(outLabel).left().padBottom(5).row();
 
-            // --- Consumes ---
+            // Consumes
             String consumesText = f.getConsumes() != null ? f.getConsumes().name() : "None";
             tooltipTable.add(new Label("Consumes: " + consumesText, skin)).left().row();
 

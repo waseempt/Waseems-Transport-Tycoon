@@ -22,7 +22,7 @@ build_job:
   script:
     # Ensures gradle is executable
     - chmod +x gradlew
-    - ./gradletw classes
+    - ./gradlew classes
 
 # Job 2: Test, Stage: test
 test_job:

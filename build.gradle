@@ -8,7 +8,6 @@ buildscript {
   }
   dependencies {
 
-
   }
 }
 
@@ -59,7 +58,6 @@ subprojects {
   ext.appName = 'Transport Tycoon'
   repositories {
     mavenCentral()
-    // You may want to remove the following line if you have errors downloading dependencies.
     mavenLocal()
     maven { url = 'https://central.sonatype.com/repository/maven-snapshots/' }
     maven { url = 'https://jitpack.io' }
@@ -67,3 +65,45 @@ subprojects {
 }
 
 eclipse.project.name = 'Transport Tycoon' + '-parent'
+
+// JUnit Testing
+project(":core") {
+  apply plugin: "jacoco"
+
+  dependencies {
+    // JUnit 5 for writing the tests
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
+
+    testImplementation 'org.mockito:mockito-core:5.3.1'
+  }
+
+  // Use JUnit 5 when running the test command
+  test {
+    useJUnitPlatform()
+    // Automatically generate the JaCoCo report after tests finish
+    finalizedBy jacocoTestReport
+  }
+
+  // Configure JaCoCo to output the HTML website and XML files
+  jacocoTestReport {
+    dependsOn test
+    reports {
+      xml.required = true
+      html.required = true
+    }
+
+    // Exclude UI and visual classes from the coverage report
+    afterEvaluate {
+      classDirectories.setFrom(files(classDirectories.files.collect {
+        fileTree(dir: it, exclude: [
+          '**/*Screen*',
+          '**/*Renderer*',
+          '**/*HUD*',
+          '**/*ControlPanel*',
+          '**/*TransportTycoon*'
+        ])
+      }))
+    }
+  }
+}

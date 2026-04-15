@@ -27,6 +27,9 @@ public class InputHandler implements InputProcessor {
     // minimap reference
     private MinimapRenderer minimap;
 
+    // Hoverlistener
+    private HoverListener hoverListener;
+
     public InputHandler(OrthographicCamera camera, GameWorld world, MinimapRenderer minimap) {
         this.camera = camera;
         this.world = world;
@@ -154,7 +157,6 @@ public class InputHandler implements InputProcessor {
         void onZoneHovered(Zone zone, int screenX, int screenY);
     }
 
-    private HoverListener hoverListener;
 
     public void setHoverListener(HoverListener listener) {
         this.hoverListener = listener;

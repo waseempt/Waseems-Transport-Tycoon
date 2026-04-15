@@ -31,6 +31,10 @@ public class HUD {
     private Label buildModeIndicator;
     private Label stopBuildModeIndicator;
 
+    //Tooltip attributes
+    private Table tooltipTable;
+    private Label tooltipLabel;
+
     public HUD(SpriteBatch batch) {
         this.stage = new Stage(new ScreenViewport(), batch);
         this.skin = createBasicSkin();
@@ -74,6 +78,15 @@ public class HUD {
                 }
             }
         });
+
+        //Build tooltip table
+        tooltipTable = new Table(skin);
+        tooltipTable.setBackground(skin.newDrawable("background", new Color(0.1f, 0.1f, 0.1f, 0.9f)));
+        tooltipTable.pad(10);
+        tooltipLabel = new Label("", skin);
+        tooltipTable.add(tooltipLabel);
+        tooltipTable.setVisible(false);
+        stage.addActor(tooltipTable);
 
         //where every label is placed
         background.add(balanceLabel).expandX().left();
@@ -137,6 +150,36 @@ public class HUD {
         } else {
             this.stopBuildModeIndicator.setText("");
         }
+    }
+
+    public void updateTooltip(Zone zone, float screenX, float screenY) {
+        if (zone == null) {
+            tooltipTable.setVisible(false);
+            return;
+        }
+
+        String info = "";
+        if (zone instanceof City) {
+            City c = (City) zone;
+            info = c.getName() + " (City)\nDemands: ";
+            for (java.util.Map.Entry<GoodType, Integer> entry : c.getDemands().entrySet()) {
+                info += "\n- " + entry.getKey() + ": " + entry.getValue();
+            }
+        } else if (zone instanceof Facility) {
+            Facility f = (Facility) zone;
+            info = f.getFacilityType() + "\nProduces: " + (f.getProduces() != null ? f.getProduces() : "None") +
+                "\nConsumes: " + (f.getConsumes() != null ? f.getConsumes() : "None");
+        }
+
+        tooltipLabel.setText(info);
+        tooltipTable.pack();
+
+        // Convert LibGDX screen coordinates to Stage coordinates
+        float stageY = Gdx.graphics.getHeight() - screenY;
+
+        // Offset slightly so it doesn't block the cursor
+        tooltipTable.setPosition(screenX + 15, stageY - 15 - tooltipTable.getHeight());
+        tooltipTable.setVisible(true);
     }
 
     //updates all the UI logic, it draws the stage to the screen so that the HUD appears on top of the game

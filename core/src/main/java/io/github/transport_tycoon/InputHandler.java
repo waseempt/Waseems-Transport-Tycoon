@@ -150,6 +150,33 @@ public class InputHandler implements InputProcessor {
     }
 
 
+    public interface HoverListener {
+        void onZoneHovered(Zone zone, int screenX, int screenY);
+    }
+
+    private HoverListener hoverListener;
+
+    public void setHoverListener(HoverListener listener) {
+        this.hoverListener = listener;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        Vector3 worldCoords = new Vector3(screenX, screenY, 0);
+        camera.unproject(worldCoords);
+
+        int gridX = (int) (worldCoords.x / 64f);
+        int gridY = (int) (worldCoords.y / 64f);
+
+        Zone hoveredZone = world.getZoneAt(gridX, gridY);
+
+        if (hoverListener != null) {
+            hoverListener.onZoneHovered(hoveredZone, screenX, screenY);
+        }
+        return true;
+    }
+
+
     // --- Required Unused Interface Methods
     @Override
     public boolean keyDown(int keycode) {
@@ -163,11 +190,6 @@ public class InputHandler implements InputProcessor {
 
     @Override
     public boolean keyTyped(char character) {
-        return false;
-    }
-
-    @Override
-    public boolean mouseMoved(int screenX, int screenY) {
         return false;
     }
 

@@ -333,6 +333,23 @@ public class GameWorld {
             }
         }
     }
+
+    // Finds the zone a tile with (gridx, gridy) belongs to
+    public Zone getZoneAt(int gridX, int gridY) {
+        Tile tile = gameMap.getTile(gridX, gridY);
+        if (tile == null) return null;
+
+        for (City city : cities) {
+            if (city.getTiles().contains(tile)) return city;
+        }
+
+        for (Facility facility : facilities) {
+            if (facility.getTiles().contains(tile)) return facility;
+        }
+
+        return null;
+    }
+
     // with time is gonna be more with this part...
     public void updateSimulation(float delta) {
         float scaledDelta = delta * timeScale;

@@ -30,6 +30,16 @@ public class InputHandler implements InputProcessor {
     // Hoverlistener
     private HoverListener hoverListener;
 
+    public interface IntersectionClickListener {
+        void onIntersectionClicked(Intersection intersection);
+    }
+
+    private IntersectionClickListener intersectionListener;
+
+    public void setIntersectionListener(IntersectionClickListener listener) {
+        this.intersectionListener = listener;
+    }
+
     public InputHandler(OrthographicCamera camera, GameWorld world, MinimapRenderer minimap) {
         this.camera = camera;
         this.world = world;
@@ -105,6 +115,21 @@ public class InputHandler implements InputProcessor {
             camera.position.set(worldPos[0], worldPos[1], 0);
             camera.update();
             return true;
+        }
+
+        if (!isBuildMode && !isBuildStopMode && !wasDragging && button == Input.Buttons.LEFT) {
+            Vector3 worldCoords = new Vector3(screenX, screenY, 0);
+            camera.unproject(worldCoords);
+            int gridX = (int) (worldCoords.x / 64f);
+            int gridY = (int) (worldCoords.y / 64f);
+
+            Tile tile = world.getMap().getTile(gridX, gridY);
+            if (tile != null && tile.hasIntersection()) {
+                if (intersectionListener != null) {
+                    intersectionListener.onIntersectionClicked(tile.getIntersection());
+                }
+                return true;
+            }
         }
 
         // Build road if build mode and not dragging

@@ -366,6 +366,16 @@ public class GameWorld {
             city.updateDemands(scaledDelta);
         }
 
+        // Update all traffic lights
+        for (int x = 0; x < 50; x++) {
+            for (int y = 0; y < 50; y++) {
+                Tile tile = gameMap.getTile(x, y);
+                if (tile != null && tile.hasIntersection()) {
+                    tile.getIntersection().updateLights(scaledDelta);
+                }
+            }
+        }
+
         // Forest Growth
         forestGrowthTimer += scaledDelta;
         if (forestGrowthTimer >= FOREST_GROWTH_INTERVAL) {
@@ -518,7 +528,7 @@ public class GameWorld {
 
         // Update whether this tile is an intersection tile or not
         if (mask == 7 || mask == 11 || mask == 13 || mask == 14 || mask == 15) {
-            tile.setIntersection(new Intersection());
+            tile.setIntersection(new Intersection(mask));
         } else {
             tile.setIntersection(null);
         }

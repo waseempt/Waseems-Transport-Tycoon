@@ -42,6 +42,13 @@ public class WorldRenderer {
     private TextureRegion threeIntersectRegion;
     private TextureRegion fourIntersectRegion;
 
+    // Traffic Light Tiles
+    private TextureRegion fourIntersectVRegion;
+    private TextureRegion fourIntersectHRegion;
+    private TextureRegion threeIntersectLRegion;
+    private TextureRegion threeIntersectRRegion;
+    private TextureRegion threeIntersectBRegion;
+
     // Stop Tile
     private TextureRegion stopRegion;
 
@@ -93,6 +100,13 @@ public class WorldRenderer {
         this.twoIntersectRegion = atlas.findRegion("intersection2");
         this.threeIntersectRegion = atlas.findRegion("intersection3");
         this.fourIntersectRegion = atlas.findRegion("intersection4");
+
+        // Define traffic light states
+        this.fourIntersectVRegion = atlas.findRegion("intersection4-trv");
+        this.fourIntersectHRegion = atlas.findRegion("intersection4-trh");
+        this.threeIntersectLRegion = atlas.findRegion("intersection3-trl");
+        this.threeIntersectRRegion = atlas.findRegion("intersection3-trr");
+        this.threeIntersectBRegion = atlas.findRegion("intersection3-trb");
 
         // Define stop tile
         this.stopRegion = atlas.findRegion("stop");
@@ -166,13 +180,39 @@ public class WorldRenderer {
                         case 3:  region = twoIntersectRegion; rotation = 90; break;  // North & East
 
                         // 3-way intersections
-                        case 14: region = threeIntersectRegion; break;   // East, South, West
-                        case 13: region = threeIntersectRegion; rotation = 270; break; // South, West, North
-                        case 11: region = threeIntersectRegion; rotation = 180; break; // West, North, East
-                        case 7:  region = threeIntersectRegion; rotation = 90; break;  // North, East, South
+                        case 14:
+                        case 13:
+                        case 11:
+                        case 7:
+                            if (tile.hasIntersection() && tile.getIntersection().hasLights()) {
+                                String state = tile.getIntersection().getVisualState();
+
+                                if (state.equals("l")) region = threeIntersectLRegion;
+                                else if (state.equals("r")) region = threeIntersectRRegion;
+                                else if (state.equals("b")) region = threeIntersectBRegion;
+                                else region = threeIntersectRegion;
+                            } else {
+                                region = threeIntersectRegion;
+                            }
+
+                            // Apply rotation for the specific mask
+                            if (tile.getRoadMask() == 14) rotation = 0;
+                            else if (tile.getRoadMask() == 13) rotation = 270;
+                            else if (tile.getRoadMask() == 11) rotation = 180;
+                            else if (tile.getRoadMask() == 7) rotation = 90;
+                            break;
 
                         // 4-way intersection
-                        case 15: region = fourIntersectRegion; break;
+                        case 15:
+                            if (tile.hasIntersection() && tile.getIntersection().hasLights()) {
+                                String state = tile.getIntersection().getVisualState();
+                                if (state.equals("v")) region = fourIntersectVRegion;
+                                else if (state.equals("h")) region = fourIntersectHRegion;
+                                else region = fourIntersectRegion;
+                            } else {
+                                region = fourIntersectRegion;
+                            }
+                            break;
                     }
 
                     if (region != null) {

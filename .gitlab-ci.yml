@@ -37,7 +37,7 @@ test_job:
       # default path where Gradle saves the JaCoCo HTML website
       - core/build/reports/jacoco/test/html/
     # Regex to parse the coverage percentage so it shows up in the GitLab UI
-    coverage: '/Total.*?([0-9]{1,3})%/'
+  coverage: '/Total.*?([0-9]{1,3})%/'
 
 # Job 3: Deploy, Stage: deploy
 deploy_job:

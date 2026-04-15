@@ -57,4 +57,21 @@ public class Facility extends Zone {
     public void setProductionTimer(float productionTimer) {
         this.productionTimer = productionTimer;
     }
+
+    public void processGoods(float scaledDelta) {
+        productionTimer += scaledDelta;
+
+        if (productionTimer >= 3.0f) {
+            productionTimer = 0f;
+
+            if (consumes == null) {
+                storedOutput += 1;
+            } else {
+                if (storedInput > 0) {
+                    storedInput -= 1;
+                    storedOutput += 1;
+                }
+            }
+        }
+    }
 }

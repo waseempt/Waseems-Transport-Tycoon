@@ -50,7 +50,7 @@ deploy_job:
     name: "Mini-Transport-Tycoon-Build"
     expire_in: 1 week
     paths:
-      - desktop/build/libs/*.jar
+      - lwjgl3/build/libs/*.jar
   only:
     - dev
     - main

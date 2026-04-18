@@ -350,6 +350,41 @@ public class GameWorld {
         return null;
     }
 
+    public float calculateDeliveryProfit(Zone origin, Zone destination, GoodType cargo) {
+        if (origin == null || destination == null || cargo == null) {
+            return 0f;
+        }
+
+        if (origin.getTiles().isEmpty() || destination.getTiles().isEmpty()) {
+            return 0f;
+        }
+
+        Tile originTile = origin.getTiles().get(0);
+        Tile destinationTile = destination.getTiles().get(0);
+
+        int originX = originTile.getGridX();
+        int originY = originTile.getGridY();
+        int destX = destinationTile.getGridX();
+        int destY = destinationTile.getGridY();
+
+        int distance = Math.abs(originX - destX) + Math.abs(originY - destY);
+
+        float multiplier;
+        switch (cargo) {
+            case WOOD:
+                multiplier = 2.0f;
+                break;
+            case STEEL:
+                multiplier = 5.0f;
+                break;
+            default:
+                multiplier = 1.0f;
+                break;
+        }
+
+        return distance * multiplier;
+    }
+
 
     public void updateSimulation(float delta) {
         float scaledDelta = delta * timeScale;

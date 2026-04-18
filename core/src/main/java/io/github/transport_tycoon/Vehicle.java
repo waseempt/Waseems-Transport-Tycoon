@@ -13,13 +13,12 @@ public abstract class Vehicle {
     private float maintenanceCost = 10f;
     private GameWorld world;
 
-    public Vehicle(String name, int capacity, float speed, GoodType cargoType, GameWorld world) {
+    public Vehicle(String name, int capacity, float speed, GoodType cargoType) {
         this.name = name;
         this.capacity = capacity;
         this.speed = speed;
         this.cargoType = cargoType;
         this.assignedRoute = null;
-        this.world = world;
     }
 
     public String getName() { return name; }
@@ -37,7 +36,13 @@ public abstract class Vehicle {
         return assignedRoute != null;
     }
 
+    public void setWorld(GameWorld world) {
+        this.world = world;
+    }
+
     public void update(float delta) {
+        if (world == null) return;
+
         maintenanceTimer += delta;
 
         while (maintenanceTimer >= 5f) {

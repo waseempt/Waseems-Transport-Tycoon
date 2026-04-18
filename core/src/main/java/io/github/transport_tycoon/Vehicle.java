@@ -9,6 +9,10 @@ public abstract class Vehicle {
     private GoodType cargoType;
     private Route assignedRoute;
 
+    private float maintenanceTimer = 0f;
+    private float maintenanceCost = 10f;
+    private GameWorld world;
+
     public Vehicle(String name, int capacity, float speed, GoodType cargoType) {
         this.name = name;
         this.capacity = capacity;
@@ -30,5 +34,20 @@ public abstract class Vehicle {
 
     public boolean hasRoute() {
         return assignedRoute != null;
+    }
+
+    public void setWorld(GameWorld world) {
+        this.world = world;
+    }
+
+    public void update(float delta) {
+        if (world == null) return;
+
+        maintenanceTimer += delta;
+
+        while (maintenanceTimer >= 5f) {
+            maintenanceTimer -= 5f;
+            world.setPlayerBalance(world.getPlayerBalance() - maintenanceCost);
+        }
     }
 }

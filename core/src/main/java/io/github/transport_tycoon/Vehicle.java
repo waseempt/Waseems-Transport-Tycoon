@@ -8,6 +8,8 @@ public abstract class Vehicle {
     private float speed;
     private GoodType cargoType;
     private Route assignedRoute;
+    private float worldX = 0f;
+    private float worldY = 0f;
 
     private float maintenanceTimer = 0f;
     private float maintenanceCost = 10f;
@@ -19,6 +21,14 @@ public abstract class Vehicle {
         this.speed = speed;
         this.cargoType = cargoType;
         this.assignedRoute = null;
+    }
+
+    public float getWorldX() { return worldX; }
+    public float getWorldY() { return worldY; }
+
+    public void setPosition(float x, float y) {
+        this.worldX = x;
+        this.worldY = y;
     }
 
     public String getName() { return name; }

@@ -304,6 +304,16 @@ public class WorldRenderer {
             }
         }
 
+        for (Vehicle vehicle : world.getActiveVehicles()) {
+            TextureRegion vRegion = (vehicle instanceof Bus) ? busRegion : truckRegion;
+            if (vRegion != null) {
+                batch.draw(vRegion,
+                    vehicle.getWorldX() - 32f,
+                    vehicle.getWorldY() - 32f,
+                    64f, 64f);
+            }
+        }
+
         batch.end();
     }
 

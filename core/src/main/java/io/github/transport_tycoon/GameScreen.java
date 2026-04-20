@@ -167,6 +167,13 @@ public class GameScreen implements Screen {
 
         routeAssignmentOverlay.setCancelListener(this::exitRouteAssignmentMode);
 
+        routeAssignmentOverlay.setConfirmListener(() -> {
+            if (routeAssignmentMode != null && routeAssignmentMode.canConfirm()) {
+                controller.getWorld().confirmRouteAssignment(routeAssignmentMode);
+            }
+            exitRouteAssignmentMode();
+        });
+
         // TrafficLight UI
         this.trafficLightUI = new TrafficLightUI(game.batch);
 

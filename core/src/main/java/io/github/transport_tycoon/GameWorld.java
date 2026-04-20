@@ -419,6 +419,10 @@ public class GameWorld {
             forestGrowthTimer = 0f;
             growForests();
         }
+
+        for (Vehicle vehicle : activeVehicles) {
+            vehicle.update(scaledDelta);
+        }
     }
     // grows all forest tiles by +1 (max 4)...that it... and now going around
     private void growForests() {
@@ -661,8 +665,5 @@ public class GameWorld {
 
         unassignedVehicles.remove(vehicle);
         activeVehicles.add(vehicle);
-
-        System.out.println("Model: Vehicle '" + vehicle.getName() + "' spawned at ("
-            + spawnTile.getGridX() + ", " + spawnTile.getGridY() + ").");
     }
 }

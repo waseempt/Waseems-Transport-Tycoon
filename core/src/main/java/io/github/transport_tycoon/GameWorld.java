@@ -29,6 +29,8 @@ public class GameWorld {
     private ArrayList<City> cities;
     private ArrayList<Facility> facilities;
     private ArrayList<Vehicle> unassignedVehicles = new ArrayList<>();
+    private ArrayList<Vehicle> activeVehicles = new ArrayList<>();
+
     //the tycoon name is entered on the SetupScreen
     private String tycoonName;
 
@@ -417,6 +419,10 @@ public class GameWorld {
             forestGrowthTimer = 0f;
             growForests();
         }
+
+        for (Vehicle vehicle : activeVehicles) {
+            vehicle.update(scaledDelta);
+        }
     }
     // grows all forest tiles by +1 (max 4)...that it... and now going around
     private void growForests() {
@@ -608,6 +614,8 @@ public class GameWorld {
         return playerBalance;
     }
 
+    public ArrayList<Vehicle> getActiveVehicles() { return activeVehicles; }
+
     public ArrayList<Vehicle> getUnassignedVehicles() {
         return unassignedVehicles;
     }
@@ -637,5 +645,25 @@ public class GameWorld {
         routes.add(route);
         System.out.println("Model: Route registered. Total routes: " + routes.size());
         return route;
+    }
+
+    public void confirmRouteAssignment(RouteAssignmentMode assignment) {
+        Vehicle vehicle = assignment.getVehicle();
+
+        Route route = new Route();
+        for (StopTile stop : assignment.getSelectedStops()) {
+            route.addStop(stop);
+        }
+        routes.add(route);
+
+        vehicle.assignRoute(route);
+        vehicle.setWorld(this);
+
+        StopTile firstStop = route.getStops().get(0);
+        Tile spawnTile = firstStop.getTile();
+        vehicle.setPosition(spawnTile.getGridX() * 64f + 32f, spawnTile.getGridY() * 64f + 32f);
+
+        unassignedVehicles.remove(vehicle);
+        activeVehicles.add(vehicle);
     }
 }

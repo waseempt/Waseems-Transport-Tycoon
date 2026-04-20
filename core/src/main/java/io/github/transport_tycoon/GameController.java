@@ -36,6 +36,16 @@ public class GameController {
         worldRenderer.renderWorld(world, delta);
     }
 
+    public void render(float delta, RouteAssignmentMode routeMode) {
+        if (world.isBankrupt()) {
+            game.setScreen(new GameOverScreen(game));
+            return;
+        }
+        float simulationDelta = delta * world.getTimeScale();
+        world.updateSimulation(simulationDelta);
+        worldRenderer.renderWorld(world, delta, routeMode);
+    }
+
     public WorldRenderer getWorldRenderer() {
         return this.worldRenderer;
     }

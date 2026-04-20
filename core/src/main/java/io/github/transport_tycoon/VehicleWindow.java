@@ -30,6 +30,14 @@ public class VehicleWindow {
         void onPurchase();
     }
 
+    public interface AssignRouteListener {
+        void onAssignRoute(Vehicle vehicle);
+    }
+    private AssignRouteListener assignRouteListener;
+    public void setAssignRouteListener(AssignRouteListener listener) {
+        this.assignRouteListener = listener;
+    }
+
     private PurchaseListener purchaseListener;
 
     public void setPurchaseListener(PurchaseListener listener) {
@@ -97,8 +105,10 @@ public class VehicleWindow {
             assignButton.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
-                    System.out.println("Assign Route clicked for: " + vehicle.getName());
-                    // TODO: open route assignment screen
+                    if (assignRouteListener != null) {
+                        hide();
+                        assignRouteListener.onAssignRoute(vehicle);
+                    }
                 }
             });
 

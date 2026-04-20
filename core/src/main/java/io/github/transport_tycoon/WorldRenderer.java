@@ -7,6 +7,8 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.Color;
 
 public class WorldRenderer {
 
@@ -58,7 +60,7 @@ public class WorldRenderer {
 
     // Grid Size
     private final float TILE_SIZE = 64f;
-
+    private ShapeRenderer shapeRenderer;
 
 
 
@@ -114,6 +116,7 @@ public class WorldRenderer {
         // Define vehicles
         this.busRegion = atlas.findRegion("bus");
         this.truckRegion = atlas.findRegion("truck");
+        this.shapeRenderer = new ShapeRenderer();
 
         System.out.println("View: WorldRenderer initialized with Camera and Assets.");
     }
@@ -304,6 +307,28 @@ public class WorldRenderer {
         batch.end();
     }
 
+    public void renderWorld(GameWorld world, float delta, RouteAssignmentMode routeMode) {
+        renderWorld(world, delta);
+
+        if (routeMode != null && !routeMode.getSelectedStops().isEmpty()) {
+            shapeRenderer.setProjectionMatrix(mainCamera.combined);
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+            shapeRenderer.setColor(Color.YELLOW);
+
+            for (StopTile stop : routeMode.getSelectedStops()) {
+                Tile tile = stop.getTile();
+                if (tile == null) continue;
+                float bx = tile.getGridX() * 64f;
+                float by = tile.getGridY() * 64f;
+                shapeRenderer.rect(bx + 1, by + 1, 62, 62);
+                shapeRenderer.rect(bx + 2, by + 2, 60, 60);
+                shapeRenderer.rect(bx + 3, by + 3, 58, 58);
+            }
+
+            shapeRenderer.end();
+        }
+    }
+
     private void clampCamera() {
         float mapWidthPixels = 50 * TILE_SIZE;
         float mapHeightPixels = 50 * TILE_SIZE;
@@ -345,5 +370,7 @@ public class WorldRenderer {
     public void dispose() {
         if (atlas != null)
             atlas.dispose();
+        if (shapeRenderer != null)
+            shapeRenderer.dispose();
     }
 }

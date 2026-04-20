@@ -40,6 +40,25 @@ public class InputHandler implements InputProcessor {
         this.intersectionListener = listener;
     }
 
+    public interface StopClickListener {
+        void onStopClicked(StopTile stop);
+    }
+    private StopClickListener stopClickListener;
+    public void setStopClickListener(StopClickListener l) { this.stopClickListener = l; }
+
+    private boolean isRouteAssignmentMode = false;
+    public void setRouteAssignmentMode(boolean active) { this.isRouteAssignmentMode = active; }
+    public boolean isRouteAssignmentMode() { return isRouteAssignmentMode; }
+
+    private StopTile findStopAt(int gridX, int gridY) {
+        Tile tile = world.getMap().getTile(gridX, gridY);
+        if (tile == null) return null;
+        for (StopTile stop : world.getStopTiles()) {
+            if (stop.getTile() == tile) return stop;
+        }
+        return null;
+    }
+
     public InputHandler(OrthographicCamera camera, GameWorld world, MinimapRenderer minimap) {
         this.camera = camera;
         this.world = world;
@@ -116,12 +135,24 @@ public class InputHandler implements InputProcessor {
             camera.update();
             return true;
         }
-
         if (!isBuildMode && !isBuildStopMode && !wasDragging && button == Input.Buttons.LEFT) {
             Vector3 worldCoords = new Vector3(screenX, screenY, 0);
             camera.unproject(worldCoords);
             int gridX = (int) (worldCoords.x / 64f);
             int gridY = (int) (worldCoords.y / 64f);
+
+
+            if (isRouteAssignmentMode) {
+                StopTile clicked = findStopAt(gridX, gridY);
+                System.out.println("Route mode click at grid: " + gridX + ", " + gridY + " | Stop found: " + (clicked != null));
+                if (clicked != null && stopClickListener != null) {
+                    stopClickListener.onStopClicked(clicked);
+                }
+                wasDragging = false;
+                return true;
+            }
+
+
 
             Tile tile = world.getMap().getTile(gridX, gridY);
             if (tile != null && tile.hasIntersection()) {

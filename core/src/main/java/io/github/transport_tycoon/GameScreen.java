@@ -15,6 +15,8 @@ public class GameScreen implements Screen {
     private HUD hud;
     private PauseMenu pauseMenu;
     private PurchaseVehicle purchaseVehicleScreen;
+    private RouteAssignmentMode routeAssignmentMode = null;
+    private RouteAssignmentOverlay routeAssignmentOverlay;
 
     private MinimapRenderer minimapRenderer;
 
@@ -79,6 +81,7 @@ public class GameScreen implements Screen {
             vehicleWindow.hide();
             purchaseVehicleScreen.show();
         });
+        this.routeAssignmentOverlay = new RouteAssignmentOverlay(game.batch);
 
         purchaseVehicleScreen.setCloseListener(() -> {
             purchaseVehicleScreen.hide();
@@ -145,10 +148,24 @@ public class GameScreen implements Screen {
         // pass minimap to input handler
         this.inputHandler = new InputHandler(camera, controller.getWorld(), minimapRenderer);
 
-
         this.inputHandler.setHoverListener((zone, screenX, screenY) -> {
             hud.updateTooltip(zone, screenX, screenY);
         });
+
+        vehicleWindow.setAssignRouteListener(vehicle -> {
+            routeAssignmentMode = new RouteAssignmentMode(vehicle);
+            inputHandler.setRouteAssignmentMode(true);
+            routeAssignmentOverlay.show(routeAssignmentMode);
+            refreshInputMultiplexer();
+        });
+
+        inputHandler.setStopClickListener(stop -> {
+            if (routeAssignmentMode == null) return;
+            routeAssignmentMode.toggleStop(stop);
+            routeAssignmentOverlay.refresh(routeAssignmentMode);
+        });
+
+        routeAssignmentOverlay.setCancelListener(this::exitRouteAssignmentMode);
 
         // TrafficLight UI
         this.trafficLightUI = new TrafficLightUI(game.batch);
@@ -186,6 +203,27 @@ public class GameScreen implements Screen {
         Gdx.input.setInputProcessor(this.inputHandler);
     }
 
+    private void exitRouteAssignmentMode() {
+        routeAssignmentMode = null;
+        inputHandler.setRouteAssignmentMode(false);
+        routeAssignmentOverlay.hide();
+        refreshInputMultiplexer();
+    }
+
+    private void refreshInputMultiplexer() {
+        com.badlogic.gdx.InputMultiplexer multiplexer = new com.badlogic.gdx.InputMultiplexer();
+        if (routeAssignmentOverlay != null && routeAssignmentOverlay.isVisible()) {
+            multiplexer.addProcessor(routeAssignmentOverlay.getStage());
+        }
+        multiplexer.addProcessor(trafficLightUI.getStage());
+        multiplexer.addProcessor(purchaseVehicleScreen.getStage());
+        multiplexer.addProcessor(vehicleWindow.getStage());
+        multiplexer.addProcessor(hud.getStage());
+        multiplexer.addProcessor(controlPanel.getStage());
+        multiplexer.addProcessor(inputHandler);
+        Gdx.input.setInputProcessor(multiplexer);
+    }
+
     @Override
     public void render(float delta) {
 
@@ -205,16 +243,12 @@ public class GameScreen implements Screen {
         hud.updateBalance(currentBalance);
         hud.updateTime(controller.getWorld().getFormattedGameTime());
         hud.render();
-
-        // draws the UI on top
         controlPanel.render();
-
         pauseMenu.render();
-
         vehicleWindow.render();
         purchaseVehicleScreen.render();
-
         trafficLightUI.render();
+        routeAssignmentOverlay.render();
 
     }
 
@@ -223,32 +257,20 @@ public class GameScreen implements Screen {
         // Prevent stretching when resizing viewport
         controller.getWorldRenderer().getViewport().update(width, height, false);
         controlPanel.resize(width, height);
-
         hud.resize(width, height);
-
         minimapRenderer.resize(width, height);
-
         pauseMenu.resize(width, height);
-
         vehicleWindow.resize(width, height);
-
         purchaseVehicleScreen.resize(width, height);
-
         trafficLightUI.resize(width, height);
+        routeAssignmentOverlay.resize(width, height);
 
     }
 
     //sets up InputMultiplexer  so teh HUD stage receives button clicks
     @Override
     public void show() {
-        com.badlogic.gdx.InputMultiplexer multiplexer = new com.badlogic.gdx.InputMultiplexer();
-        multiplexer.addProcessor(trafficLightUI.getStage());
-        multiplexer.addProcessor(purchaseVehicleScreen.getStage());
-        multiplexer.addProcessor(vehicleWindow.getStage());
-        multiplexer.addProcessor(hud.getStage());
-        multiplexer.addProcessor(controlPanel.getStage());
-        multiplexer.addProcessor(inputHandler);
-        Gdx.input.setInputProcessor(multiplexer);
+        refreshInputMultiplexer();
     }
     @Override public void pause() {}
     @Override public void resume() {}
@@ -263,6 +285,7 @@ public class GameScreen implements Screen {
         vehicleWindow.dispose();
         purchaseVehicleScreen.dispose();
         trafficLightUI.dispose();
+        routeAssignmentOverlay.dispose();
     }
 
 }

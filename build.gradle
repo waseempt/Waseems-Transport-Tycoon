@@ -93,6 +93,7 @@ project(":core") {
     reports {
       xml.required = true
       html.required = true
+      csv.required = true
     }
 
     // Exclude UI and visual classes from the coverage report

@@ -666,4 +666,11 @@ public class GameWorld {
         unassignedVehicles.remove(vehicle);
         activeVehicles.add(vehicle);
     }
+
+    public void calculateDeliveryProfit(Zone origin, Zone destination, GoodType cargo, int amount) {
+        float profit = amount * 10f;
+        playerBalance += profit;
+        if (balanceListener != null) balanceListener.onBalanceChanged(profit);
+        System.out.println("Model: Delivery profit $" + profit + " for " + amount + " " + cargo);
+    }
 }

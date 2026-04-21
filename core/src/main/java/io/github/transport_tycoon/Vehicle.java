@@ -88,6 +88,7 @@ public abstract class Vehicle {
             if (f.getConsumes() == cargoType) {
                 f.setStoredInput(f.getStoredInput() + currentLoad);
                 System.out.println(name + ": Unloaded " + currentLoad + " " + cargoType + " into " + f.getFacilityType());
+                world.calculateDeliveryProfit(lastLoadedZone, zone, cargoType, currentLoad);
                 currentLoad = 0;
                 lastLoadedZone = null;
             }
@@ -95,6 +96,7 @@ public abstract class Vehicle {
             City c = (City) zone;
             c.consumeGoods(cargoType, currentLoad);
             System.out.println(name + ": Unloaded " + currentLoad + " " + cargoType + " into " + c.getName());
+            world.calculateDeliveryProfit(lastLoadedZone, zone, cargoType, currentLoad);
             currentLoad = 0;
             lastLoadedZone = null;
         }

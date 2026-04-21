@@ -206,6 +206,7 @@ public class GameWorld {
             budapestWest2.setZoneConnection(8, budapest);
         }
         cities.add(budapest);
+        buildCityInternalRoads(budapest);
 
         City debrecen = new City("Debrecen");
         assignZoneTiles(debrecen, 8, 24, 4, 4);   // 4x4 city
@@ -220,6 +221,7 @@ public class GameWorld {
             debrecenEast2.setZoneConnection(2, debrecen);
         }
         cities.add(debrecen);
+        buildCityInternalRoads(debrecen);
 
         City szentendre = new City("Szentendre");
         assignZoneTiles(szentendre, 38, 12, 3, 3); // 3x3 city
@@ -234,6 +236,7 @@ public class GameWorld {
             szentendreSouth.setZoneConnection(4, szentendre);
         }
         cities.add(szentendre);
+        buildCityInternalRoads(szentendre);
 
         City pecs = new City("Pecs");
         assignZoneTiles(pecs, 42, 36, 3, 3); // 3x3 city
@@ -248,6 +251,7 @@ public class GameWorld {
             pecsSouth.setZoneConnection(4, pecs);
         }
         cities.add(pecs);
+        buildCityInternalRoads(pecs);
 
         // Instantiate 5 Facilities
         Facility coalMine = new Facility("Coal Mine");
@@ -352,39 +356,93 @@ public class GameWorld {
         return null;
     }
 
-    public float calculateDeliveryProfit(Zone origin, Zone destination, GoodType cargo) {
-        if (origin == null || destination == null || cargo == null) {
-            return 0f;
+    private void setInternalRoad(int x, int y) {
+        Tile tile = gameMap.getTile(x, y);
+        if (tile != null) {
+            tile.setHasRoad(true);
+            tile.setTreeCount(0);
+        }
+    }
+
+    private void buildCityInternalRoads(City city) {
+        int startX = city.getTiles().get(0).getGridX();
+        int startY = city.getTiles().get(0).getGridY();
+        int width = city.getGridWidth();
+
+        if (width == 3) {
+            setInternalRoad(startX, startY + 1);
+            setInternalRoad(startX + 1, startY + 1);
+            setInternalRoad(startX + 2, startY + 1);
+            setInternalRoad(startX + 2, startY);
+        } else if (width == 4) {
+            setInternalRoad(startX, startY); setInternalRoad(startX + 1, startY);
+            setInternalRoad(startX + 2, startY); setInternalRoad(startX + 3, startY);
+            setInternalRoad(startX, startY + 1); setInternalRoad(startX, startY + 2);
+            setInternalRoad(startX + 1, startY + 2); setInternalRoad(startX + 2, startY + 2);
+            setInternalRoad(startX + 2, startY + 3); setInternalRoad(startX + 3, startY + 3);
+        } else if (width == 5) {
+            for (int x = 0; x < 5; x++) {
+                setInternalRoad(startX + x, startY + 1);
+                setInternalRoad(startX + x, startY + 3);
+            }
+            for (int y = 0; y < 5; y++) {
+                setInternalRoad(startX + 2, startY + y);
+            }
         }
 
-        if (origin.getTiles().isEmpty() || destination.getTiles().isEmpty()) {
-            return 0f;
+        // Update neighbors so they properly connect to external roads
+        for (Tile tile : city.getTiles()) {
+            if (tile.hasRoad()) {
+                updateTileAndNeighbors(tile.getGridX(), tile.getGridY());
+            }
+        }
+    }
+
+    public void calculateDeliveryProfit(Zone origin, Zone destination, GoodType cargo, int amount) {
+        if (origin == null || destination == null || amount <= 0) {
+            return;
         }
 
-        Tile originTile = origin.getTiles().get(0);
-        Tile destinationTile = destination.getTiles().get(0);
+        Tile startTile = origin.getAnchorTile();
+        Tile endTile = destination.getAnchorTile();
 
-        int originX = originTile.getGridX();
-        int originY = originTile.getGridY();
-        int destX = destinationTile.getGridX();
-        int destY = destinationTile.getGridY();
+        if (startTile == null || endTile == null) {
+            return;
+        }
 
-        int distance = Math.abs(originX - destX) + Math.abs(originY - destY);
+        // Calculate grid distance (Manhattan distance)
+        int distance = Math.abs(startTile.getGridX() - endTile.getGridX()) + Math.abs(startTile.getGridY() - endTile.getGridY());
 
-        float multiplier;
+        // Apply specific economic multipliers
+        float multiplier = 1.0f;
         switch (cargo) {
+            case PASSENGERS:
+                multiplier = 1.5f;
+                break;
             case WOOD:
                 multiplier = 2.0f;
+                break;
+            case COAL:
+                multiplier = 2.5f;
+                break;
+            case IRON:
+                multiplier = 3.0f;
                 break;
             case STEEL:
                 multiplier = 5.0f;
                 break;
-            default:
-                multiplier = 1.0f;
-                break;
         }
 
-        return distance * multiplier;
+        // Calculate true profit based on distance, cargo value, and quantity
+        float profit = distance * multiplier * amount;
+
+        playerBalance += profit;
+
+        if (balanceListener != null) {
+            balanceListener.onBalanceChanged(profit);
+        }
+
+        System.out.println("Model: Delivery profit $" + profit + " for " + amount + " " + cargo);
     }
 
 
@@ -665,12 +723,5 @@ public class GameWorld {
 
         unassignedVehicles.remove(vehicle);
         activeVehicles.add(vehicle);
-    }
-
-    public void calculateDeliveryProfit(Zone origin, Zone destination, GoodType cargo, int amount) {
-        float profit = amount * 10f;
-        playerBalance += profit;
-        if (balanceListener != null) balanceListener.onBalanceChanged(profit);
-        System.out.println("Model: Delivery profit $" + profit + " for " + amount + " " + cargo);
     }
 }

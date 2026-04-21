@@ -5,48 +5,39 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class IntersectionTest {
-
-    // Intersection with traffic lights (4-way)
     private Intersection fourWay;
 
     @BeforeEach
     void setUp() {
-        // Create a 4-way intersection (mask = 15)
-        fourWay = new Intersection(15);
-
-        // Install traffic lights
+        fourWay = new Intersection(15); // 4-way mask
         fourWay.installLights();
     }
 
     @Test
-    void testInitialPhaseIsVertical() {
-
-        // Update a very small time step
-        // This keeps the initial phase
-        fourWay.updateLights(0.1f);
-
-        // Expect vertical direction ("v")
-        assertEquals("v", fourWay.getVisualState());
-    }
-
-    @Test
     void testClearanceBufferTriggersAllRed() {
-
-        // Move time forward close to phase change
-        // Now we are inside the safety buffer (all red)
-        fourWay.updateLights(8.6f);
-
-        // Expect no green → all directions red
+        // Timer starts at 10.0f. The first 1.5s (down to 8.5) is the clearance buffer.
+        // Fast forward 0.5 seconds. Timer is now 9.5f.
+        fourWay.updateLights(0.5f);
         assertEquals("none", fourWay.getVisualState());
     }
 
     @Test
+    void testInitialPhaseIsVertical() {
+        // Fast forward past the 1.5s clearance buffer
+        fourWay.updateLights(2.0f); // Timer is now 8.0f
+        assertEquals("v", fourWay.getVisualState());
+    }
+
+    @Test
     void testPhaseSwitchesToHorizontal() {
+        // Fast forward exactly 10.0 seconds to finish Phase 0
+        fourWay.updateLights(10.0f);
 
-        // Move time enough to switch phase
-        fourWay.updateLights(10.1f);
+        // We are now at the start of Phase 1.
+        // Fast forward 2.0 seconds to get past the new clearance buffer
+        fourWay.updateLights(2.0f);
 
-        // Expect horizontal direction ("h")
+        // Should now be phase 1 ("h")
         assertEquals("h", fourWay.getVisualState());
     }
 }

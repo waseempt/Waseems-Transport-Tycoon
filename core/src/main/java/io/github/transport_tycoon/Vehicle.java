@@ -54,6 +54,52 @@ public abstract class Vehicle {
         this.world = world;
     }
 
+    private void loadCargo(Zone zone) {
+        if (currentLoad > 0) return;
+
+        if (zone instanceof Facility) {
+            Facility f = (Facility) zone;
+            if (f.getProduces() == cargoType && f.getStoredOutput() > 0) {
+                int amount = Math.min(capacity, f.getStoredOutput());
+                f.setStoredOutput(f.getStoredOutput() - amount);
+                currentLoad = amount;
+                lastLoadedZone = zone;
+                System.out.println(name + ": Loaded " + amount + " " + cargoType + " from " + f.getFacilityType());
+            }
+        } else if (zone instanceof City) {
+            City c = (City) zone;
+            if (cargoType == GoodType.PASSENGERS) {
+                int waiting = c.getDemands().getOrDefault(GoodType.PASSENGERS, 0);
+                int amount = Math.min(capacity, waiting);
+                if (amount > 0) {
+                    currentLoad = amount;
+                    lastLoadedZone = zone;
+                    System.out.println(name + ": Loaded " + amount + " PASSENGERS from " + c.getName());
+                }
+            }
+        }
+    }
+
+    private void unloadCargo(Zone zone) {
+        if (currentLoad <= 0) return;
+
+        if (zone instanceof Facility) {
+            Facility f = (Facility) zone;
+            if (f.getConsumes() == cargoType) {
+                f.setStoredInput(f.getStoredInput() + currentLoad);
+                System.out.println(name + ": Unloaded " + currentLoad + " " + cargoType + " into " + f.getFacilityType());
+                currentLoad = 0;
+                lastLoadedZone = null;
+            }
+        } else if (zone instanceof City) {
+            City c = (City) zone;
+            c.consumeGoods(cargoType, currentLoad);
+            System.out.println(name + ": Unloaded " + currentLoad + " " + cargoType + " into " + c.getName());
+            currentLoad = 0;
+            lastLoadedZone = null;
+        }
+    }
+
     public void update(float delta) {
         if (world == null || assignedRoute == null || assignedRoute.getStopCount() < 2) return;
 
@@ -77,6 +123,11 @@ public abstract class Vehicle {
 
         // Check if we reached the target stop
         if (Math.abs(worldX - targetX) < 1f && Math.abs(worldY - targetY) < 1f) {
+            Zone zone = targetStop.getLinkedZone();
+            if (zone != null) {
+                unloadCargo(zone);
+                loadCargo(zone);
+            }
             currentStopIndex = (currentStopIndex + 1) % assignedRoute.getStopCount();
             return;
         }

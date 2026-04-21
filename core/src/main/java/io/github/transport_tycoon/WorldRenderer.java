@@ -114,8 +114,8 @@ public class WorldRenderer {
         this.stopRegion = atlas.findRegion("stop");
 
         // Define vehicles
-        this.busRegion = atlas.findRegion("bus");
-        this.truckRegion = atlas.findRegion("truck");
+        this.busRegion = atlas.findRegion("bus1");
+        this.truckRegion = atlas.findRegion("truck1");
         this.shapeRenderer = new ShapeRenderer();
 
         System.out.println("View: WorldRenderer initialized with Camera and Assets.");

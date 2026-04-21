@@ -13,7 +13,8 @@ public abstract class Vehicle {
     private int currentStopIndex = 0;
     private float movementTimer = 0f;
     private static final float TELEPORT_DELAY = 0.5f;
-
+    private int currentLoad = 0;
+    private Zone lastLoadedZone = null;
     private float maintenanceTimer = 0f;
     private float maintenanceCost = 10f;
     private GameWorld world;

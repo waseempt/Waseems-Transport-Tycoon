@@ -23,6 +23,12 @@ public abstract class Vehicle {
     private float targetX = 0f;
     private float targetY = 0f;
 
+    private boolean isTurning = false;
+    private float controlX = 0f;
+    private float controlY = 0f;
+    private float startRotation = 0f;
+    private float targetRotation = 0f;
+
     private int currentLoad = 0;
     private Zone lastLoadedZone = null;
     private float maintenanceTimer = 0f;
@@ -150,17 +156,20 @@ public abstract class Vehicle {
         if (assignedRoute == null || assignedRoute.getStopCount() == 0) return;
 
         if (isMoving) {
-            // Speed acts as a multiplier. If speed is 1.0, it takes 1 second to cross a tile.
-            movementProgress += delta * speed;
+            // Apply realistic deceleration when cornering
+            if (isTurning) {
+                movementProgress += delta * (speed * 0.55f);
+            } else {
+                movementProgress += delta * speed;
+            }
 
             if (movementProgress >= 1.0f) {
-                // We reached the destination tile
                 movementProgress = 1.0f;
                 worldX = targetX;
                 worldY = targetY;
+                rotation = targetRotation;
                 isMoving = false;
 
-                // Check if we arrived at our target stop
                 StopTile targetStop = assignedRoute.getStops().get(currentStopIndex);
                 if (currentTile == targetStop.getTile()) {
                     Zone zone = targetStop.getLinkedZone();
@@ -171,12 +180,26 @@ public abstract class Vehicle {
                     currentStopIndex = (currentStopIndex + 1) % assignedRoute.getStopCount();
                 }
             } else {
-                // Interpolate (Glide smoothly between source and target)
-                worldX = sourceX + (targetX - sourceX) * movementProgress;
-                worldY = sourceY + (targetY - sourceY) * movementProgress;
+                if (isTurning) {
+                    float t = movementProgress;
+                    float u = 1f - t;
+                    worldX = (u * u * sourceX) + (2 * u * t * controlX) + (t * t * targetX);
+                    worldY = (u * u * sourceY) + (2 * u * t * controlY) + (t * t * targetY);
+
+                    float rotDiff = targetRotation - startRotation;
+                    if (rotDiff > 180f) rotDiff -= 360f;
+                    if (rotDiff < -180f) rotDiff += 360f;
+
+                    rotation = startRotation + (rotDiff * t);
+                    rotation = rotation % 360f;
+                    if (rotation < 0) rotation += 360f;
+
+                } else {
+                    worldX = sourceX + (targetX - sourceX) * movementProgress;
+                    worldY = sourceY + (targetY - sourceY) * movementProgress;
+                }
             }
         } else {
-            // We aren't moving, so try to calculate and start the next segment
             startMovingToNextTile();
         }
     }
@@ -198,12 +221,7 @@ public abstract class Vehicle {
 
         if (currentPath.isEmpty()) {
             List<Tile> path = PathFinder.findPath(world.getMap(), startTile, targetStop.getTile());
-
-            if (path.isEmpty()) {
-                System.out.println(getName() + ": No valid route found to target!");
-                return;
-            }
-
+            if (path.isEmpty()) return;
             if (path.get(0) == startTile) path.remove(0);
             currentPath.addAll(path);
         }
@@ -211,43 +229,71 @@ public abstract class Vehicle {
         Tile nextTile = currentPath.peek();
         if (nextTile == null) return;
 
-        // --- PRE-CALCULATE TARGET COORDINATES & LANE OFFSET ---
         float nextTargetX = nextTile.getGridX() * 64f + 32f;
         float nextTargetY = nextTile.getGridY() * 64f + 32f;
         float laneOffset = 14f;
 
-        if (nextTile.getGridX() > currentTile.getGridX()) {
-            rotation = 90f;
-            nextTargetY -= laneOffset;
-        } else if (nextTile.getGridX() < currentTile.getGridX()) {
-            rotation = 270f;
-            nextTargetY += laneOffset;
-        } else if (nextTile.getGridY() > currentTile.getGridY()) {
-            rotation = 180f;
-            nextTargetX += laneOffset;
-        } else if (nextTile.getGridY() < currentTile.getGridY()) {
-            rotation = 0f;
-            nextTargetX -= laneOffset;
+        float moveDirX = nextTile.getGridX() - currentTile.getGridX();
+        float moveDirY = nextTile.getGridY() - currentTile.getGridY();
+
+        float newRotation = rotation;
+        if (moveDirX > 0) newRotation = 90f;
+        else if (moveDirX < 0) newRotation = 270f;
+        else if (moveDirY > 0) newRotation = 180f;
+        else if (moveDirY < 0) newRotation = 0f;
+
+        boolean isDestination = (nextTile == targetStop.getTile());
+
+        if (!isDestination) {
+            // Apply standard right-hand lane offset
+            if (moveDirY > 0) nextTargetX += laneOffset;
+            else if (moveDirY < 0) nextTargetX -= laneOffset;
+            else if (moveDirX > 0) nextTargetY -= laneOffset;
+            else if (moveDirX < 0) nextTargetY += laneOffset;
+
+            // Curb lookahead logic
+            // We use LinkedList casting to safely peek at the 2nd tile in the queue
+            Tile nextNextTile = ((LinkedList<Tile>) currentPath).size() > 1 ? ((LinkedList<Tile>) currentPath).get(1) : null;
+            if (nextNextTile != null) {
+                float nextDirX = nextNextTile.getGridX() - nextTile.getGridX();
+                float nextDirY = nextNextTile.getGridY() - nextTile.getGridY();
+
+                // If the next move changes direction, we are approaching a corner.
+                if (moveDirX != nextDirX || moveDirY != nextDirY) {
+                    // Pull the target point backwards to the edge of the intersection tile
+                    nextTargetX -= moveDirX * 32f;
+                    nextTargetY -= moveDirY * 32f;
+                }
+            }
         }
 
-        // --- SAFETY CHECKS ---
-        // These happen BEFORE we commit to moving. If a vehicle is blocked, it stays parked perfectly in its current lane.
         if (isTileOccupied(nextTile)) return;
         if (isRedLight(nextTile)) return;
 
-        // --- LOCK IN THE MOVE ---
         currentPath.poll();
         currentTile = nextTile;
 
-        // Save where we are starting from
         sourceX = worldX;
         sourceY = worldY;
-
-        // Save where we are gliding to
         targetX = nextTargetX;
         targetY = nextTargetY;
 
-        // Reset the progress and flip the switch!
+        startRotation = rotation;
+        targetRotation = newRotation;
+
+        if (startRotation != targetRotation || (Math.abs(sourceX - targetX) > 1f && Math.abs(sourceY - targetY) > 1f)) {
+            isTurning = true;
+            if (startRotation == 0f || startRotation == 180f) {
+                controlX = sourceX;
+                controlY = targetY;
+            } else {
+                controlX = targetX;
+                controlY = sourceY;
+            }
+        } else {
+            isTurning = false;
+        }
+
         movementProgress = 0f;
         isMoving = true;
     }
@@ -312,9 +358,9 @@ public abstract class Vehicle {
             else if (rotation == 180f) ourApproach = "r"; // Driving up from the bottom
         }
 
-        // Does our approach road currently have the green light?
+        // Does our approach road currently have the green light
         if (state.equals(ourApproach)) {
-            return false; // Light is green, keep driving!
+            return false; // Light is green, keep driving
         }
 
         // If it doesn't match, we have to stop.

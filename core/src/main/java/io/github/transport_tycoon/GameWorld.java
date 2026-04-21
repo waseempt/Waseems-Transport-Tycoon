@@ -398,39 +398,51 @@ public class GameWorld {
         }
     }
 
-    public float calculateDeliveryProfit(Zone origin, Zone destination, GoodType cargo) {
-        if (origin == null || destination == null || cargo == null) {
-            return 0f;
+    public void calculateDeliveryProfit(Zone origin, Zone destination, GoodType cargo, int amount) {
+        if (origin == null || destination == null || amount <= 0) {
+            return;
         }
 
-        if (origin.getTiles().isEmpty() || destination.getTiles().isEmpty()) {
-            return 0f;
+        Tile startTile = origin.getAnchorTile();
+        Tile endTile = destination.getAnchorTile();
+
+        if (startTile == null || endTile == null) {
+            return;
         }
 
-        Tile originTile = origin.getTiles().get(0);
-        Tile destinationTile = destination.getTiles().get(0);
+        // Calculate grid distance (Manhattan distance)
+        int distance = Math.abs(startTile.getGridX() - endTile.getGridX()) + Math.abs(startTile.getGridY() - endTile.getGridY());
 
-        int originX = originTile.getGridX();
-        int originY = originTile.getGridY();
-        int destX = destinationTile.getGridX();
-        int destY = destinationTile.getGridY();
-
-        int distance = Math.abs(originX - destX) + Math.abs(originY - destY);
-
-        float multiplier;
+        // Apply specific economic multipliers
+        float multiplier = 1.0f;
         switch (cargo) {
+            case PASSENGERS:
+                multiplier = 1.5f;
+                break;
             case WOOD:
                 multiplier = 2.0f;
+                break;
+            case COAL:
+                multiplier = 2.5f;
+                break;
+            case IRON:
+                multiplier = 3.0f;
                 break;
             case STEEL:
                 multiplier = 5.0f;
                 break;
-            default:
-                multiplier = 1.0f;
-                break;
         }
 
-        return distance * multiplier;
+        // Calculate true profit based on distance, cargo value, and quantity
+        float profit = distance * multiplier * amount;
+
+        playerBalance += profit;
+
+        if (balanceListener != null) {
+            balanceListener.onBalanceChanged(profit);
+        }
+
+        System.out.println("Model: Delivery profit $" + profit + " for " + amount + " " + cargo);
     }
 
 
@@ -711,12 +723,5 @@ public class GameWorld {
 
         unassignedVehicles.remove(vehicle);
         activeVehicles.add(vehicle);
-    }
-
-    public void calculateDeliveryProfit(Zone origin, Zone destination, GoodType cargo, int amount) {
-        float profit = amount * 10f;
-        playerBalance += profit;
-        if (balanceListener != null) balanceListener.onBalanceChanged(profit);
-        System.out.println("Model: Delivery profit $" + profit + " for " + amount + " " + cargo);
     }
 }

@@ -1,6 +1,10 @@
 package io.github.transport_tycoon;
 
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+
 public abstract class Vehicle {
 
     private String name;
@@ -17,6 +21,9 @@ public abstract class Vehicle {
     private Zone lastLoadedZone = null;
     private float maintenanceTimer = 0f;
     private float maintenanceCost = 10f;
+    private Queue<Tile> currentPath = new LinkedList<>();
+    private float rotation = 0f;
+    private Tile currentTile = null;
     private GameWorld world;
 
     public Vehicle(String name, int capacity, float speed, GoodType cargoType) {
@@ -27,19 +34,46 @@ public abstract class Vehicle {
         this.assignedRoute = null;
     }
 
-    public float getWorldX() { return worldX; }
-    public float getWorldY() { return worldY; }
+    public float getWorldX() {
+        return worldX;
+    }
+
+    public float getWorldY() {
+        return worldY;
+    }
 
     public void setPosition(float x, float y) {
         this.worldX = x;
         this.worldY = y;
     }
 
-    public String getName() { return name; }
-    public int getCapacity() { return capacity; }
-    public float getSpeed() { return speed; }
-    public GoodType getCargoType() { return cargoType; }
-    public Route getAssignedRoute() { return assignedRoute; }
+    public String getName() {
+        return name;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public float getSpeed() {
+        return speed;
+    }
+
+    public GoodType getCargoType() {
+        return cargoType;
+    }
+
+    public Route getAssignedRoute() {
+        return assignedRoute;
+    }
+
+    public float getRotation() {
+        return rotation;
+    }
+
+    public Tile getCurrentTile() {
+        return currentTile;
+    }
 
     public void assignRoute(Route route) {
         this.assignedRoute = route;
@@ -54,51 +88,49 @@ public abstract class Vehicle {
         this.world = world;
     }
 
-    private void loadCargo(Zone zone) {
-        if (currentLoad > 0) return;
+    protected void loadCargo(Zone zone) {
+        if (currentLoad < capacity) {
+            int amountToLoad = 0;
 
-        if (zone instanceof Facility) {
-            Facility f = (Facility) zone;
-            if (f.getProduces() == cargoType && f.getStoredOutput() > 0) {
-                int amount = Math.min(capacity, f.getStoredOutput());
-                f.setStoredOutput(f.getStoredOutput() - amount);
-                currentLoad = amount;
-                lastLoadedZone = zone;
-                System.out.println(name + ": Loaded " + amount + " " + cargoType + " from " + f.getFacilityType());
-            }
-        } else if (zone instanceof City) {
-            City c = (City) zone;
-            if (cargoType == GoodType.PASSENGERS) {
-                int waiting = c.getDemands().getOrDefault(GoodType.PASSENGERS, 0);
-                int amount = Math.min(capacity, waiting);
-                if (amount > 0) {
-                    currentLoad = amount;
-                    lastLoadedZone = zone;
-                    System.out.println(name + ": Loaded " + amount + " PASSENGERS from " + c.getName());
+            if (zone instanceof Facility) {
+                Facility f = (Facility) zone;
+                if (f.getProduces() == cargoType) {
+                    amountToLoad = Math.min(capacity - currentLoad, f.getStoredOutput());
+                    f.setStoredOutput(f.getStoredOutput() - amountToLoad);
                 }
+            } else if (zone instanceof City && cargoType == GoodType.PASSENGERS) {
+                // Cities automatically generate passengers to fill the bus
+                amountToLoad = capacity - currentLoad;
+            }
+
+            if (amountToLoad > 0) {
+                currentLoad += amountToLoad;
+                lastLoadedZone = zone;
             }
         }
     }
 
-    private void unloadCargo(Zone zone) {
-        if (currentLoad <= 0) return;
+    protected void unloadCargo(Zone destination) {
+        if (currentLoad > 0) {
+            // Keep track of how much we are dropping off for the calculation
+            int amountUnloaded = currentLoad;
 
-        if (zone instanceof Facility) {
-            Facility f = (Facility) zone;
-            if (f.getConsumes() == cargoType) {
-                f.setStoredInput(f.getStoredInput() + currentLoad);
-                System.out.println(name + ": Unloaded " + currentLoad + " " + cargoType + " into " + f.getFacilityType());
-                world.calculateDeliveryProfit(lastLoadedZone, zone, cargoType, currentLoad);
-                currentLoad = 0;
-                lastLoadedZone = null;
+            if (destination instanceof City) {
+                ((City) destination).consumeGoods(cargoType, amountUnloaded);
+            } else if (destination instanceof Facility) {
+                Facility f = (Facility) destination;
+                if (f.getConsumes() == cargoType) {
+                    f.setStoredInput(f.getStoredInput() + amountUnloaded);
+                }
             }
-        } else if (zone instanceof City) {
-            City c = (City) zone;
-            c.consumeGoods(cargoType, currentLoad);
-            System.out.println(name + ": Unloaded " + currentLoad + " " + cargoType + " into " + c.getName());
-            world.calculateDeliveryProfit(lastLoadedZone, zone, cargoType, currentLoad);
+
+
+            if (lastLoadedZone != null && lastLoadedZone != destination) {
+                world.calculateDeliveryProfit(lastLoadedZone, destination, cargoType, amountUnloaded);
+            }
+
+            // Empty the truck
             currentLoad = 0;
-            lastLoadedZone = null;
         }
     }
 
@@ -120,29 +152,142 @@ public abstract class Vehicle {
 
     private void performTeleportMovement() {
         StopTile targetStop = assignedRoute.getStops().get(currentStopIndex);
-        float targetX = targetStop.getTile().getGridX() * 64f + 32f;
-        float targetY = targetStop.getTile().getGridY() * 64f + 32f;
+        Tile startTile = (currentTile != null) ? currentTile : assignedRoute.getStops().get(0).getTile();
 
-        // Check if we reached the target stop
-        if (Math.abs(worldX - targetX) < 1f && Math.abs(worldY - targetY) < 1f) {
+        // If we are already standing on the target stop, handle cargo and increment to the next stop.
+        if (startTile == targetStop.getTile() && currentPath.isEmpty()) {
             Zone zone = targetStop.getLinkedZone();
             if (zone != null) {
                 unloadCargo(zone);
                 loadCargo(zone);
             }
             currentStopIndex = (currentStopIndex + 1) % assignedRoute.getStopCount();
+            currentTile = startTile;
             return;
         }
 
-        // Snap exactly one tile (64 pixels) toward the destination
-        int gridX = (int)(worldX / 64f);
-        int gridY = (int)(worldY / 64f);
-        int destGridX = targetStop.getTile().getGridX();
-        int destGridY = targetStop.getTile().getGridY();
+        // If we don't have a path, ask the pathfinder to generate one
+        if (currentPath.isEmpty()) {
+            List<Tile> path = PathFinder.findPath(world.getMap(), startTile, targetStop.getTile());
 
-        if (gridX < destGridX) worldX += 64f;
-        else if (gridX > destGridX) worldX -= 64f;
-        else if (gridY < destGridY) worldY += 64f;
-        else if (gridY > destGridY) worldY -= 64f;
+            if (path.isEmpty()) {
+                System.out.println(getName() + ": No valid route found to target!");
+                return;
+            }
+
+            if (path.get(0) == startTile) path.remove(0);
+            currentPath.addAll(path);
+        }
+
+        Tile nextTile = currentPath.peek();
+        if (nextTile == null) return;
+
+        // Calculate direction and lane offset
+        float targetX = nextTile.getGridX() * 64f + 32f;
+        float targetY = nextTile.getGridY() * 64f + 32f;
+        float laneOffset = 14f; // Push vehicle 14 pixels into the right lane
+
+        if (nextTile.getGridX() > currentTile.getGridX()) {
+            rotation = 90f;         // Moving East (Right)
+            targetY -= laneOffset;  // Right lane is South
+        } else if (nextTile.getGridX() < currentTile.getGridX()) {
+            rotation = 270f;        // Moving West (Left)
+            targetY += laneOffset;  // Right lane is North
+        } else if (nextTile.getGridY() > currentTile.getGridY()) {
+            rotation = 180f;        // Moving North (Up)
+            targetX += laneOffset;  // Right lane is East
+        } else if (nextTile.getGridY() < currentTile.getGridY()) {
+            rotation = 0f;          // Moving South (Down)
+            targetX -= laneOffset;  // Right lane is West
+        }
+
+        // --- SAFETY CHECKS ---
+        if (isTileOccupied(nextTile)) return;
+        if (isRedLight(nextTile)) return;
+
+        // Update position
+        currentPath.poll();
+        currentTile = nextTile;
+        worldX = targetX;
+        worldY = targetY;
+
+        // Check if we reached the destination stop
+        if (currentTile == targetStop.getTile()) {
+            Zone zone = targetStop.getLinkedZone();
+            if (zone != null) {
+                unloadCargo(zone);
+                loadCargo(zone);
+            }
+            currentStopIndex = (currentStopIndex + 1) % assignedRoute.getStopCount();
+        }
+    }
+
+    private boolean isTileOccupied(Tile target) {
+        for (Vehicle v : world.getActiveVehicles()) {
+            if (v != this && v.getCurrentTile() == target) {
+                // If the vehicles are facing exactly opposite directions, they are in different lanes
+                float diff = Math.abs(v.getRotation() - this.rotation);
+                if (diff == 180f) {
+                    continue; // Safe to share the tile
+                }
+                return true; // Blocked (Same direction or intersecting)
+            }
+        }
+        return false;
+    }
+
+    private boolean isRedLight(Tile target) {
+        if (!target.hasIntersection() || !target.getIntersection().hasLights()) return false;
+
+        String state = target.getIntersection().getVisualState();
+
+        // The Clearance Phase ("none"), vehicles must stop to clear the intersection
+        if (state.equals("none")) return true;
+
+        int mask = target.getRoadMask();
+
+        // 4-Way Intersections
+        if (mask == 15) {
+            // Vertical is green. Vehicles moving East (90) or West (270) must stop.
+            if (state.equals("v") && (rotation == 90f || rotation == 270f)) return true;
+            // Horizontal is green. Vehicles moving North (180) or South (0) must stop.
+            if (state.equals("h") && (rotation == 0f || rotation == 180f)) return true;
+
+            return false; // Light is green for our direction
+        }
+
+        // T-Junctions (3-Way Intersections)
+        // We need to match the vehicle's direction to how the intersection is drawn on screen.
+        // "b" is the bottom stem of the T, "l" is the left arm, and "r" is the right arm.
+        String ourApproach = "";
+
+        if (mask == 14) { // The 'T' is standing upright (Stem points South)
+            if (rotation == 180f) ourApproach = "b";      // Driving up from the bottom stem
+            else if (rotation == 90f) ourApproach = "l";  // Driving in from the left arm
+            else if (rotation == 270f) ourApproach = "r"; // Driving in from the right arm
+
+        } else if (mask == 7) { // The 'T' is laying on its right side (Stem points East)
+            if (rotation == 270f) ourApproach = "b";      // Driving in from the stem
+            else if (rotation == 180f) ourApproach = "l"; // Driving up from the bottom
+            else if (rotation == 0f) ourApproach = "r";   // Driving down from the top
+
+        } else if (mask == 11) { // The 'T' is completely upside down (Stem points North)
+            if (rotation == 0f) ourApproach = "b";        // Driving down from the top stem
+            else if (rotation == 270f) ourApproach = "l"; // Driving in from the right arm
+            else if (rotation == 90f) ourApproach = "r";  // Driving in from the left arm
+
+        } else if (mask == 13) { // The 'T' is laying on its left side (Stem points West)
+            if (rotation == 90f) ourApproach = "b";       // Driving in from the stem
+            else if (rotation == 0f) ourApproach = "l";   // Driving down from the top
+            else if (rotation == 180f) ourApproach = "r"; // Driving up from the bottom
+        }
+
+        // Does our approach road currently have the green light?
+        if (state.equals(ourApproach)) {
+            return false; // Light is green, keep driving!
+        }
+
+        // If it doesn't match, we have to stop.
+        return true;
     }
 }

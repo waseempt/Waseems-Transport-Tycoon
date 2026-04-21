@@ -307,10 +307,22 @@ public class WorldRenderer {
         for (Vehicle vehicle : world.getActiveVehicles()) {
             TextureRegion vRegion = (vehicle instanceof Bus) ? busRegion : truckRegion;
             if (vRegion != null) {
-                batch.draw(vRegion,
-                    vehicle.getWorldX() - 32f,
-                    vehicle.getWorldY() - 32f,
-                    64f, 64f);
+                // Calculate width and heigh
+                float vWidth = 22f;
+                float vHeight = 99f * (22f / 42f);
+
+                // Offset coordinates to center the vehicle on its lane's worldX and worldY
+                float drawX = vehicle.getWorldX() - (vWidth / 2f);
+                float drawY = vehicle.getWorldY() - (vHeight / 2f);
+
+                batch.draw(
+                    vRegion,
+                    drawX, drawY,
+                    vWidth / 2f, vHeight / 2f, // Origin X, Origin Y (center for rotation)
+                    vWidth, vHeight,           // Dimensions
+                    1f, 1f,                    // Scale X, Scale Y
+                    vehicle.getRotation()      // Rotation angle
+                );
             }
         }
 

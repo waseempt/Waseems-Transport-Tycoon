@@ -67,6 +67,10 @@ public abstract class Vehicle {
         return capacity;
     }
 
+    public int getCurrentLoad() {
+        return currentLoad;
+    }
+
     public float getSpeed() {
         return speed;
     }

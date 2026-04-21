@@ -15,8 +15,14 @@ public abstract class Vehicle {
     private float worldX = 0f;
     private float worldY = 0f;
     private int currentStopIndex = 0;
-    private float movementTimer = 0f;
-    private static final float TELEPORT_DELAY = 0.5f;
+
+    private boolean isMoving = false;
+    private float movementProgress = 0f; // Goes from 0.0 to 1.0
+    private float sourceX = 0f;
+    private float sourceY = 0f;
+    private float targetX = 0f;
+    private float targetY = 0f;
+
     private int currentLoad = 0;
     private Zone lastLoadedZone = null;
     private float maintenanceTimer = 0f;
@@ -135,26 +141,50 @@ public abstract class Vehicle {
     }
 
     public void update(float delta) {
-        if (world == null || assignedRoute == null || assignedRoute.getStopCount() < 2) return;
-
         maintenanceTimer += delta;
         while (maintenanceTimer >= 5f) {
             maintenanceTimer -= 5f;
             world.setPlayerBalance(world.getPlayerBalance() - maintenanceCost);
         }
 
-        movementTimer += delta;
-        if (movementTimer >= (TELEPORT_DELAY / speed)) {
-            movementTimer = 0f;
-            performTeleportMovement();
+        if (assignedRoute == null || assignedRoute.getStopCount() == 0) return;
+
+        if (isMoving) {
+            // Speed acts as a multiplier. If speed is 1.0, it takes 1 second to cross a tile.
+            movementProgress += delta * speed;
+
+            if (movementProgress >= 1.0f) {
+                // We reached the destination tile
+                movementProgress = 1.0f;
+                worldX = targetX;
+                worldY = targetY;
+                isMoving = false;
+
+                // Check if we arrived at our target stop
+                StopTile targetStop = assignedRoute.getStops().get(currentStopIndex);
+                if (currentTile == targetStop.getTile()) {
+                    Zone zone = targetStop.getLinkedZone();
+                    if (zone != null) {
+                        unloadCargo(zone);
+                        loadCargo(zone);
+                    }
+                    currentStopIndex = (currentStopIndex + 1) % assignedRoute.getStopCount();
+                }
+            } else {
+                // Interpolate (Glide smoothly between source and target)
+                worldX = sourceX + (targetX - sourceX) * movementProgress;
+                worldY = sourceY + (targetY - sourceY) * movementProgress;
+            }
+        } else {
+            // We aren't moving, so try to calculate and start the next segment
+            startMovingToNextTile();
         }
     }
 
-    private void performTeleportMovement() {
+    private void startMovingToNextTile() {
         StopTile targetStop = assignedRoute.getStops().get(currentStopIndex);
         Tile startTile = (currentTile != null) ? currentTile : assignedRoute.getStops().get(0).getTile();
 
-        // If we are already standing on the target stop, handle cargo and increment to the next stop.
         if (startTile == targetStop.getTile() && currentPath.isEmpty()) {
             Zone zone = targetStop.getLinkedZone();
             if (zone != null) {
@@ -166,7 +196,6 @@ public abstract class Vehicle {
             return;
         }
 
-        // If we don't have a path, ask the pathfinder to generate one
         if (currentPath.isEmpty()) {
             List<Tile> path = PathFinder.findPath(world.getMap(), startTile, targetStop.getTile());
 
@@ -182,44 +211,45 @@ public abstract class Vehicle {
         Tile nextTile = currentPath.peek();
         if (nextTile == null) return;
 
-        // Calculate direction and lane offset
-        float targetX = nextTile.getGridX() * 64f + 32f;
-        float targetY = nextTile.getGridY() * 64f + 32f;
-        float laneOffset = 14f; // Push vehicle 14 pixels into the right lane
+        // --- PRE-CALCULATE TARGET COORDINATES & LANE OFFSET ---
+        float nextTargetX = nextTile.getGridX() * 64f + 32f;
+        float nextTargetY = nextTile.getGridY() * 64f + 32f;
+        float laneOffset = 14f;
 
         if (nextTile.getGridX() > currentTile.getGridX()) {
-            rotation = 90f;         // Moving East (Right)
-            targetY -= laneOffset;  // Right lane is South
+            rotation = 90f;
+            nextTargetY -= laneOffset;
         } else if (nextTile.getGridX() < currentTile.getGridX()) {
-            rotation = 270f;        // Moving West (Left)
-            targetY += laneOffset;  // Right lane is North
+            rotation = 270f;
+            nextTargetY += laneOffset;
         } else if (nextTile.getGridY() > currentTile.getGridY()) {
-            rotation = 180f;        // Moving North (Up)
-            targetX += laneOffset;  // Right lane is East
+            rotation = 180f;
+            nextTargetX += laneOffset;
         } else if (nextTile.getGridY() < currentTile.getGridY()) {
-            rotation = 0f;          // Moving South (Down)
-            targetX -= laneOffset;  // Right lane is West
+            rotation = 0f;
+            nextTargetX -= laneOffset;
         }
 
         // --- SAFETY CHECKS ---
+        // These happen BEFORE we commit to moving. If a vehicle is blocked, it stays parked perfectly in its current lane.
         if (isTileOccupied(nextTile)) return;
         if (isRedLight(nextTile)) return;
 
-        // Update position
+        // --- LOCK IN THE MOVE ---
         currentPath.poll();
         currentTile = nextTile;
-        worldX = targetX;
-        worldY = targetY;
 
-        // Check if we reached the destination stop
-        if (currentTile == targetStop.getTile()) {
-            Zone zone = targetStop.getLinkedZone();
-            if (zone != null) {
-                unloadCargo(zone);
-                loadCargo(zone);
-            }
-            currentStopIndex = (currentStopIndex + 1) % assignedRoute.getStopCount();
-        }
+        // Save where we are starting from
+        sourceX = worldX;
+        sourceY = worldY;
+
+        // Save where we are gliding to
+        targetX = nextTargetX;
+        targetY = nextTargetY;
+
+        // Reset the progress and flip the switch!
+        movementProgress = 0f;
+        isMoving = true;
     }
 
     private boolean isTileOccupied(Tile target) {

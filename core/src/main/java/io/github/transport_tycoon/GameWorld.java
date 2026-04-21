@@ -206,6 +206,7 @@ public class GameWorld {
             budapestWest2.setZoneConnection(8, budapest);
         }
         cities.add(budapest);
+        buildCityInternalRoads(budapest);
 
         City debrecen = new City("Debrecen");
         assignZoneTiles(debrecen, 8, 24, 4, 4);   // 4x4 city
@@ -220,6 +221,7 @@ public class GameWorld {
             debrecenEast2.setZoneConnection(2, debrecen);
         }
         cities.add(debrecen);
+        buildCityInternalRoads(debrecen);
 
         City szentendre = new City("Szentendre");
         assignZoneTiles(szentendre, 38, 12, 3, 3); // 3x3 city
@@ -234,6 +236,7 @@ public class GameWorld {
             szentendreSouth.setZoneConnection(4, szentendre);
         }
         cities.add(szentendre);
+        buildCityInternalRoads(szentendre);
 
         City pecs = new City("Pecs");
         assignZoneTiles(pecs, 42, 36, 3, 3); // 3x3 city
@@ -248,6 +251,7 @@ public class GameWorld {
             pecsSouth.setZoneConnection(4, pecs);
         }
         cities.add(pecs);
+        buildCityInternalRoads(pecs);
 
         // Instantiate 5 Facilities
         Facility coalMine = new Facility("Coal Mine");
@@ -350,6 +354,48 @@ public class GameWorld {
         }
 
         return null;
+    }
+
+    private void setInternalRoad(int x, int y) {
+        Tile tile = gameMap.getTile(x, y);
+        if (tile != null) {
+            tile.setHasRoad(true);
+            tile.setTreeCount(0);
+        }
+    }
+
+    private void buildCityInternalRoads(City city) {
+        int startX = city.getTiles().get(0).getGridX();
+        int startY = city.getTiles().get(0).getGridY();
+        int width = city.getGridWidth();
+
+        if (width == 3) {
+            setInternalRoad(startX, startY + 1);
+            setInternalRoad(startX + 1, startY + 1);
+            setInternalRoad(startX + 2, startY + 1);
+            setInternalRoad(startX + 2, startY);
+        } else if (width == 4) {
+            setInternalRoad(startX, startY); setInternalRoad(startX + 1, startY);
+            setInternalRoad(startX + 2, startY); setInternalRoad(startX + 3, startY);
+            setInternalRoad(startX, startY + 1); setInternalRoad(startX, startY + 2);
+            setInternalRoad(startX + 1, startY + 2); setInternalRoad(startX + 2, startY + 2);
+            setInternalRoad(startX + 2, startY + 3); setInternalRoad(startX + 3, startY + 3);
+        } else if (width == 5) {
+            for (int x = 0; x < 5; x++) {
+                setInternalRoad(startX + x, startY + 1);
+                setInternalRoad(startX + x, startY + 3);
+            }
+            for (int y = 0; y < 5; y++) {
+                setInternalRoad(startX + 2, startY + y);
+            }
+        }
+
+        // Update neighbors so they properly connect to external roads
+        for (Tile tile : city.getTiles()) {
+            if (tile.hasRoad()) {
+                updateTileAndNeighbors(tile.getGridX(), tile.getGridY());
+            }
+        }
     }
 
     public float calculateDeliveryProfit(Zone origin, Zone destination, GoodType cargo) {

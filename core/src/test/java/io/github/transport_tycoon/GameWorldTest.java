@@ -50,4 +50,21 @@ class GameWorldTest {
 
         assertEquals(initialBalance + 100.0f, world.getPlayerBalance());
     }
+
+    @Test
+    void testTimeScaleControls() {
+        // it should not be paused
+        assertFalse(world.isPaused());
+
+        world.setTimeScale(0f);
+        assertTrue(world.isPaused());
+    }
+
+    @Test
+    void testCreateRoute() {
+        Route newRoute = world.createRoute();
+        assertNotNull(newRoute);
+        // it should have 0 stops when first created
+        assertEquals(0, newRoute.getStopCount());
+    }
 }

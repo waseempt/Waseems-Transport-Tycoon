@@ -3,7 +3,7 @@ package io.github.transport_tycoon;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-class POJOTest {
+class BasicModelTest {
 
     @Test
     void testBusInitialization() {

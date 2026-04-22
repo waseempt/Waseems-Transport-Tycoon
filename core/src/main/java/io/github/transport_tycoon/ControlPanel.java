@@ -30,6 +30,8 @@ public class ControlPanel {
     private Skin skin;
 
     private BuildModeListener buildListener;
+    private VehicleWindowListener vehicleWindowListener;
+
 
     public ControlPanel(SpriteBatch batch) {
         this.stage = new Stage(new ScreenViewport(), batch);
@@ -69,8 +71,32 @@ public class ControlPanel {
         background.add(veryFastSpeedButton);
 
         //shows the build mode
-        TextButton buildButton = new TextButton("Build Mode", skin);
+        TextButton buildButton = new TextButton("Build Roads", skin);
         background.add(buildButton);
+
+        // Build Stops button — costs $60 per stop placed
+        TextButton buildStopButton = new TextButton("Build Stops", skin);
+        buildStopButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (buildStopListener != null) {
+                    buildStopListener.onBuildStop();
+                }
+            }
+        });
+        background.add(buildStopButton);
+
+        // opens the vehicle list window
+        TextButton vehiclesButton = new TextButton("Vehicles", skin);
+        vehiclesButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (vehicleWindowListener != null) {
+                    vehicleWindowListener.onVehicleWindow();
+                }
+            }
+        });
+        background.add(vehiclesButton);
 
         pauseButton.addListener(new ClickListener() {
             @Override
@@ -143,6 +169,26 @@ public class ControlPanel {
 
     public void setBuildListener(BuildModeListener listener) {
         this.buildListener = listener;
+    }
+
+    // Callback triggered when the Build Stops button is clicked
+    public interface BuildStopListener {
+        void onBuildStop();
+    }
+
+    private BuildStopListener buildStopListener;
+
+    public void setBuildStopListener(BuildStopListener listener) {
+        this.buildStopListener = listener;
+    }
+
+    // Callback triggered when the Vehicles button is clicked
+    public interface VehicleWindowListener {
+        void onVehicleWindow();
+    }
+
+    public void setVehicleWindowListener(VehicleWindowListener listener) {
+        this.vehicleWindowListener = listener;
     }
 
     public void dispose() {

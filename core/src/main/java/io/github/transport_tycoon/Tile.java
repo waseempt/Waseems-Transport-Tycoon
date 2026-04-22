@@ -16,6 +16,8 @@ public class Tile {
 
     private int treeCount;
 
+    private Intersection intersection = null;
+
     public Tile(int x, int y) {
         this.gridX = x;
         this.gridY = y;
@@ -37,6 +39,8 @@ public class Tile {
     public int getRoadMask() { return roadMask; }
     public int getZoneConnectionMask() { return zoneConnectionMask; }
     public Zone getParentZone() { return parentZone; }
+    public Intersection getIntersection() { return intersection; }
+    public boolean hasIntersection() { return intersection != null; }
 
     public void setTreeCount(int treeCount) {
         if (treeCount < 0) treeCount = 0;
@@ -56,4 +60,9 @@ public class Tile {
         this.zoneConnectionMask = mask;
         this.parentZone = zone;
     }
+
+    public void setIntersection(Intersection intersection) {
+        this.intersection = intersection;
+    }
+
 }

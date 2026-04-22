@@ -1,0 +1,61 @@
+image: eclipse-temurin:17-jdk-jammy
+
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
+# Ensure gradlew always has execute permission
+before_script:
+  - chmod +x gradlew
+
+# Cache dependencies for subsequent builds
+cache:
+  key: "$CI_COMMIT_REF_NAME"
+  paths:
+    - .gradle/wrapper
+    - .gradle/caches
+
+# Defining stages of the pipeline
+stages:
+  - build
+  - test
+  - deploy
+
+# Job 1: Build, Stage: build
+build_job:
+  stage: build
+  script:
+    - ./gradlew classes
+
+# Job 2: Test, Stage: test
+test_job:
+  stage: test
+  script:
+    - ./gradlew test jacocoTestReport
+    - >
+      awk -F"," '{ instructions += $4 + $5; covered += $5 } END { print "Total Coverage: " int(100*covered/instructions) "%" }' core/build/reports/jacoco/test/jacocoTestReport.csv
+  artifacts:
+    name: "JaCoCo-Coverage-Report"
+    when: always
+    expire_in: 30 days
+    paths:
+      # default path where Gradle saves the JaCoCo HTML website
+      - core/build/reports/jacoco/test/html/
+    reports:
+      junit: core/build/test-results/test/TEST-*.xml
+    # Regex to parse the coverage percentage so it shows up in the GitLab UI
+  coverage: '/Total Coverage: ([0-9]{1,3})%/'
+
+# Job 3: Deploy, Stage: deploy
+deploy_job:
+  stage: deploy
+  script:
+    - ./gradlew lwjgl3:dist
+  artifacts:
+    name: "Mini-Transport-Tycoon-Build"
+    expire_in: 1 week
+    paths:
+      - lwjgl3/build/libs/*.jar
+  only:
+    - dev
+    - main
+

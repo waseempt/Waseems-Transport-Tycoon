@@ -17,6 +17,8 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
+import java.util.Map;
+
 public class HUD {
     //a place where all the HUD widgets are held/placed
     private Stage stage;
@@ -29,6 +31,10 @@ public class HUD {
     private Label balanceLabel;
     private Label timeLabel;
     private Label buildModeIndicator;
+    private Label stopBuildModeIndicator;
+
+
+    private Table tooltipTable;
 
     public HUD(SpriteBatch batch) {
         this.stage = new Stage(new ScreenViewport(), batch);
@@ -59,10 +65,11 @@ public class HUD {
         this.buildModeIndicator = new Label("", skin);
         this.buildModeIndicator.setColor(Color.YELLOW);
 
-        //shows the pause button on the right
-        Label pauseLabel = new Label("Pause Game: [placeholder]", skin);
+        //stop build mode indicator — shown when the player is placing a stop
+        this.stopBuildModeIndicator = new Label("", skin);
+        this.stopBuildModeIndicator.setColor(Color.CYAN);
 
-        //pause button
+        //shows the pause button on the right
         TextButton pauseButton = new TextButton("Pause Game", skin);
         pauseButton.addListener(new ClickListener() {
             @Override
@@ -73,10 +80,18 @@ public class HUD {
             }
         });
 
+        //Build tooltip table
+        tooltipTable = new Table(skin);
+        tooltipTable.setBackground(skin.newDrawable("background", new Color(0.1f, 0.1f, 0.1f, 0.9f)));
+        tooltipTable.pad(15);
+        tooltipTable.setVisible(false);
+        stage.addActor(tooltipTable);
+
         //where every label is placed
         background.add(balanceLabel).expandX().left();
         background.add(timeLabel).expandX().center();
         background.add(buildModeIndicator).expandX().center();
+        background.add(stopBuildModeIndicator).expandX().center();
         background.add(pauseButton).expandX().right();
 
         //placeholder labels
@@ -121,10 +136,107 @@ public class HUD {
     //Shows build mode message when active
     public void setBuildModeActive(boolean active) {
         if (active) {
-            this.buildModeIndicator.setText("BUILD MODE ACTIVE");
+            this.buildModeIndicator.setText("BUILD MODE ACTIVE - Left Click: Build - Right Click: Remove");
         } else {
             this.buildModeIndicator.setText("");
         }
+    }
+
+    // Shows stop build mode message when the player is about to place a stop
+    public void setStopBuildModeActive(boolean active) {
+        if (active) {
+            this.stopBuildModeIndicator.setText("STOP BUILD MODE ACTIVE - Left Click: Build - Right Click: Remove");
+        } else {
+            this.stopBuildModeIndicator.setText("");
+        }
+    }
+
+    public void updateTooltip(Zone zone, float screenX, float screenY) {
+        // Clear the table completely so we can stack new labels into it
+        tooltipTable.clear();
+
+        if (zone == null) {
+            tooltipTable.setVisible(false);
+            return;
+        }
+
+        if (zone instanceof City) {
+            City c = (City) zone;
+
+            // Title Label
+            Label title = new Label(c.getName() + " (City)", skin);
+            title.setFontScale(1.3f);
+            title.setColor(Color.GOLD);
+            tooltipTable.add(title).left().padBottom(5).row();
+
+            // Size Label
+            Label size = new Label("Size: " + c.getGridWidth() + "x" + c.getGridHeight(), skin);
+            size.setColor(Color.LIGHT_GRAY);
+            tooltipTable.add(size).left().padBottom(10).row();
+
+            // Passengers
+            int waitingPassengers = c.getDemands().getOrDefault(GoodType.PASSENGERS, 0);
+            tooltipTable.add(new Label("Produces (Waiting):", skin)).left().row();
+
+            Label passLabel = new Label("  ↳ Passengers: " + waitingPassengers, skin);
+            passLabel.setColor(Color.LIGHT_GRAY);
+            tooltipTable.add(passLabel).left().padBottom(5).row();
+
+            // Demands Header
+            tooltipTable.add(new Label("Demands:", skin)).left().row();
+
+            // Demands List
+            for (Map.Entry<GoodType, Integer> entry : c.getDemands().entrySet()) {
+                // Skip passengers since we already displayed them above
+                if (entry.getKey() == GoodType.PASSENGERS) {
+                    continue;
+                }
+
+                Label demandLabel = new Label("  ↳ " + entry.getKey() + ": " + entry.getValue(), skin);
+                demandLabel.setColor(Color.LIGHT_GRAY);
+                tooltipTable.add(demandLabel).left().row();
+            }
+
+        } else if (zone instanceof Facility) {
+            Facility f = (Facility) zone;
+
+            // Title Label
+            Label title = new Label(f.getFacilityType() + " (Facility)", skin);
+            title.setFontScale(1.3f);
+            title.setColor(Color.CYAN);
+            tooltipTable.add(title).left().padBottom(5).row();
+
+            // Size Label
+            Label size = new Label("Size: " + f.getGridWidth() + "x" + f.getGridHeight(), skin);
+            size.setColor(Color.LIGHT_GRAY);
+            tooltipTable.add(size).left().padBottom(10).row();
+
+            // Produces
+            String producesText = f.getProduces() != null ? f.getProduces().name() : "None";
+            tooltipTable.add(new Label("Produces: " + producesText, skin)).left().row();
+
+            Label outLabel = new Label("  ↳ Stored Output: " + f.getStoredOutput(), skin);
+            outLabel.setColor(Color.LIGHT_GRAY);
+            tooltipTable.add(outLabel).left().padBottom(5).row();
+
+            // Consumes
+            String consumesText = f.getConsumes() != null ? f.getConsumes().name() : "None";
+            tooltipTable.add(new Label("Consumes: " + consumesText, skin)).left().row();
+
+            if (f.getConsumes() != null) {
+                Label inLabel = new Label("  ↳ Stored Input: " + f.getStoredInput(), skin);
+                inLabel.setColor(Color.LIGHT_GRAY);
+                tooltipTable.add(inLabel).left().row();
+            }
+        }
+
+        // Resize the background to perfectly wrap around the newly stacked labels
+        tooltipTable.pack();
+
+        // Position it near the mouse
+        float stageY = Gdx.graphics.getHeight() - screenY;
+        tooltipTable.setPosition(screenX + 15, stageY - 15 - tooltipTable.getHeight());
+        tooltipTable.setVisible(true);
     }
 
     //updates all the UI logic, it draws the stage to the screen so that the HUD appears on top of the game

@@ -7,6 +7,8 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.Color;
 
 public class WorldRenderer {
 
@@ -42,13 +44,23 @@ public class WorldRenderer {
     private TextureRegion threeIntersectRegion;
     private TextureRegion fourIntersectRegion;
 
+    // Traffic Light Tiles
+    private TextureRegion fourIntersectVRegion;
+    private TextureRegion fourIntersectHRegion;
+    private TextureRegion threeIntersectLRegion;
+    private TextureRegion threeIntersectRRegion;
+    private TextureRegion threeIntersectBRegion;
+
+    // Stop Tile
+    private TextureRegion stopRegion;
+
     // Vehicles
     private TextureRegion busRegion;
     private TextureRegion truckRegion;
 
     // Grid Size
     private final float TILE_SIZE = 64f;
-
+    private ShapeRenderer shapeRenderer;
 
 
 
@@ -91,9 +103,20 @@ public class WorldRenderer {
         this.threeIntersectRegion = atlas.findRegion("intersection3");
         this.fourIntersectRegion = atlas.findRegion("intersection4");
 
+        // Define traffic light states
+        this.fourIntersectVRegion = atlas.findRegion("intersection4-trv");
+        this.fourIntersectHRegion = atlas.findRegion("intersection4-trh");
+        this.threeIntersectLRegion = atlas.findRegion("intersection3-trl");
+        this.threeIntersectRRegion = atlas.findRegion("intersection3-trr");
+        this.threeIntersectBRegion = atlas.findRegion("intersection3-trb");
+
+        // Define stop tile
+        this.stopRegion = atlas.findRegion("stop");
+
         // Define vehicles
-        this.busRegion = atlas.findRegion("bus");
-        this.truckRegion = atlas.findRegion("truck");
+        this.busRegion = atlas.findRegion("bus1");
+        this.truckRegion = atlas.findRegion("truck1");
+        this.shapeRenderer = new ShapeRenderer();
 
         System.out.println("View: WorldRenderer initialized with Camera and Assets.");
     }
@@ -160,13 +183,39 @@ public class WorldRenderer {
                         case 3:  region = twoIntersectRegion; rotation = 90; break;  // North & East
 
                         // 3-way intersections
-                        case 14: region = threeIntersectRegion; break;   // East, South, West
-                        case 13: region = threeIntersectRegion; rotation = 270; break; // South, West, North
-                        case 11: region = threeIntersectRegion; rotation = 180; break; // West, North, East
-                        case 7:  region = threeIntersectRegion; rotation = 90; break;  // North, East, South
+                        case 14:
+                        case 13:
+                        case 11:
+                        case 7:
+                            if (tile.hasIntersection() && tile.getIntersection().hasLights()) {
+                                String state = tile.getIntersection().getVisualState();
+
+                                if (state.equals("l")) region = threeIntersectLRegion;
+                                else if (state.equals("r")) region = threeIntersectRRegion;
+                                else if (state.equals("b")) region = threeIntersectBRegion;
+                                else region = threeIntersectRegion;
+                            } else {
+                                region = threeIntersectRegion;
+                            }
+
+                            // Apply rotation for the specific mask
+                            if (tile.getRoadMask() == 14) rotation = 0;
+                            else if (tile.getRoadMask() == 13) rotation = 270;
+                            else if (tile.getRoadMask() == 11) rotation = 180;
+                            else if (tile.getRoadMask() == 7) rotation = 90;
+                            break;
 
                         // 4-way intersection
-                        case 15: region = fourIntersectRegion; break;
+                        case 15:
+                            if (tile.hasIntersection() && tile.getIntersection().hasLights()) {
+                                String state = tile.getIntersection().getVisualState();
+                                if (state.equals("v")) region = fourIntersectVRegion;
+                                else if (state.equals("h")) region = fourIntersectHRegion;
+                                else region = fourIntersectRegion;
+                            } else {
+                                region = fourIntersectRegion;
+                            }
+                            break;
                     }
 
                     if (region != null) {
@@ -243,7 +292,63 @@ public class WorldRenderer {
             }
         }
 
+        // Draw stop tiles
+        if (stopRegion != null) {
+            for (StopTile stop : world.getStopTiles()) {
+                Tile tile = stop.getTile();
+                if (tile != null) {
+                    float drawX = tile.getGridX() * TILE_SIZE;
+                    float drawY = tile.getGridY() * TILE_SIZE;
+                    batch.draw(stopRegion, drawX, drawY, TILE_SIZE, TILE_SIZE);
+                }
+            }
+        }
+
+        for (Vehicle vehicle : world.getActiveVehicles()) {
+            TextureRegion vRegion = (vehicle instanceof Bus) ? busRegion : truckRegion;
+            if (vRegion != null) {
+                // Calculate width and heigh
+                float vWidth = 22f;
+                float vHeight = 99f * (22f / 42f);
+
+                // Offset coordinates to center the vehicle on its lane's worldX and worldY
+                float drawX = vehicle.getWorldX() - (vWidth / 2f);
+                float drawY = vehicle.getWorldY() - (vHeight / 2f);
+
+                batch.draw(
+                    vRegion,
+                    drawX, drawY,
+                    vWidth / 2f, vHeight / 2f, // Origin X, Origin Y (center for rotation)
+                    vWidth, vHeight,           // Dimensions
+                    1f, 1f,                    // Scale X, Scale Y
+                    vehicle.getRotation()      // Rotation angle
+                );
+            }
+        }
+
         batch.end();
+    }
+
+    public void renderWorld(GameWorld world, float delta, RouteAssignmentMode routeMode) {
+        renderWorld(world, delta);
+
+        if (routeMode != null && !routeMode.getSelectedStops().isEmpty()) {
+            shapeRenderer.setProjectionMatrix(mainCamera.combined);
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+            shapeRenderer.setColor(Color.YELLOW);
+
+            for (StopTile stop : routeMode.getSelectedStops()) {
+                Tile tile = stop.getTile();
+                if (tile == null) continue;
+                float bx = tile.getGridX() * 64f;
+                float by = tile.getGridY() * 64f;
+                shapeRenderer.rect(bx + 1, by + 1, 62, 62);
+                shapeRenderer.rect(bx + 2, by + 2, 60, 60);
+                shapeRenderer.rect(bx + 3, by + 3, 58, 58);
+            }
+
+            shapeRenderer.end();
+        }
     }
 
     private void clampCamera() {
@@ -287,5 +392,7 @@ public class WorldRenderer {
     public void dispose() {
         if (atlas != null)
             atlas.dispose();
+        if (shapeRenderer != null)
+            shapeRenderer.dispose();
     }
 }

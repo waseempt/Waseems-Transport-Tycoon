@@ -22,9 +22,42 @@ public class InputHandler implements InputProcessor {
     // For build mode
     private GameWorld world;
     private boolean isBuildMode = false;
+    private boolean isBuildStopMode = false;
 
     // minimap reference
     private MinimapRenderer minimap;
+
+    // Hoverlistener
+    private HoverListener hoverListener;
+
+    public interface IntersectionClickListener {
+        void onIntersectionClicked(Intersection intersection);
+    }
+
+    private IntersectionClickListener intersectionListener;
+
+    public void setIntersectionListener(IntersectionClickListener listener) {
+        this.intersectionListener = listener;
+    }
+
+    public interface StopClickListener {
+        void onStopClicked(StopTile stop);
+    }
+    private StopClickListener stopClickListener;
+    public void setStopClickListener(StopClickListener l) { this.stopClickListener = l; }
+
+    private boolean isRouteAssignmentMode = false;
+    public void setRouteAssignmentMode(boolean active) { this.isRouteAssignmentMode = active; }
+    public boolean isRouteAssignmentMode() { return isRouteAssignmentMode; }
+
+    private StopTile findStopAt(int gridX, int gridY) {
+        Tile tile = world.getMap().getTile(gridX, gridY);
+        if (tile == null) return null;
+        for (StopTile stop : world.getStopTiles()) {
+            if (stop.getTile() == tile) return stop;
+        }
+        return null;
+    }
 
     public InputHandler(OrthographicCamera camera, GameWorld world, MinimapRenderer minimap) {
         this.camera = camera;
@@ -33,8 +66,20 @@ public class InputHandler implements InputProcessor {
         System.out.println("Control: InputHandler initialized and linked to Camera.");
     }
 
+    public void setBuildStopMode(boolean active) {
+        isBuildStopMode = active;
+        if (active)
+            isBuildMode = false;
+    }
+
+    public boolean getBuildStopMode() {
+        return isBuildStopMode;
+    }
+
     public void setBuildMode(boolean active) {
-        this.isBuildMode = active;
+        isBuildMode = active;
+        if (active)
+            isBuildStopMode = false;
     }
 
     @Override
@@ -90,7 +135,35 @@ public class InputHandler implements InputProcessor {
             camera.update();
             return true;
         }
+        if (!isBuildMode && !isBuildStopMode && !wasDragging && button == Input.Buttons.LEFT) {
+            Vector3 worldCoords = new Vector3(screenX, screenY, 0);
+            camera.unproject(worldCoords);
+            int gridX = (int) (worldCoords.x / 64f);
+            int gridY = (int) (worldCoords.y / 64f);
 
+
+            if (isRouteAssignmentMode) {
+                StopTile clicked = findStopAt(gridX, gridY);
+                System.out.println("Route mode click at grid: " + gridX + ", " + gridY + " | Stop found: " + (clicked != null));
+                if (clicked != null && stopClickListener != null) {
+                    stopClickListener.onStopClicked(clicked);
+                }
+                wasDragging = false;
+                return true;
+            }
+
+
+
+            Tile tile = world.getMap().getTile(gridX, gridY);
+            if (tile != null && tile.hasIntersection()) {
+                if (intersectionListener != null) {
+                    intersectionListener.onIntersectionClicked(tile.getIntersection());
+                }
+                return true;
+            }
+        }
+
+        // Build road if build mode and not dragging
         if (isBuildMode && !wasDragging) {
 
             // convert pixels to Map Math
@@ -112,9 +185,52 @@ public class InputHandler implements InputProcessor {
             }
 
         }
+        // Place stop if in stop build mode and not dragging
+        if (isBuildStopMode && !wasDragging) {
+            Vector3 worldCoords = new Vector3(screenX, screenY, 0);
+            camera.unproject(worldCoords);
+            int gridX = (int)(worldCoords.x / 64f);
+            int gridY = (int)(worldCoords.y / 64f);
+
+            // Build stop if left mouse button
+            if (button == Input.Buttons.LEFT) {
+                world.tryPlaceStop(gridX, gridY);
+            }
+
+            // Remove if right mouse button
+            else if (button == Input.Buttons.RIGHT) {
+                world.removeStop(gridX,gridY);
+            }
+        }
 
         // Reset the drag flag
         wasDragging = false;
+        return true;
+    }
+
+
+    public interface HoverListener {
+        void onZoneHovered(Zone zone, int screenX, int screenY);
+    }
+
+
+    public void setHoverListener(HoverListener listener) {
+        this.hoverListener = listener;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        Vector3 worldCoords = new Vector3(screenX, screenY, 0);
+        camera.unproject(worldCoords);
+
+        int gridX = (int) (worldCoords.x / 64f);
+        int gridY = (int) (worldCoords.y / 64f);
+
+        Zone hoveredZone = world.getZoneAt(gridX, gridY);
+
+        if (hoverListener != null) {
+            hoverListener.onZoneHovered(hoveredZone, screenX, screenY);
+        }
         return true;
     }
 
@@ -132,11 +248,6 @@ public class InputHandler implements InputProcessor {
 
     @Override
     public boolean keyTyped(char character) {
-        return false;
-    }
-
-    @Override
-    public boolean mouseMoved(int screenX, int screenY) {
         return false;
     }
 

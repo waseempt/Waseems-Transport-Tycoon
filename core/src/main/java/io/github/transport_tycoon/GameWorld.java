@@ -28,6 +28,8 @@ public class GameWorld {
 
     private ArrayList<City> cities;
     private ArrayList<Facility> facilities;
+    private ArrayList<Vehicle> unassignedVehicles = new ArrayList<>();
+    private ArrayList<Vehicle> activeVehicles = new ArrayList<>();
 
     //the tycoon name is entered on the SetupScreen
     private String tycoonName;
@@ -68,6 +70,112 @@ public class GameWorld {
         return tycoonName; }
 
 
+
+    // All stop tiles placed on the map
+    private ArrayList<StopTile> stopTiles = new ArrayList<>();
+    // All routes currently defined in the game
+    private ArrayList<Route> routes = new ArrayList<>();
+
+    ArrayList<Tile> newForests = new ArrayList<>();
+
+
+    public ArrayList<StopTile> getStopTiles() { return stopTiles; }
+    public ArrayList<Route> getRoutes() { return routes; }
+
+
+    //place a stop tile at the given grid coordinates.
+    public boolean tryPlaceStop(int gridX, int gridY) {
+        Tile tile = gameMap.getTile(gridX, gridY);
+        if (tile == null) return false;
+
+        // Check the tile is not already a stop
+        for (StopTile stop : stopTiles) {
+            if (stop.getTile() == tile) {
+                System.out.println("Model: Tile already has a stop.");
+                return false;
+            }
+        }
+
+        // Check that tile is not a road
+        if (tile.hasRoad()) {
+            System.out.println("Model: Stop must be placed on empty tile.");
+            return false;
+        }
+
+        // Must be adjacent to a road
+        if (!isAdjacentToRoad(gridX, gridY)) {
+            System.out.println("Model: Stop must be adjacent to a road.");
+            return false;
+        }
+
+        // Must be adjacent to a zone
+        Zone adjacentZone = findAdjacentZone(gridX, gridY);
+        if (adjacentZone == null) {
+            System.out.println("Model: Stop must be adjacent to a zone.");
+            return false;
+        }
+
+        // Check funds
+        if (playerBalance < 60) {
+            System.out.println("Model: Not enough money to build a stop.");
+            return false;
+        }
+
+        // Deduct cost
+        playerBalance -= 60;
+        if (balanceListener != null) balanceListener.onBalanceChanged(-60);
+
+        // Place the stop
+        StopTile stop = new StopTile(tile, adjacentZone);
+        stopTiles.add(stop);
+        System.out.println("Model: Stop placed at (" + gridX + ", " + gridY + ") linked to " + adjacentZone.getClass().getSimpleName());
+        return true;
+    }
+
+    public boolean removeStop(int gridX, int gridY){
+        for (StopTile stop : stopTiles) {
+            Tile tile = stop.getTile();
+            if (tile.getGridX() == gridX && tile.getGridY() == gridY){
+                stopTiles.remove(stop);
+
+                // partial refund
+                playerBalance += 30;
+                if (balanceListener != null) balanceListener.onBalanceChanged(30);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Checks if any of the 4 neighboring tiles has a road.
+    private boolean isAdjacentToRoad(int x, int y) {
+        Tile north = gameMap.getTile(x, y + 1);
+        Tile south = gameMap.getTile(x, y - 1);
+        Tile east  = gameMap.getTile(x + 1, y);
+        Tile west  = gameMap.getTile(x - 1, y);
+
+        return (north != null && north.hasRoad()) ||
+            (south != null && south.hasRoad()) ||
+            (east  != null && east.hasRoad())  ||
+            (west  != null && west.hasRoad());
+    }
+
+    // Searches the 4 neighboring tiles for one that belongs to a city or facility zone.
+    private Zone findAdjacentZone(int x, int y) {
+        int[][] neighbors = {{x+1,y},{x-1,y},{x,y+1},{x,y-1}};
+        for (int[] n : neighbors) {
+            Tile neighbor = gameMap.getTile(n[0], n[1]);
+            if (neighbor == null) continue;
+            for (City city : cities) {
+                if (city.getTiles().contains(neighbor)) return city;
+            }
+            for (Facility facility : facilities) {
+                if (facility.getTiles().contains(neighbor)) return facility;
+            }
+        }
+        return null;
+    }
+
     private void defineZones() {
 
         City budapest = new City("Budapest");
@@ -98,6 +206,7 @@ public class GameWorld {
             budapestWest2.setZoneConnection(8, budapest);
         }
         cities.add(budapest);
+        buildCityInternalRoads(budapest);
 
         City debrecen = new City("Debrecen");
         assignZoneTiles(debrecen, 8, 24, 4, 4);   // 4x4 city
@@ -112,6 +221,7 @@ public class GameWorld {
             debrecenEast2.setZoneConnection(2, debrecen);
         }
         cities.add(debrecen);
+        buildCityInternalRoads(debrecen);
 
         City szentendre = new City("Szentendre");
         assignZoneTiles(szentendre, 38, 12, 3, 3); // 3x3 city
@@ -126,6 +236,7 @@ public class GameWorld {
             szentendreSouth.setZoneConnection(4, szentendre);
         }
         cities.add(szentendre);
+        buildCityInternalRoads(szentendre);
 
         City pecs = new City("Pecs");
         assignZoneTiles(pecs, 42, 36, 3, 3); // 3x3 city
@@ -140,9 +251,12 @@ public class GameWorld {
             pecsSouth.setZoneConnection(4, pecs);
         }
         cities.add(pecs);
+        buildCityInternalRoads(pecs);
 
         // Instantiate 5 Facilities
         Facility coalMine = new Facility("Coal Mine");
+        coalMine.setProduces(GoodType.COAL);
+        coalMine.setConsumes(null);
         assignZoneTiles(coalMine, 5, 42, 3, 3);    // 3x3 Coal Mine
 
         Tile coalMineSouth = gameMap.getTile(5 + 2, 42 + 0);
@@ -152,6 +266,8 @@ public class GameWorld {
         facilities.add(coalMine);
 
         Facility ironMine = new Facility("Iron Mine");
+        ironMine.setProduces(GoodType.IRON);
+        ironMine.setConsumes(null);
         assignZoneTiles(ironMine, 38, 26, 3, 3);   // 3x3 Iron Mine
 
         Tile ironMineSouth = gameMap.getTile(38 + 2, 26 + 0);
@@ -161,6 +277,8 @@ public class GameWorld {
         facilities.add(ironMine);
 
         Facility steelMill = new Facility("Steel Mill");
+        steelMill.setProduces(GoodType.STEEL);
+        steelMill.setConsumes(GoodType.IRON);
         assignZoneTiles(steelMill, 20, 18, 4, 4);  // 4x4 Steel Mill
 
         Tile steelMillWest = gameMap.getTile(20, 18);
@@ -170,6 +288,8 @@ public class GameWorld {
         facilities.add(steelMill);
 
         Facility lumberCamp = new Facility("Lumber Camp");
+        lumberCamp.setProduces(GoodType.WOOD);
+        lumberCamp.setConsumes(null);
         assignZoneTiles(lumberCamp, 12, 5, 4, 4);  // 4x4 Lumber Camp
 
         Tile lumberCampSouth = gameMap.getTile(12, 5);
@@ -179,6 +299,8 @@ public class GameWorld {
         facilities.add(lumberCamp);
 
         Facility ironMine2 = new Facility("Iron Mine");
+        ironMine2.setProduces(GoodType.IRON);
+        ironMine2.setConsumes(null);
         assignZoneTiles(ironMine2, 28, 8, 3, 3);   // 3x3 Iron Mine
 
         Tile ironMine2South = gameMap.getTile(28 + 2, 8 + 0);
@@ -217,23 +339,151 @@ public class GameWorld {
             }
         }
     }
-    // with time is gonna be more with this part...
+
+    // Finds the zone a tile with (gridx, gridy) belongs to
+    public Zone getZoneAt(int gridX, int gridY) {
+        Tile tile = gameMap.getTile(gridX, gridY);
+        if (tile == null) return null;
+
+        for (City city : cities) {
+            if (city.getTiles().contains(tile)) return city;
+        }
+
+        for (Facility facility : facilities) {
+            if (facility.getTiles().contains(tile)) return facility;
+        }
+
+        return null;
+    }
+
+    private void setInternalRoad(int x, int y) {
+        Tile tile = gameMap.getTile(x, y);
+        if (tile != null) {
+            tile.setHasRoad(true);
+            tile.setTreeCount(0);
+        }
+    }
+
+    private void buildCityInternalRoads(City city) {
+        int startX = city.getTiles().get(0).getGridX();
+        int startY = city.getTiles().get(0).getGridY();
+        int width = city.getGridWidth();
+
+        if (width == 3) {
+            setInternalRoad(startX, startY + 1);
+            setInternalRoad(startX + 1, startY + 1);
+            setInternalRoad(startX + 2, startY + 1);
+            setInternalRoad(startX + 2, startY);
+        } else if (width == 4) {
+            setInternalRoad(startX, startY); setInternalRoad(startX + 1, startY);
+            setInternalRoad(startX + 2, startY); setInternalRoad(startX + 3, startY);
+            setInternalRoad(startX, startY + 1); setInternalRoad(startX, startY + 2);
+            setInternalRoad(startX + 1, startY + 2); setInternalRoad(startX + 2, startY + 2);
+            setInternalRoad(startX + 2, startY + 3); setInternalRoad(startX + 3, startY + 3);
+        } else if (width == 5) {
+            for (int x = 0; x < 5; x++) {
+                setInternalRoad(startX + x, startY + 1);
+                setInternalRoad(startX + x, startY + 3);
+            }
+            for (int y = 0; y < 5; y++) {
+                setInternalRoad(startX + 2, startY + y);
+            }
+        }
+
+        // Update neighbors so they properly connect to external roads
+        for (Tile tile : city.getTiles()) {
+            if (tile.hasRoad()) {
+                updateTileAndNeighbors(tile.getGridX(), tile.getGridY());
+            }
+        }
+    }
+
+    public void calculateDeliveryProfit(Zone origin, Zone destination, GoodType cargo, int amount) {
+        if (origin == null || destination == null || amount <= 0) {
+            return;
+        }
+
+        Tile startTile = origin.getAnchorTile();
+        Tile endTile = destination.getAnchorTile();
+
+        if (startTile == null || endTile == null) {
+            return;
+        }
+
+        // Calculate grid distance (Manhattan distance)
+        int distance = Math.abs(startTile.getGridX() - endTile.getGridX()) + Math.abs(startTile.getGridY() - endTile.getGridY());
+
+        // Apply specific economic multipliers
+        float multiplier = 1.0f;
+        switch (cargo) {
+            case PASSENGERS:
+                multiplier = 1.5f;
+                break;
+            case WOOD:
+                multiplier = 2.0f;
+                break;
+            case COAL:
+                multiplier = 2.5f;
+                break;
+            case IRON:
+                multiplier = 3.0f;
+                break;
+            case STEEL:
+                multiplier = 5.0f;
+                break;
+        }
+
+        // Calculate true profit based on distance, cargo value, and quantity
+        float profit = distance * multiplier * amount;
+
+        playerBalance += profit;
+
+        if (balanceListener != null) {
+            balanceListener.onBalanceChanged(profit);
+        }
+
+        System.out.println("Model: Delivery profit $" + profit + " for " + amount + " " + cargo);
+    }
+
+
     public void updateSimulation(float delta) {
         float scaledDelta = delta * timeScale;
         elapsedGameTime += scaledDelta;
         System.out.println("speed: " + timeScale + " | scaledDelta: " + scaledDelta);
 
-        forestGrowthTimer += scaledDelta;
+        // Process input and output of Facilities
+        for (Facility facility : facilities) {
+            facility.processGoods(scaledDelta);
+        }
 
+        // Process input and output of Cities
+        for (City city : cities) {
+            city.updateDemands(scaledDelta);
+        }
+
+        // Update all traffic lights
+        for (int x = 0; x < 50; x++) {
+            for (int y = 0; y < 50; y++) {
+                Tile tile = gameMap.getTile(x, y);
+                if (tile != null && tile.hasIntersection()) {
+                    tile.getIntersection().updateLights(scaledDelta);
+                }
+            }
+        }
+
+        // Forest Growth
+        forestGrowthTimer += scaledDelta;
         if (forestGrowthTimer >= FOREST_GROWTH_INTERVAL) {
             forestGrowthTimer = 0f;
             growForests();
         }
+
+        for (Vehicle vehicle : activeVehicles) {
+            vehicle.update(scaledDelta);
+        }
     }
     // grows all forest tiles by +1 (max 4)...that it... and now going around
     private void growForests() {
-
-        ArrayList<Tile> newForests = new ArrayList<>();
 
         for (int x = 0; x < 50; x++) {
             for (int y = 0; y < 50; y++) {
@@ -374,6 +624,13 @@ public class GameWorld {
         if (west != null && (west.hasRoad() || west.getZoneConnectionMask() == 2)) mask += 8;
 
         tile.setRoadMask(mask);
+
+        // Update whether this tile is an intersection tile or not
+        if (mask == 7 || mask == 11 || mask == 13 || mask == 14 || mask == 15) {
+            tile.setIntersection(new Intersection(mask));
+        } else {
+            tile.setIntersection(null);
+        }
     }
 
     // updates a tile and it's neighbors, called on build or remove
@@ -415,6 +672,18 @@ public class GameWorld {
         return playerBalance;
     }
 
+    public ArrayList<Vehicle> getActiveVehicles() { return activeVehicles; }
+
+    public ArrayList<Vehicle> getUnassignedVehicles() {
+        return unassignedVehicles;
+    }
+
+    // Adds a newly purchased vehicle to the unassigned vehicles list.
+    public void addVehicle(Vehicle vehicle) {
+        unassignedVehicles.add(vehicle);
+        System.out.println("Model of Vehicle added - " + vehicle.getName() + " , Total unassigned: " + unassignedVehicles.size());
+    }
+
     public void setPlayerBalance(float b) {
         playerBalance = b;
     }
@@ -427,5 +696,32 @@ public class GameWorld {
             return true;
 
         return false;
+    }
+
+    public Route createRoute() {
+        Route route = new Route();
+        routes.add(route);
+        System.out.println("Model: Route registered. Total routes: " + routes.size());
+        return route;
+    }
+
+    public void confirmRouteAssignment(RouteAssignmentMode assignment) {
+        Vehicle vehicle = assignment.getVehicle();
+
+        Route route = new Route();
+        for (StopTile stop : assignment.getSelectedStops()) {
+            route.addStop(stop);
+        }
+        routes.add(route);
+
+        vehicle.assignRoute(route);
+        vehicle.setWorld(this);
+
+        StopTile firstStop = route.getStops().get(0);
+        Tile spawnTile = firstStop.getTile();
+        vehicle.setPosition(spawnTile.getGridX() * 64f + 32f, spawnTile.getGridY() * 64f + 32f);
+
+        unassignedVehicles.remove(vehicle);
+        activeVehicles.add(vehicle);
     }
 }

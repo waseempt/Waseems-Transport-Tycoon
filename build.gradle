@@ -104,7 +104,17 @@ project(":core") {
           '**/*Renderer*',
           '**/*HUD*',
           '**/*ControlPanel*',
-          '**/*TransportTycoon*'
+          '**/*TransportTycoon*',
+
+          // Missing UI files
+          '**/*PauseMenu*',
+          '**/*PurchaseVehicle*',
+          '**/*VehicleWindow*',
+          '**/*TrafficLightUI*',
+          '**/*RouteAssignmentOverlay*',
+
+          // The Input Manager relies on Camera and Screen coordinates
+          '**/*InputHandler*'
         ])
       }))
     }

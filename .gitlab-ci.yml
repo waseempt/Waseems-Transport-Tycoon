@@ -57,5 +57,5 @@ deploy_job:
       - lwjgl3/build/libs/*.jar
   only:
     - dev
-    - main
+    - master
 

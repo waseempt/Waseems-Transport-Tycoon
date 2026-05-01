@@ -93,16 +93,17 @@ public class VehicleWindow {
         // Column headers
         panel.add(new Label("Name", skin)).expandX().left();
         panel.add(new Label("Type / Cargo", skin)).expandX().center();
+        panel.add(new Label("Status", skin)).expandX().center();
         panel.add(new Label("Action", skin)).expandX().right();
         panel.row().padBottom(5);
 
-        // List all unassigned vehicles
-        for (Vehicle vehicle : world.getUnassignedVehicles()) {
+        // List all assigned vehicles
+        for (Vehicle vehicle : world.getActiveVehicles()) {
             Label nameLabel = new Label(vehicle.getName(), skin);
             String typeInfo = vehicle.getClass().getSimpleName() + " / " + vehicle.getCargoType();
             Label typeLabel = new Label(typeInfo, skin);
+            Label statusLabel = new Label("Active", skin);
 
-            // Assign Route button — wired in a future commit
             TextButton assignButton = new TextButton("Assign Route", skin);
             assignButton.addListener(new ClickListener() {
                 @Override
@@ -116,12 +117,38 @@ public class VehicleWindow {
 
             panel.add(nameLabel).expandX().left();
             panel.add(typeLabel).expandX().center();
+            panel.add(statusLabel).expand().center();
+            panel.add(assignButton).width(120).height(35).right();
+            panel.row().padBottom(5);
+        }
+
+        // List all unassigned vehicles
+        for (Vehicle vehicle : world.getUnassignedVehicles()) {
+            Label nameLabel = new Label(vehicle.getName(), skin);
+            String typeInfo = vehicle.getClass().getSimpleName() + " / " + vehicle.getCargoType();
+            Label typeLabel = new Label(typeInfo, skin);
+            Label statusLabel = new Label("Inactive", skin);
+
+            TextButton assignButton = new TextButton("Assign Route", skin);
+            assignButton.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    if (assignRouteListener != null) {
+                        hide();
+                        assignRouteListener.onAssignRoute(vehicle);
+                    }
+                }
+            });
+
+            panel.add(nameLabel).expandX().left();
+            panel.add(typeLabel).expandX().center();
+            panel.add(statusLabel).expand().center();
             panel.add(assignButton).width(120).height(35).right();
             panel.row().padBottom(5);
         }
 
         // Show message if no vehicles owned yet
-        if (world.getUnassignedVehicles().isEmpty()) {
+        if (world.getUnassignedVehicles().isEmpty() && world.getActiveVehicles().isEmpty()) {
             panel.add(new Label("No vehicles owned yet.", skin)).colspan(3).center().padBottom(10).row();
         }
 

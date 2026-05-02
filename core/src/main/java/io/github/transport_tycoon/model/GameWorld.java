@@ -716,14 +716,20 @@ public class GameWorld {
         }
         routes.add(route);
 
-        vehicle.assignRoute(route);
-        vehicle.setWorld(this);
+        if (activeVehicles.contains(vehicle)) {
+            routes.remove(vehicle.getAssignedRoute());
+            vehicle.assignRoute(route);
+        }
+        else {
+            vehicle.assignRoute(route);
+            vehicle.setWorld(this);
 
-        StopTile firstStop = route.getStops().get(0);
-        Tile spawnTile = firstStop.getTile();
-        vehicle.setPosition(spawnTile.getGridX() * 64f + 32f, spawnTile.getGridY() * 64f + 32f);
+            StopTile firstStop = route.getStops().get(0);
+            Tile spawnTile = firstStop.getTile();
+            vehicle.setPosition(spawnTile.getGridX() * 64f + 32f, spawnTile.getGridY() * 64f + 32f);
 
-        unassignedVehicles.remove(vehicle);
-        activeVehicles.add(vehicle);
+            unassignedVehicles.remove(vehicle);
+            activeVehicles.add(vehicle);
+        }
     }
 }

@@ -35,6 +35,7 @@ public abstract class Vehicle {
     private float maintenanceCost = 10f;
     private Queue<Tile> currentPath = new LinkedList<>();
     private float rotation = 0f;
+    private float intendedRotation = 0f;
     private Tile currentTile = null;
     private GameWorld world;
 
@@ -246,6 +247,8 @@ public abstract class Vehicle {
         else if (moveDirY > 0) newRotation = 180f;
         else if (moveDirY < 0) newRotation = 0f;
 
+        this.intendedRotation = newRotation;
+
         boolean isDestination = (nextTile == targetStop.getTile());
 
         if (!isDestination) {
@@ -272,7 +275,7 @@ public abstract class Vehicle {
         }
 
         if (isTileOccupied(nextTile)) return;
-        if (isRedLight(nextTile)) return;
+        if (isRedLight(nextTile,newRotation)) return;
 
         currentPath.poll();
         currentTile = nextTile;
@@ -304,19 +307,50 @@ public abstract class Vehicle {
 
     private boolean isTileOccupied(Tile target) {
         for (Vehicle v : world.getActiveVehicles()) {
-            if (v != this && v.getCurrentTile() == target) {
-                // If the vehicles are facing exactly opposite directions, they are in different lanes
-                float diff = Math.abs(v.getRotation() - this.rotation);
-                if (diff == 180f) {
-                    continue; // Safe to share the tile
+            if (v != this && v.getCurrentTile() != null) {
+                Tile vTile = v.getCurrentTile();
+
+                // Target tile directly occupied by another vehicle
+                if (vTile == target) {
+                    float diff = Math.abs(v.intendedRotation - this.intendedRotation);
+
+                    // 180 degrees means they are traveling in opposite lanes (or swapping tiles)
+                    if (diff == 180f) {
+                        continue;
+                    }
+                    return true; // Blocked (Same direction or intersecting paths)
                 }
-                return true; // Blocked (Same direction or intersecting)
+
+                // Vehicle parked at a stop blocking the attached road tile
+                if (!vTile.hasRoad()) {
+                    // Calculate which exact road tile the parked vehicle intends to pull out onto
+                    int dx = 0, dy = 0;
+                    if (v.intendedRotation == 0f) dy = -1; // North
+                    else if (v.intendedRotation == 180f) dy = 1; // South
+                    else if (v.intendedRotation == 90f) dx = 1; // East
+                    else if (v.intendedRotation == 270f) dx = -1; // West
+
+                    int expectedRoadX = vTile.getGridX() + dx;
+                    int expectedRoadY = vTile.getGridY() + dy;
+
+                    // If we are trying to move into the exact road tile the bus is about to use
+                    if (target.getGridX() == expectedRoadX && target.getGridY() == expectedRoadY && target.hasRoad()) {
+
+                        // Allow them to swap if one is entering and one is leaving
+                        float diff = Math.abs(v.intendedRotation - this.intendedRotation);
+                        if (diff == 180f) {
+                            continue;
+                        }
+
+                        return true;
+                    }
+                }
             }
         }
         return false;
     }
 
-    private boolean isRedLight(Tile target) {
+    private boolean isRedLight(Tile target, float intendedRotation) {
         if (!target.hasIntersection() || !target.getIntersection().hasLights()) return false;
 
         String state = target.getIntersection().getVisualState();
@@ -329,37 +363,35 @@ public abstract class Vehicle {
         // 4-Way Intersections
         if (mask == 15) {
             // Vertical is green. Vehicles moving East (90) or West (270) must stop.
-            if (state.equals("v") && (rotation == 90f || rotation == 270f)) return true;
+            if (state.equals("v") && (intendedRotation == 90f || intendedRotation == 270f)) return true;
             // Horizontal is green. Vehicles moving North (180) or South (0) must stop.
-            if (state.equals("h") && (rotation == 0f || rotation == 180f)) return true;
+            if (state.equals("h") && (intendedRotation == 0f || intendedRotation == 180f)) return true;
 
             return false; // Light is green for our direction
         }
 
         // T-Junctions (3-Way Intersections)
-        // We need to match the vehicle's direction to how the intersection is drawn on screen.
-        // "b" is the bottom stem of the T, "l" is the left arm, and "r" is the right arm.
         String ourApproach = "";
 
         if (mask == 14) { // The 'T' is standing upright (Stem points South)
-            if (rotation == 180f) ourApproach = "b";      // Driving up from the bottom stem
-            else if (rotation == 90f) ourApproach = "l";  // Driving in from the left arm
-            else if (rotation == 270f) ourApproach = "r"; // Driving in from the right arm
+            if (intendedRotation == 180f) ourApproach = "b";
+            else if (intendedRotation == 90f) ourApproach = "l";
+            else if (intendedRotation == 270f) ourApproach = "r";
 
         } else if (mask == 7) { // The 'T' is laying on its right side (Stem points East)
-            if (rotation == 270f) ourApproach = "b";      // Driving in from the stem
-            else if (rotation == 180f) ourApproach = "l"; // Driving up from the bottom
-            else if (rotation == 0f) ourApproach = "r";   // Driving down from the top
+            if (intendedRotation == 270f) ourApproach = "b";
+            else if (intendedRotation == 180f) ourApproach = "l";
+            else if (intendedRotation == 0f) ourApproach = "r";
 
         } else if (mask == 11) { // The 'T' is completely upside down (Stem points North)
-            if (rotation == 0f) ourApproach = "b";        // Driving down from the top stem
-            else if (rotation == 270f) ourApproach = "l"; // Driving in from the right arm
-            else if (rotation == 90f) ourApproach = "r";  // Driving in from the left arm
+            if (intendedRotation == 0f) ourApproach = "b";
+            else if (intendedRotation == 270f) ourApproach = "l";
+            else if (intendedRotation == 90f) ourApproach = "r";
 
         } else if (mask == 13) { // The 'T' is laying on its left side (Stem points West)
-            if (rotation == 90f) ourApproach = "b";       // Driving in from the stem
-            else if (rotation == 0f) ourApproach = "l";   // Driving down from the top
-            else if (rotation == 180f) ourApproach = "r"; // Driving up from the bottom
+            if (intendedRotation == 90f) ourApproach = "b";
+            else if (intendedRotation == 0f) ourApproach = "l";
+            else if (intendedRotation == 180f) ourApproach = "r";
         }
 
         // Does our approach road currently have the green light

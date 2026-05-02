@@ -303,14 +303,28 @@ public abstract class Vehicle {
     }
 
     private boolean isTileOccupied(Tile target) {
+        // Determine this vehicle's intended rotation before the turn actually starts
+        float moveDirX = target.getGridX() - currentTile.getGridX();
+        float moveDirY = target.getGridY() - currentTile.getGridY();
+
+        float intendedRotation = rotation;
+        if (moveDirX > 0) intendedRotation = 90f;
+        else if (moveDirX < 0) intendedRotation = 270f;
+        else if (moveDirY > 0) intendedRotation = 180f;
+        else if (moveDirY < 0) intendedRotation = 0f;
+
         for (Vehicle v : world.getActiveVehicles()) {
             if (v != this && v.getCurrentTile() == target) {
-                // If the vehicles are facing exactly opposite directions, they are in different lanes
-                float diff = Math.abs(v.getRotation() - this.rotation);
+
+                // Compare against the target vehicle's destination rotation
+                float diff = Math.abs(v.targetRotation - intendedRotation);
+
+                // 180 degrees means they are traveling in opposite directions (different lanes)
                 if (diff == 180f) {
-                    continue; // Safe to share the tile
+                    continue;
                 }
-                return true; // Blocked (Same direction or intersecting)
+
+                return true; // Blocked (Same direction or intersecting paths)
             }
         }
         return false;

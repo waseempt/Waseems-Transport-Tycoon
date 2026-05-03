@@ -547,7 +547,7 @@ public class GameWorld {
 
     private void addIfValid(int x, int y, ArrayList<Tile> list) {
         Tile tile = gameMap.getTile(x, y);
-        if (tile != null && !tile.hasRoad() && !hasStop(x,y)) {
+        if (tile != null && !tile.hasRoad() && !hasStop(x,y) ) {
             list.add(tile);
         }
     }

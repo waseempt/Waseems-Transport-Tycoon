@@ -117,15 +117,19 @@ public class GameWorld {
             return false;
         }
 
+        float totalCost = 60 + (tile.getTreeCount() * TREE_CLEAR_COST);
+
         // Check funds
-        if (playerBalance < 60) {
+        if (playerBalance < totalCost) {
             System.out.println("Model: Not enough money to build a stop.");
             return false;
         }
 
         // Deduct cost
-        playerBalance -= 60;
-        if (balanceListener != null) balanceListener.onBalanceChanged(-60);
+        playerBalance -= totalCost;
+        if (balanceListener != null) balanceListener.onBalanceChanged(-totalCost);
+
+        tile.setTreeCount(0);
 
         // Place the stop
         StopTile stop = new StopTile(tile, adjacentZone);

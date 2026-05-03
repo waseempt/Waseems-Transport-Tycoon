@@ -84,6 +84,14 @@ public class GameWorld {
     public ArrayList<StopTile> getStopTiles() { return stopTiles; }
     public ArrayList<Route> getRoutes() { return routes; }
 
+    public boolean hasStop(int gridX, int gridY){
+        for (StopTile stop : stopTiles){
+            if (stop.getTile().getGridX() == gridX && stop.getTile().getGridY() == gridY)
+                return true;
+        }
+        return false;
+    }
+
 
     //place a stop tile at the given grid coordinates.
     public boolean tryPlaceStop(int gridX, int gridY) {
@@ -539,7 +547,7 @@ public class GameWorld {
 
     private void addIfValid(int x, int y, ArrayList<Tile> list) {
         Tile tile = gameMap.getTile(x, y);
-        if (tile != null) {
+        if (tile != null && !tile.hasRoad() && !hasStop(x,y) ) {
             list.add(tile);
         }
     }

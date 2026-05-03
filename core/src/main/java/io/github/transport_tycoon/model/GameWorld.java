@@ -596,6 +596,11 @@ public class GameWorld {
 
         // check that tile is actually a road tile
         if (tile != null && tile.hasRoad()) {
+            for (int i = -1; i < 2; i++){
+                for (int j = -1; j < 2; j++){
+                    removeStopWithoutRefund(x+i,y+j);
+                }
+            }
 
             removeStopWithoutRefund(x, y);
 

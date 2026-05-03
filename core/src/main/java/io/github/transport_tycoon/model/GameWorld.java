@@ -149,6 +149,18 @@ public class GameWorld {
         return false;
     }
 
+    private boolean removeStopWithoutRefund(int gridX, int gridY) {
+        for (int i = 0; i < stopTiles.size(); i++) {
+            StopTile stop = stopTiles.get(i);
+            Tile tile = stop.getTile();
+            if (tile.getGridX() == gridX && tile.getGridY() == gridY) {
+                stopTiles.remove(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
     // Checks if any of the 4 neighboring tiles has a road.
     private boolean isAdjacentToRoad(int x, int y) {
         Tile north = gameMap.getTile(x, y + 1);
@@ -580,6 +592,8 @@ public class GameWorld {
 
         // check that tile is actually a road tile
         if (tile != null && tile.hasRoad()) {
+
+            removeStopWithoutRefund(x, y);
 
             // Remove the road
             tile.setHasRoad(false);

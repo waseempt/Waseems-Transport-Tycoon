@@ -106,6 +106,21 @@ public class GameWorld {
             }
         }
 
+        int minDistance = 3; // Minimum grid squares required between stops
+        for (StopTile existingStop : stopTiles) {
+            // Calculate Manhattan distance (grid distance)
+            int dx = Math.abs(existingStop.getTile().getGridX() - gridX);
+            int dy = Math.abs(existingStop.getTile().getGridY() - gridY);
+
+            // If the click is within the 3x3 square of an existing stop, block placement
+            if (dx < minDistance && dy < minDistance) {
+                System.out.println("Model: Placement failed. Too close to an existing stop at ("
+                    + existingStop.getTile().getGridX() + ", "
+                    + existingStop.getTile().getGridY() + ")");
+                return false;
+            }
+        }
+
         // Check that tile is not a road
         if (tile.hasRoad()) {
             System.out.println("Model: Stop must be placed on empty tile.");
@@ -146,19 +161,54 @@ public class GameWorld {
         return true;
     }
 
-    public boolean removeStop(int gridX, int gridY){
+    public boolean removeStop(int gridX, int gridY) {
+        // 1. Find the stop at the given coordinates
+        StopTile stopToTarget = null;
         for (StopTile stop : stopTiles) {
-            Tile tile = stop.getTile();
-            if (tile.getGridX() == gridX && tile.getGridY() == gridY){
-                stopTiles.remove(stop);
-
-                // partial refund
-                playerBalance += 30;
-                if (balanceListener != null) balanceListener.onBalanceChanged(30);
-                return true;
+            if (stop.getTile().getGridX() == gridX && stop.getTile().getGridY() == gridY) {
+                stopToTarget = stop;
+                break;
             }
         }
-        return false;
+
+        if (stopToTarget == null) {
+            System.out.println("No stop found at (" + gridX + ", " + gridY + ")");
+            return false;
+        }
+
+        // 2. Identify all vehicles using this stop
+        ArrayList<Vehicle> vehiclesToDestroy = new ArrayList<>();
+        for (Vehicle vehicle : activeVehicles) {
+            if (vehicle.getAssignedRoute() != null &&
+                vehicle.getAssignedRoute().getStops().contains(stopToTarget)) {
+                vehiclesToDestroy.add(vehicle);
+            }
+        }
+
+        boolean vehicleDestroyed = !vehiclesToDestroy.isEmpty();
+
+        // 3. Destroy vehicles and their routes (Safely)
+        for (Vehicle v : vehiclesToDestroy) {
+            routes.remove(v.getAssignedRoute()); // Clean up the route list
+            activeVehicles.remove(v);            // Remove from active simulation
+            System.out.println("Vehicle " + v.getName() + " destroyed due to stop removal.");
+        }
+
+        // 4. Remove the stop itself
+        stopTiles.remove(stopToTarget);
+
+        // 5. Refund logic: Only if NO vehicle was destroyed
+        if (!vehicleDestroyed) {
+            playerBalance += 30;
+            if (balanceListener != null) {
+                balanceListener.onBalanceChanged(30);
+            }
+            System.out.println("Stop removed at (" + gridX + ", " + gridY + ") - Refunded $30.");
+        } else {
+            System.out.println("Stop removed at (" + gridX + ", " + gridY + ") - NO REFUND due to vehicle destruction.");
+        }
+
+        return true;
     }
 
     private boolean removeStopWithoutRefund(int gridX, int gridY) {
@@ -604,6 +654,17 @@ public class GameWorld {
 
         // check that tile is actually a road tile
         if (tile != null && tile.hasRoad()) {
+            // Block removal if any active vehicle is on this tile
+            for (Vehicle vehicle : activeVehicles) {
+                int vGridX = (int)(vehicle.getWorldX() / 64f);
+                int vGridY = (int)(vehicle.getWorldY() / 64f);
+                System.out.println("Vehicle " + vehicle.getName() + " is at grid: " + vGridX + ", " + vGridY + " | Removing: " + x + ", " + y);
+                if (vGridX == x && vGridY == y) {
+                    System.out.println("Cannot remove road: vehicle " + vehicle.getName() + " is on this tile.");
+                    return;
+                }
+            }
+
             for (int i = -1; i < 2; i++){
                 for (int j = -1; j < 2; j++){
                     removeStopWithoutRefund(x+i,y+j);

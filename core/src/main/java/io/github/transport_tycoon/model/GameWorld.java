@@ -146,19 +146,54 @@ public class GameWorld {
         return true;
     }
 
-    public boolean removeStop(int gridX, int gridY){
+    public boolean removeStop(int gridX, int gridY) {
+        // 1. Find the stop at the given coordinates
+        StopTile stopToTarget = null;
         for (StopTile stop : stopTiles) {
-            Tile tile = stop.getTile();
-            if (tile.getGridX() == gridX && tile.getGridY() == gridY){
-                stopTiles.remove(stop);
-
-                // partial refund
-                playerBalance += 30;
-                if (balanceListener != null) balanceListener.onBalanceChanged(30);
-                return true;
+            if (stop.getTile().getGridX() == gridX && stop.getTile().getGridY() == gridY) {
+                stopToTarget = stop;
+                break;
             }
         }
-        return false;
+
+        if (stopToTarget == null) {
+            System.out.println("No stop found at (" + gridX + ", " + gridY + ")");
+            return false;
+        }
+
+        // 2. Identify all vehicles using this stop
+        ArrayList<Vehicle> vehiclesToDestroy = new ArrayList<>();
+        for (Vehicle vehicle : activeVehicles) {
+            if (vehicle.getAssignedRoute() != null &&
+                vehicle.getAssignedRoute().getStops().contains(stopToTarget)) {
+                vehiclesToDestroy.add(vehicle);
+            }
+        }
+
+        boolean vehicleDestroyed = !vehiclesToDestroy.isEmpty();
+
+        // 3. Destroy vehicles and their routes (Safely)
+        for (Vehicle v : vehiclesToDestroy) {
+            routes.remove(v.getAssignedRoute()); // Clean up the route list
+            activeVehicles.remove(v);            // Remove from active simulation
+            System.out.println("Vehicle " + v.getName() + " destroyed due to stop removal.");
+        }
+
+        // 4. Remove the stop itself
+        stopTiles.remove(stopToTarget);
+
+        // 5. Refund logic: Only if NO vehicle was destroyed
+        if (!vehicleDestroyed) {
+            playerBalance += 30;
+            if (balanceListener != null) {
+                balanceListener.onBalanceChanged(30);
+            }
+            System.out.println("Stop removed at (" + gridX + ", " + gridY + ") - Refunded $30.");
+        } else {
+            System.out.println("Stop removed at (" + gridX + ", " + gridY + ") - NO REFUND due to vehicle destruction.");
+        }
+
+        return true;
     }
 
     private boolean removeStopWithoutRefund(int gridX, int gridY) {

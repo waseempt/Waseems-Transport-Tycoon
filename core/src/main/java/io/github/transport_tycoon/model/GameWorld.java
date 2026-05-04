@@ -106,6 +106,21 @@ public class GameWorld {
             }
         }
 
+        int minDistance = 3; // Minimum grid squares required between stops
+        for (StopTile existingStop : stopTiles) {
+            // Calculate Manhattan distance (grid distance)
+            int dx = Math.abs(existingStop.getTile().getGridX() - gridX);
+            int dy = Math.abs(existingStop.getTile().getGridY() - gridY);
+
+            // If the click is within the 3x3 square of an existing stop, block placement
+            if (dx < minDistance && dy < minDistance) {
+                System.out.println("Model: Placement failed. Too close to an existing stop at ("
+                    + existingStop.getTile().getGridX() + ", "
+                    + existingStop.getTile().getGridY() + ")");
+                return false;
+            }
+        }
+
         // Check that tile is not a road
         if (tile.hasRoad()) {
             System.out.println("Model: Stop must be placed on empty tile.");

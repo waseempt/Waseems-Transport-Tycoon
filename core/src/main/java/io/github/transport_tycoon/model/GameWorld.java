@@ -604,6 +604,17 @@ public class GameWorld {
 
         // check that tile is actually a road tile
         if (tile != null && tile.hasRoad()) {
+            // Block removal if any active vehicle is on this tile
+            for (Vehicle vehicle : activeVehicles) {
+                int vGridX = (int)(vehicle.getWorldX() / 64f);
+                int vGridY = (int)(vehicle.getWorldY() / 64f);
+                System.out.println("Vehicle " + vehicle.getName() + " is at grid: " + vGridX + ", " + vGridY + " | Removing: " + x + ", " + y);
+                if (vGridX == x && vGridY == y) {
+                    System.out.println("Cannot remove road: vehicle " + vehicle.getName() + " is on this tile.");
+                    return;
+                }
+            }
+
             for (int i = -1; i < 2; i++){
                 for (int j = -1; j < 2; j++){
                     removeStopWithoutRefund(x+i,y+j);

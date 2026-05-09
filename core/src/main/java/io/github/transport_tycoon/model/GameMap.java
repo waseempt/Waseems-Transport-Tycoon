@@ -1,8 +1,8 @@
 package io.github.transport_tycoon.model;
 
 public class GameMap {
-    private final int width;
-    private final int height;
+    private int width;
+    private int height;
     private Tile[][] grid;
 
     public GameMap(int width, int height) {
@@ -11,6 +11,7 @@ public class GameMap {
         this.grid = new Tile[width][height];
         initializeMap();
     }
+    public GameMap() {}
 
     private void initializeMap() {
         for (int x = 0; x < width; x++) {

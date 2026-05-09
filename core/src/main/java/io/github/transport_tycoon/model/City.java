@@ -1,5 +1,6 @@
 package io.github.transport_tycoon.model;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.EnumMap;
 
@@ -15,12 +16,14 @@ public class City extends Zone {
         super();
         this.name = name;
 
-        this.demands = new EnumMap<>(GoodType.class);
+        this.demands = new HashMap<>();
         this.demands.put(GoodType.PASSENGERS, 50);
         this.demands.put(GoodType.WOOD, 20);
         this.demands.put(GoodType.IRON, 10);
         this.demands.put(GoodType.STEEL, 30);
     }
+
+    public City() {}
 
     public String getName() {
         return name;
@@ -51,5 +54,26 @@ public class City extends Zone {
             demands.put(GoodType.IRON, demands.get(GoodType.IRON) + 1);
             demands.put(GoodType.STEEL, demands.get(GoodType.STEEL) + 2);
         }
+    }
+
+    // Used to restore enum values in the map from strings to enum (bug fix for loading saved game)
+    public void restoreDemands() {
+        if (demands == null) return;
+
+        Map<GoodType, Integer> fixedDemands = new HashMap<>();
+
+        // Iterate using Object to avoid type-casting crashes
+        for (Object key : demands.keySet()) {
+            if (key instanceof String) {
+                // Convert the String back into our proper Enum
+                fixedDemands.put(GoodType.valueOf((String) key), demands.get(key));
+            } else if (key instanceof GoodType) {
+                // Already an Enum (safe fallback)
+                fixedDemands.put((GoodType) key, demands.get(key));
+            }
+        }
+
+        // Replace the broken map with our repaired one
+        this.demands = fixedDemands;
     }
 }

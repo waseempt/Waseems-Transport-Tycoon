@@ -12,7 +12,7 @@ public class Tile {
 
     // Similar to roadMask, identifies if a tile is an entry point for a city or facility
     private int zoneConnectionMask = 0;
-    private Zone parentZone = null;
+    private transient Zone parentZone = null;
 
     private int treeCount;
 
@@ -23,6 +23,8 @@ public class Tile {
         this.gridY = y;
         this.treeCount = 0;
     }
+
+    public Tile() {}
 
     public int getGridX() { return gridX; }
     public int getGridY() { return gridY; }
@@ -60,6 +62,8 @@ public class Tile {
         this.zoneConnectionMask = mask;
         this.parentZone = zone;
     }
+
+    public void setParentZone(Zone zone) { this.parentZone = zone; }
 
     public void setIntersection(Intersection intersection) {
         this.intersection = intersection;

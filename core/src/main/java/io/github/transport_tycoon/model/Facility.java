@@ -14,6 +14,8 @@ public class Facility extends Zone {
         this.facilityType = facilityType;
     }
 
+    public Facility() {}
+
     public String getFacilityType() {
         return facilityType;
     }

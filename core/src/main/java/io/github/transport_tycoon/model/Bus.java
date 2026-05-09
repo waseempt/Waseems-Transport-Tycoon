@@ -14,6 +14,8 @@ public class Bus extends Vehicle {
         setMaintenanceCost(variant == 1 ? 10f : 5f);
     }
 
+    public Bus() {}
+
     @Override
     public int getModelVariant() {
         return modelVariant;

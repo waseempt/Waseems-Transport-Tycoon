@@ -24,6 +24,8 @@ public class Intersection {
         }
     }
 
+    public Intersection() {}
+
     public void installLights() {
         this.hasTrafficLights = true;
         this.currentPhase = 0;

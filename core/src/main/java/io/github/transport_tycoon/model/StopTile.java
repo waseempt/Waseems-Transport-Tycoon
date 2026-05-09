@@ -12,6 +12,7 @@ public class StopTile {
         this.tile = tile;
         this.linkedZone = linkedZone;
     }
+    public StopTile() {}
 
     public Tile getTile() {
         return tile;
@@ -19,5 +20,13 @@ public class StopTile {
 
     public Zone getLinkedZone() {
         return linkedZone;
+    }
+
+    public void setTile(Tile tile) {
+        this.tile = tile;
+    }
+
+    public void setLinkedZone(Zone zone) {
+        this.linkedZone = zone;
     }
 }

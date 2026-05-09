@@ -78,7 +78,8 @@ public class GameScreen implements Screen {
             String saveName = controller.getWorld().getTycoonName();
 
             SaveManager.saveGame(controller.getWorld(), saveName);
-            System.out.println("Model: Game saved automatically as " + saveName);
+
+            pauseMenu.showSaveSuccess();
         });
 
         // shows all owned vehicles

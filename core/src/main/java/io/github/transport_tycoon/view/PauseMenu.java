@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -28,6 +29,8 @@ public class PauseMenu {
     private ResumeListener resumeListener;
 
     private ExitListener exitListener;
+
+    private Label saveFeedbackLabel;
 
 
 
@@ -66,6 +69,10 @@ public class PauseMenu {
         //exit button
         TextButton exitButton = new TextButton("Exit to Menu", skin);
         panel.add(exitButton).width(200).height(50).row();
+
+        saveFeedbackLabel = new Label("", skin);
+        saveFeedbackLabel.getColor().a = 0; // Start fully transparent
+        panel.add(saveFeedbackLabel).padTop(15).row();
 
         outer.add(panel);
 
@@ -124,6 +131,18 @@ public class PauseMenu {
     private SaveListener saveListener;
     public void setSaveListener(SaveListener listener) {
         this.saveListener = listener;
+    }
+
+    public void showSaveSuccess() {
+        saveFeedbackLabel.setText("Game Saved Successfully!");
+        saveFeedbackLabel.clearActions(); // Stop any existing fade animations
+
+        // Sequence: Become visible immediately -> Wait 2 seconds -> Fade out over 1 second
+        saveFeedbackLabel.addAction(Actions.sequence(
+            Actions.alpha(1f),
+            Actions.delay(2f),
+            Actions.fadeOut(1f)
+        ));
     }
 
     public void hide() {

@@ -7,7 +7,8 @@ import io.github.transport_tycoon.model.GameWorld;
 
 public class SaveManager {
 
-    private static final String SAVE_DIR = "saves/";
+    // Creates a hidden folder in the user's home directory
+    private static final String SAVE_DIR = ".transport_tycoon/saves/";
 
     public static void saveGame(GameWorld world, String saveName) {
         Json json = new Json();
@@ -15,18 +16,19 @@ public class SaveManager {
 
         String saveText = json.prettyPrint(world);
 
-        FileHandle dir = Gdx.files.local(SAVE_DIR);
+        FileHandle dir = Gdx.files.external(SAVE_DIR);
         if (!dir.exists()) {
             dir.mkdirs();
         }
-        FileHandle file = Gdx.files.local(SAVE_DIR + saveName + ".json");
+
+        FileHandle file = Gdx.files.external(SAVE_DIR + saveName + ".json");
         file.writeString(saveText, false);
 
         System.out.println("Game saved successfully to " + file.path());
     }
 
     public static GameWorld loadGame(String saveName) {
-        FileHandle file = Gdx.files.local(SAVE_DIR + saveName);
+        FileHandle file = Gdx.files.external(SAVE_DIR + saveName);
         if (file.exists()) {
             Json json = new Json();
             System.out.println("Game loaded successfully from " + saveName);
@@ -36,10 +38,18 @@ public class SaveManager {
     }
 
     public static FileHandle[] getAvailableSaves() {
-        FileHandle dir = Gdx.files.local(SAVE_DIR);
+        FileHandle dir = Gdx.files.external(SAVE_DIR);
         if (dir.exists() && dir.isDirectory()) {
             return dir.list(".json");
         }
-        return new FileHandle[0]; // Return empty array if no saves exist
+        return new FileHandle[0];
+    }
+
+    public static boolean deleteSave(String saveFileName) {
+        FileHandle file = Gdx.files.external(SAVE_DIR + saveFileName);
+        if (file.exists()) {
+            return file.delete();
+        }
+        return false;
     }
 }

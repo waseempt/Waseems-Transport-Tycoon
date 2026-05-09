@@ -76,7 +76,8 @@ public class GameScreen implements Screen {
         //restores simulation speed and hides the pause menu when resumed
         pauseMenu.setResumeListener(() -> {
             controller.getWorld().resume();
-            pauseMenu.hide(inputHandler, hud.getStage(), controlPanel.getStage());
+            pauseMenu.hide();
+            refreshInputMultiplexer();
         });
 
         this.purchaseVehicleScreen = new PurchaseVehicle(game.batch);

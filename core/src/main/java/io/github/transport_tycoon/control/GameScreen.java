@@ -109,6 +109,7 @@ public class GameScreen implements Screen {
 
             // Pass the model variant into the new constructors
             Vehicle newVehicle = type.equals("Bus") ? new Bus(name, variant) : new Truck(name, variant, cargo);
+            newVehicle.setPurchasePrice(price);
             world.addVehicle(newVehicle);
 
             System.out.println("Model: Purchased " + name + " (" + type + " Model " + variant + ") for $" + price + ".");

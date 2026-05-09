@@ -155,7 +155,7 @@ public abstract class Vehicle {
         maintenanceTimer += delta;
         while (maintenanceTimer >= 5f) {
             maintenanceTimer -= 5f;
-            world.setPlayerBalance(world.getPlayerBalance() - maintenanceCost);
+            world.changePlayerBalance(-maintenanceCost);
         }
 
         if (assignedRoute == null || assignedRoute.getStopCount() == 0) return;

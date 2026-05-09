@@ -785,6 +785,13 @@ public class GameWorld {
         this.balanceListener = listener;
     }
 
+    public void changePlayerBalance(float amount) {
+        playerBalance += amount;
+        if (balanceListener != null) {
+            balanceListener.onBalanceChanged(amount);
+        }
+    }
+
     public boolean isBankrupt () {
         if (playerBalance < 0 )
             return true;

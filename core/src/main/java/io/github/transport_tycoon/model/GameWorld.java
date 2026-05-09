@@ -43,7 +43,7 @@ public class GameWorld {
         void onBalanceChanged(float changeAmount);
     }
 
-    private BalanceChangeListener balanceListener;
+    private transient BalanceChangeListener balanceListener;
 
     public GameWorld(String tycoonName) {
         this.tycoonName = tycoonName;
@@ -56,6 +56,8 @@ public class GameWorld {
         defineZones();
         generateInitialForests();
     }
+
+    public GameWorld() {}
 
     //pauses the simulation and sets the time to 0
     public void pause() {
@@ -857,5 +859,94 @@ public class GameWorld {
             vehicle.assignRoute(null);
         }
         unassignedVehicles.add(vehicle);
+    }
+
+
+    public void relinkAfterLoad() {
+        // Throw away cloned zone tiles and grab the real ones from GameMap
+        for (City city : cities) {
+            city.restoreDemands();
+            ArrayList<Tile> realTiles = new ArrayList<>();
+            for (Tile clone : city.getTiles()) {
+                Tile realTile = gameMap.getTile(clone.getGridX(), clone.getGridY());
+                realTiles.add(realTile);
+                if (realTile.getZoneConnectionMask() > 0) {
+                    realTile.setParentZone(city);
+                }
+            }
+            city.getTiles().clear();
+            city.getTiles().addAll(realTiles);
+        }
+
+        for (Facility facility : facilities) {
+            ArrayList<Tile> realTiles = new ArrayList<>();
+            for (Tile clone : facility.getTiles()) {
+                Tile realTile = gameMap.getTile(clone.getGridX(), clone.getGridY());
+                realTiles.add(realTile);
+                if (realTile.getZoneConnectionMask() > 0) {
+                    realTile.setParentZone(facility);
+                }
+            }
+            facility.getTiles().clear();
+            facility.getTiles().addAll(realTiles);
+        }
+
+        // Link StopTiles to the real Map Tile and real Zone
+        for (StopTile stop : stopTiles) {
+            Tile cloneTile = stop.getTile();
+            Tile realTile = gameMap.getTile(cloneTile.getGridX(), cloneTile.getGridY());
+            stop.setTile(realTile);
+            stop.setLinkedZone(findAdjacentZone(realTile.getGridX(), realTile.getGridY()));
+        }
+
+        // Ensure Routes use the real StopTiles
+        for (Route route : routes) {
+            ArrayList<StopTile> realStops = new ArrayList<>();
+            for (StopTile cloneStop : route.getStops()) {
+                for (StopTile realStop : stopTiles) {
+                    // Match coordinates to find the real stop
+                    if (realStop.getTile() == gameMap.getTile(cloneStop.getTile().getGridX(), cloneStop.getTile().getGridY())) {
+                        realStops.add(realStop);
+                        break;
+                    }
+                }
+            }
+            route.getStops().clear();
+            route.getStops().addAll(realStops);
+        }
+
+        // Repair Vehicles
+        for (Vehicle v : activeVehicles) {
+            v.setWorld(this);
+
+            // Fix the Vehicle's specific Route clones
+            if (v.getAssignedRoute() != null) {
+                ArrayList<StopTile> realStops = new ArrayList<>();
+                for (StopTile cloneStop : v.getAssignedRoute().getStops()) {
+                    for (StopTile realStop : stopTiles) {
+                        if (realStop.getTile() == gameMap.getTile(cloneStop.getTile().getGridX(), cloneStop.getTile().getGridY())) {
+                            realStops.add(realStop);
+                            break;
+                        }
+                    }
+                }
+                v.getAssignedRoute().getStops().clear();
+                v.getAssignedRoute().getStops().addAll(realStops);
+            }
+
+            // Fix the tile the vehicle is currently sitting on
+            if (v.getCurrentTile() != null) {
+                v.setCurrentTile(gameMap.getTile(v.getCurrentTile().getGridX(), v.getCurrentTile().getGridY()));
+            }
+
+            // Wipe the navigation memory so it maps a fresh path using REAL tiles
+            v.clearPath();
+        }
+
+        for (Vehicle v : unassignedVehicles) {
+            v.setWorld(this);
+        }
+
+        System.out.println("Model: All duplicate objects successfully repaired and linked.");
     }
 }

@@ -14,6 +14,8 @@ public class Truck extends Vehicle {
         setMaintenanceCost(variant == 1 ? 10f : 5f);
     }
 
+    public Truck() {}
+
     @Override
     public int getModelVariant() {
         return modelVariant;

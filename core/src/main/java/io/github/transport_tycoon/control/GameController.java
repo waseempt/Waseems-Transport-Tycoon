@@ -2,6 +2,7 @@ package io.github.transport_tycoon.control;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import io.github.transport_tycoon.model.GameWorld;
+import io.github.transport_tycoon.model.Vehicle;
 import io.github.transport_tycoon.view.WorldRenderer;
 
 public class GameController {
@@ -15,6 +16,16 @@ public class GameController {
         this.world = new GameWorld(tycoonName);
         this.worldRenderer = new WorldRenderer(batch);
         System.out.println("Controller: Architecture linked successfully.");
+    }
+
+    public GameController(SpriteBatch batch, GameWorld loadedWorld, TransportTycoon game) {
+        this.game = game;
+        this.world = loadedWorld;
+
+        this.world.relinkAfterLoad();
+
+        this.worldRenderer = new WorldRenderer(batch);
+        System.out.println("Controller: Architecture linked successfully from save file.");
     }
 
     // Runs every frame

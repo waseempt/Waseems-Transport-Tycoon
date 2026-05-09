@@ -37,7 +37,7 @@ public abstract class Vehicle {
     private float rotation = 0f;
     private float intendedRotation = 0f;
     private Tile currentTile = null;
-    private GameWorld world;
+    private transient GameWorld world;
 
     private float purchasePrice = 0f;
     private boolean pendingSale = false;
@@ -50,6 +50,8 @@ public abstract class Vehicle {
         this.cargoType = cargoType;
         this.assignedRoute = null;
     }
+
+    public Vehicle() {}
 
     public float getWorldX() {
         return worldX;
@@ -445,5 +447,13 @@ public abstract class Vehicle {
 
         // If it doesn't match, we have to stop.
         return true;
+    }
+
+    public void setCurrentTile(Tile tile) {
+        this.currentTile = tile;
+    }
+
+    public void clearPath() {
+        this.currentPath.clear();
     }
 }

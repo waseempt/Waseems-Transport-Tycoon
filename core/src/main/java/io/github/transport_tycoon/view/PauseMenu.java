@@ -59,6 +59,10 @@ public class PauseMenu {
         TextButton resumeButton = new TextButton("Resume", skin);
         panel.add(resumeButton).width(200).height(50).row();
 
+        //save button
+        TextButton saveButton = new TextButton("Save Game", skin);
+        panel.add(saveButton).width(200).height(50).row();
+
         //exit button
         TextButton exitButton = new TextButton("Exit to Menu", skin);
         panel.add(exitButton).width(200).height(50).row();
@@ -71,6 +75,15 @@ public class PauseMenu {
             public void clicked(InputEvent event, float x, float y) {
                 if (resumeListener != null) {
                     resumeListener.onResume();
+                }
+            }
+        });
+
+        saveButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (saveListener != null) {
+                    saveListener.onSave();
                 }
             }
         });
@@ -103,6 +116,14 @@ public class PauseMenu {
     //sets the ExitListerner so gameScreen reacts when the player clicks Exit
     public void setExitListener(ExitListener listener) {
         this.exitListener = listener;
+    }
+
+    public interface SaveListener {
+        void onSave();
+    }
+    private SaveListener saveListener;
+    public void setSaveListener(SaveListener listener) {
+        this.saveListener = listener;
     }
 
     public void hide() {

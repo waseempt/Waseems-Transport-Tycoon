@@ -29,13 +29,22 @@ public class GameScreen implements Screen {
 
     private boolean isBuildMode = false;
 
-    public GameScreen(TransportTycoon game,  String tycoonName) {
+    // For a brand new game
+    public GameScreen(TransportTycoon game, String tycoonName) {
         this.game = game;
-
-        // Instantiate the Controller, which instantiates the rest
         this.controller = new GameController(game.batch, tycoonName, game);
+        initializeScreen();
+    }
 
-        //fixed size panel at the bottom of the screen
+    // For loading a saved game
+    public GameScreen(TransportTycoon game, GameWorld loadedWorld) {
+        this.game = game;
+        this.controller = new GameController(game.batch, loadedWorld, game);
+        initializeScreen();
+    }
+
+    private void initializeScreen() {
+        // fixed size panel at the bottom of the screen
         this.controlPanel = new ControlPanel(game.batch);
 
         // connect speed controls to simulation
@@ -55,14 +64,21 @@ public class GameScreen implements Screen {
             }
         });
 
-        //fixed size panel at the top of the screen
+        // fixed size panel at the top of the screen
         this.hud = new HUD(game.batch);
 
         this.pauseMenu = new PauseMenu(game.batch);
-        //stops the simulation and shows the pause menu when game paused
+        // stops the simulation and shows the pause menu when game paused
         hud.setPauseListener(() -> {
             controller.getWorld().pause();
             pauseMenu.show();
+        });
+
+        pauseMenu.setSaveListener(() -> {
+            String saveName = controller.getWorld().getTycoonName();
+
+            SaveManager.saveGame(controller.getWorld(), saveName);
+            System.out.println("Model: Game saved automatically as " + saveName);
         });
 
         // shows all owned vehicles
@@ -73,7 +89,7 @@ public class GameScreen implements Screen {
             vehicleWindow.show();
         });
 
-        //restores simulation speed and hides the pause menu when resumed
+        // restores simulation speed and hides the pause menu when resumed
         pauseMenu.setResumeListener(() -> {
             controller.getWorld().resume();
             pauseMenu.hide();
@@ -87,6 +103,7 @@ public class GameScreen implements Screen {
             vehicleWindow.hide();
             purchaseVehicleScreen.show();
         });
+
         this.routeAssignmentOverlay = new RouteAssignmentOverlay(game.batch);
 
         purchaseVehicleScreen.setCloseListener(() -> {
@@ -97,17 +114,14 @@ public class GameScreen implements Screen {
         purchaseVehicleScreen.setConfirmListener((name, type, variant, price, cargo) -> {
             GameWorld world = controller.getWorld();
 
-            // Check against the dynamic price rather than a hardcoded 200
             if (world.getPlayerBalance() < price) {
                 System.out.println("Model: Not enough money to purchase this vehicle.");
                 return;
             }
 
-            // Deduct the exact cost of the selected model
             world.setPlayerBalance(world.getPlayerBalance() - price);
             hud.showBalanceChange(-price);
 
-            // Pass the model variant into the new constructors
             Vehicle newVehicle = type.equals("Bus") ? new Bus(name, variant) : new Truck(name, variant, cargo);
             newVehicle.setPurchasePrice(price);
             world.addVehicle(newVehicle);
@@ -118,12 +132,12 @@ public class GameScreen implements Screen {
             vehicleWindow.show();
         });
 
-        //routes the player back to the main menu when exiting
+        // routes the player back to the main menu when exiting
         pauseMenu.setExitListener(() -> {
             game.setScreen(new MainMenuScreen(game));
         });
 
-        //Build mode listener
+        // Build mode listener
         this.controlPanel.setBuildListener(() -> {
             isBuildMode = !isBuildMode;
             if (inputHandler.getBuildStopMode()){
@@ -149,9 +163,7 @@ public class GameScreen implements Screen {
             hud.showBalanceChange(amount);
         });
 
-        // Minimap now belongs to GameScreen
         this.minimapRenderer = new MinimapRenderer();
-
         OrthographicCamera camera = controller.getWorldRenderer().getMainCamera();
 
         // pass minimap to input handler
@@ -194,23 +206,14 @@ public class GameScreen implements Screen {
             GameWorld world = controller.getWorld();
 
             if (world.getPlayerBalance() >= 200) {
-                // Deduct the money
                 world.setPlayerBalance(world.getPlayerBalance() - 200);
-
-                // Trigger balance hud animation
                 hud.showBalanceChange(-200);
-
-                // Install the lights
                 intersection.installLights();
-
-                // Refresh the UI to immediately show the configuration menu
                 trafficLightUI.show(intersection);
             } else {
-                // Tell the UI to display the error text
                 trafficLightUI.showError("Not enough money! ($200 required)");
             }
         });
-
 
         this.inputHandler.setIntersectionListener(intersection -> {
             trafficLightUI.show(intersection);

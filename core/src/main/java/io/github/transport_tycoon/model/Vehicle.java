@@ -138,25 +138,26 @@ public abstract class Vehicle {
 
     protected void unloadCargo(Zone destination) {
         if (currentLoad > 0) {
-            // Keep track of how much we are dropping off for the calculation
             int amountUnloaded = currentLoad;
+            boolean cargoAccepted = false;
 
             if (destination instanceof City) {
-                ((City) destination).consumeGoods(cargoType, amountUnloaded);
+                if (lastLoadedZone != destination) {
+                    ((City) destination).consumeGoods(cargoType, amountUnloaded);
+                    cargoAccepted = true;
+                }
             } else if (destination instanceof Facility) {
                 Facility f = (Facility) destination;
                 if (f.getConsumes() == cargoType) {
                     f.setStoredInput(f.getStoredInput() + amountUnloaded);
+                    cargoAccepted = true;
                 }
             }
 
-
-            if (lastLoadedZone != null && lastLoadedZone != destination) {
+            if (cargoAccepted && lastLoadedZone != null && lastLoadedZone != destination) {
                 world.calculateDeliveryProfit(lastLoadedZone, destination, cargoType, amountUnloaded);
+                currentLoad = 0;
             }
-
-            // Empty the truck
-            currentLoad = 0;
         }
     }
 

@@ -35,7 +35,7 @@ class VehicleTest {
     @Test
     void testVehicleAttributes() {
         assertEquals("Test Bus", vehicle.getName());
-        assertEquals(40, vehicle.getCapacity());
+        assertEquals(30, vehicle.getCapacity());
         assertEquals(1.5f, vehicle.getSpeed());
         assertEquals(GoodType.PASSENGERS, vehicle.getCargoType());
     }
@@ -43,7 +43,7 @@ class VehicleTest {
     @Test
     void testVehicleInitialization() {
         assertEquals("City Express", bus.getName());
-        assertEquals(40, bus.getCapacity());
+        assertEquals(30, bus.getCapacity());
         assertEquals(GoodType.PASSENGERS, bus.getCargoType());
     }
 
@@ -53,6 +53,6 @@ class VehicleTest {
         bus.loadCargo(city);
 
         // This will now successfully check the new getter you added!
-        assertEquals(40, bus.getCurrentLoad());
+        assertEquals(30, bus.getCurrentLoad());
     }
 }

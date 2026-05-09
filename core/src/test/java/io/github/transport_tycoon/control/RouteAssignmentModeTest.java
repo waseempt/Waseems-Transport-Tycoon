@@ -15,7 +15,7 @@ class RouteAssignmentModeTest {
 
     @BeforeEach
     void setUp() {
-        Vehicle bus = new Bus("Test Bus");
+        Vehicle bus = new Bus("Test Bus", 1);
         mode = new RouteAssignmentMode(bus);
         stop = new StopTile(new Tile(0, 0), null);
     }

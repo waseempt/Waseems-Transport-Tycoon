@@ -17,22 +17,20 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import io.github.transport_tycoon.model.GoodType;
 
-
-//Overlay screen where the player configures and purchases a new vehicle.
-
 public class PurchaseVehicle {
 
     private Stage stage;
     private Skin skin;
     private boolean visible = false;
     private String selectedType = null;
+    private int selectedModel = 1; // 1 = Fast/Small, 2 = Slow/Heavy
     private GoodType selectedCargo = null;
     private String vehicleNameText = "";
     private TextField nameField;
     private Label errorLabel;
 
     public interface ConfirmListener {
-        void onConfirm(String name, String type, GoodType cargo);
+        void onConfirm(String name, String type, int modelVariant, int price, GoodType cargo);
     }
 
     private ConfirmListener confirmListener;
@@ -54,12 +52,11 @@ public class PurchaseVehicle {
     public PurchaseVehicle(SpriteBatch batch) {
         this.stage = new Stage(new ScreenViewport(), batch);
         this.skin = createBasicSkin();
-        System.out.println("View: PurchaseVehicleScreen initialized.");
     }
 
-    // Resets all parameters first
     public void show() {
         selectedType = null;
+        selectedModel = 1;
         selectedCargo = null;
         vehicleNameText = "";
         stage.clear();
@@ -85,75 +82,106 @@ public class PurchaseVehicle {
     }
 
     private void buildUI() {
-        // Centered Table
         Table outer = new Table();
         outer.setFillParent(true);
         outer.center();
         stage.addActor(outer);
 
-        // Dark background panel
         Table panel = new Table(skin);
-        panel.setBackground(skin.newDrawable("background", new Color(0.1f, 0.1f, 0.1f, 0.92f)));
+        panel.setBackground(skin.newDrawable("background", new Color(0.1f, 0.1f, 0.1f, 0.95f)));
         panel.pad(25);
         panel.defaults().padBottom(12).left();
 
-        // Title
-        Label title = new Label("Purchase Vehicle ($200)", skin, "title");
+        Label title = new Label("Vehicle Dealership", skin, "title");
         panel.add(title).center().padBottom(20).row();
 
-        // Vehicle name
         panel.add(new Label("Vehicle Name:", skin)).row();
         nameField = new TextField(vehicleNameText, skin);
         nameField.setMessageText("Enter vehicle name...");
-        panel.add(nameField).width(300).row();
+        panel.add(nameField).width(350).row();
 
-        // Vehicle type selection
-        panel.add(new Label("Type:", skin)).padTop(10).row();
-
+        panel.add(new Label("Vehicle Category:", skin)).padTop(5).row();
         Table typeRow = new Table();
 
-        TextButton busButton = new TextButton("Bus", skin,
-            "Bus".equals(selectedType) ? "selected" : "default");
+        TextButton busButton = new TextButton("Bus", skin, "Bus".equals(selectedType) ? "selected" : "default");
         busButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 selectedType = "Bus";
-                selectedCargo = null; // cargo is irrelevant for a bus
+                selectedCargo = null;
+                selectedModel = 1; // Default to model 1 when switching
                 refresh();
             }
         });
 
-        TextButton truckButton = new TextButton("Truck", skin,
-            "Truck".equals(selectedType) ? "selected" : "default");
+        TextButton truckButton = new TextButton("Truck", skin, "Truck".equals(selectedType) ? "selected" : "default");
         truckButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 selectedType = "Truck";
+                selectedModel = 1;
                 refresh();
             }
         });
 
-        typeRow.add(busButton).width(130).height(40).padRight(10);
-        typeRow.add(truckButton).width(130).height(40);
+        typeRow.add(busButton).width(170).height(40).padRight(10);
+        typeRow.add(truckButton).width(170).height(40);
         panel.add(typeRow).row();
 
-        // Cargo type selection (Truck only)
-        // The entire section is omitted from the layout unless Truck is chosen.
+        // Dynamically show Variant options based on the chosen category
+        if (selectedType != null) {
+            panel.add(new Label("Vehicle Model:", skin)).padTop(5).row();
+            Table modelRow = new Table();
+
+            String m1Name = "Bus".equals(selectedType) ? "Express Bus" : "Light Freight";
+            String m2Name = "Bus".equals(selectedType) ? "Heavy Transit" : "Heavy Hauler";
+
+            TextButton m1Btn = new TextButton(m1Name, skin, selectedModel == 1 ? "selected" : "default");
+            m1Btn.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    selectedModel = 1;
+                    refresh();
+                }
+            });
+
+            TextButton m2Btn = new TextButton(m2Name, skin, selectedModel == 2 ? "selected" : "default");
+            m2Btn.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    selectedModel = 2;
+                    refresh();
+                }
+            });
+
+            modelRow.add(m1Btn).width(170).height(40).padRight(10);
+            modelRow.add(m2Btn).width(170).height(40);
+            panel.add(modelRow).row();
+
+            // Dynamic Stats Label
+            String stats;
+            if ("Bus".equals(selectedType)) {
+                stats = (selectedModel == 1) ?
+                    "Capacity: 30 | Speed: Fast | Maint: $10" :
+                    "Capacity: 60 | Speed: Slow | Maint: $5";
+            } else {
+                stats = (selectedModel == 1) ?
+                    "Capacity: 40 | Speed: Fast | Maint: $10" :
+                    "Capacity: 80 | Speed: Slow | Maint: $5";
+            }
+            Label statsLabel = new Label(stats, skin);
+            statsLabel.setColor(Color.LIGHT_GRAY);
+            panel.add(statsLabel).center().padTop(2).row();
+        }
+
         if ("Truck".equals(selectedType)) {
-            panel.add(new Label("Cargo Type:", skin)).padTop(10).row();
-
+            panel.add(new Label("Cargo Specialization:", skin)).padTop(10).row();
             Table cargoRow = new Table();
-
-            GoodType[] cargoOptions = {
-                GoodType.WOOD, GoodType.IRON, GoodType.STEEL, GoodType.COAL
-            };
+            GoodType[] cargoOptions = { GoodType.WOOD, GoodType.IRON, GoodType.STEEL, GoodType.COAL };
 
             for (GoodType cargoType : cargoOptions) {
                 final GoodType ct = cargoType;
-                String label = ct.name();
-
-                TextButton cargoButton = new TextButton(label, skin,
-                    ct == selectedCargo ? "selected" : "default");
+                TextButton cargoButton = new TextButton(ct.name(), skin, ct == selectedCargo ? "selected" : "default");
                 cargoButton.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
@@ -161,18 +189,19 @@ public class PurchaseVehicle {
                         refresh();
                     }
                 });
-                cargoRow.add(cargoButton).width(85).height(40).padRight(5);
+                cargoRow.add(cargoButton).width(84).height(40).padRight(4);
             }
-
             panel.add(cargoRow).row();
         }
 
         errorLabel = new Label("", skin, "error");
         panel.add(errorLabel).center().padTop(5).row();
 
-        Table buttonRow = new Table();
+        // Calculate dynamic price based on the selected model
+        final int finalPrice = (selectedModel == 1) ? 200 : 350;
 
-        TextButton confirmButton = new TextButton("Confirm Purchase", skin);
+        Table buttonRow = new Table();
+        TextButton confirmButton = new TextButton("Buy ($" + finalPrice + ")", skin);
         confirmButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -182,21 +211,19 @@ public class PurchaseVehicle {
                     errorLabel.setText("Please enter a vehicle name.");
                     return;
                 }
-
                 if (selectedType == null) {
-                    errorLabel.setText("Please select a vehicle type (Bus or Truck).");
+                    errorLabel.setText("Please select a vehicle category.");
                     return;
                 }
-
                 if ("Truck".equals(selectedType) && selectedCargo == null) {
-                    errorLabel.setText("Please select a cargo type for the truck.");
+                    errorLabel.setText("Please select a cargo type.");
                     return;
                 }
 
                 GoodType cargo = "Bus".equals(selectedType) ? GoodType.PASSENGERS : selectedCargo;
 
                 if (confirmListener != null) {
-                    confirmListener.onConfirm(vehicleName, selectedType, cargo);
+                    confirmListener.onConfirm(vehicleName, selectedType, selectedModel, finalPrice, cargo);
                 }
             }
         });
@@ -205,19 +232,16 @@ public class PurchaseVehicle {
         cancelButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (closeListener != null) {
-                    closeListener.onClose();
-                }
+                if (closeListener != null) closeListener.onClose();
             }
         });
 
-        buttonRow.add(confirmButton).width(180).height(45).padRight(10);
-        buttonRow.add(cancelButton).width(100).height(45);
+        buttonRow.add(confirmButton).width(200).height(45).padRight(10);
+        buttonRow.add(cancelButton).width(140).height(45);
         panel.add(buttonRow).center().padTop(10).row();
 
-        outer.add(panel).width(450);
+        outer.add(panel).width(480);
     }
-
 
     public void render() {
         if (!visible) return;
@@ -251,25 +275,21 @@ public class PurchaseVehicle {
         tempSkin.add("background", new Texture(pixmap));
         pixmap.dispose();
 
-        // Default label
         Label.LabelStyle defaultStyle = new Label.LabelStyle();
         defaultStyle.font = tempSkin.getFont("default");
         defaultStyle.fontColor = Color.WHITE;
         tempSkin.add("default", defaultStyle);
 
-        // Title label
         Label.LabelStyle titleStyle = new Label.LabelStyle();
         titleStyle.font = tempSkin.getFont("title");
         titleStyle.fontColor = Color.WHITE;
         tempSkin.add("title", titleStyle);
 
-        // Error label
         Label.LabelStyle errorStyle = new Label.LabelStyle();
         errorStyle.font = tempSkin.getFont("default");
         errorStyle.fontColor = Color.RED;
         tempSkin.add("error", errorStyle);
 
-        // Default button style (unselected)
         TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
         buttonStyle.up   = tempSkin.newDrawable("background", Color.DARK_GRAY);
         buttonStyle.down = tempSkin.newDrawable("background", Color.GRAY);
@@ -277,7 +297,6 @@ public class PurchaseVehicle {
         buttonStyle.font = tempSkin.getFont("default");
         tempSkin.add("default", buttonStyle);
 
-        // Selected button style — green tint to make the active choice obvious
         TextButton.TextButtonStyle selectedStyle = new TextButton.TextButtonStyle();
         selectedStyle.up   = tempSkin.newDrawable("background", new Color(0.15f, 0.55f, 0.15f, 1f));
         selectedStyle.down = tempSkin.newDrawable("background", new Color(0.20f, 0.65f, 0.20f, 1f));
@@ -285,7 +304,6 @@ public class PurchaseVehicle {
         selectedStyle.font = tempSkin.getFont("default");
         tempSkin.add("selected", selectedStyle);
 
-        // Text field
         TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle();
         textFieldStyle.font             = tempSkin.getFont("default");
         textFieldStyle.fontColor        = Color.WHITE;

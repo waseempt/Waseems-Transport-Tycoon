@@ -554,7 +554,9 @@ public class GameWorld {
             growForests();
         }
 
-        for (Vehicle vehicle : activeVehicles) {
+        // Update vehicles - backwards to prevent crash when removing vehicles
+        for (int i = activeVehicles.size() - 1; i >= 0; i--) {
+            Vehicle vehicle = activeVehicles.get(i);
             vehicle.update(scaledDelta);
         }
     }
@@ -785,6 +787,13 @@ public class GameWorld {
         this.balanceListener = listener;
     }
 
+    public void changePlayerBalance(float amount) {
+        playerBalance += amount;
+        if (balanceListener != null) {
+            balanceListener.onBalanceChanged(amount);
+        }
+    }
+
     public boolean isBankrupt () {
         if (playerBalance < 0 )
             return true;
@@ -823,5 +832,30 @@ public class GameWorld {
             unassignedVehicles.remove(vehicle);
             activeVehicles.add(vehicle);
         }
+    }
+
+    public void executeSale(Vehicle vehicle) {
+        activeVehicles.remove(vehicle);
+        unassignedVehicles.remove(vehicle);
+
+        if (vehicle.getAssignedRoute() != null) {
+            routes.remove(vehicle.getAssignedRoute());
+        }
+
+        float refund = vehicle.getPurchasePrice() / 2f;
+        playerBalance += refund;
+
+        if (balanceListener != null) {
+            balanceListener.onBalanceChanged(refund);
+        }
+    }
+
+    public void executeRetirement(Vehicle vehicle) {
+        activeVehicles.remove(vehicle);
+        if (vehicle.getAssignedRoute() != null) {
+            routes.remove(vehicle.getAssignedRoute());
+            vehicle.assignRoute(null);
+        }
+        unassignedVehicles.add(vehicle);
     }
 }

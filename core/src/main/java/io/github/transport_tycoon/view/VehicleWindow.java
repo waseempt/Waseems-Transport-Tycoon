@@ -102,23 +102,48 @@ public class VehicleWindow {
             Label nameLabel = new Label(vehicle.getName(), skin);
             String typeInfo = vehicle.getClass().getSimpleName() + " / " + vehicle.getCargoType();
             Label typeLabel = new Label(typeInfo, skin);
-            Label statusLabel = new Label("Active", skin);
 
-            TextButton assignButton = new TextButton("Assign Route", skin);
-            assignButton.addListener(new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    if (assignRouteListener != null) {
-                        hide();
-                        assignRouteListener.onAssignRoute(vehicle);
+            String statusText = "Active";
+            if (vehicle.isPendingSale()) statusText = "Pending Sale...";
+            else if (vehicle.isPendingRetirement()) statusText = "Retiring...";
+            Label statusLabel = new Label(statusText, skin);
+
+            Table actionTable = new Table();
+
+            // Only show action buttons if the vehicle isn't currently waiting to be removed
+            if (!vehicle.isPendingSale() && !vehicle.isPendingRetirement()) {
+                TextButton assignButton = new TextButton("Route", skin);
+                assignButton.addListener(new ClickListener() {
+                    @Override public void clicked(InputEvent event, float x, float y) {
+                        if (assignRouteListener != null) { hide(); assignRouteListener.onAssignRoute(vehicle); }
                     }
-                }
-            });
+                });
+
+                TextButton retireButton = new TextButton("Retire", skin);
+                retireButton.addListener(new ClickListener() {
+                    @Override public void clicked(InputEvent event, float x, float y) {
+                        vehicle.retireAfterDelivery();
+                        show(); // refresh UI
+                    }
+                });
+
+                TextButton sellButton = new TextButton("Sell", skin);
+                sellButton.addListener(new ClickListener() {
+                    @Override public void clicked(InputEvent event, float x, float y) {
+                        vehicle.sellAfterDelivery();
+                        show(); // refresh UI
+                    }
+                });
+
+                actionTable.add(assignButton).width(75).height(35).padRight(5);
+                actionTable.add(retireButton).width(75).height(35).padRight(5);
+                actionTable.add(sellButton).width(75).height(35);
+            }
 
             panel.add(nameLabel).expandX().left();
             panel.add(typeLabel).expandX().center();
             panel.add(statusLabel).expand().center();
-            panel.add(assignButton).width(120).height(35).right();
+            panel.add(actionTable).right();
             panel.row().padBottom(5);
         }
 
@@ -129,21 +154,31 @@ public class VehicleWindow {
             Label typeLabel = new Label(typeInfo, skin);
             Label statusLabel = new Label("Inactive", skin);
 
-            TextButton assignButton = new TextButton("Assign Route", skin);
+            Table actionTable = new Table();
+
+            TextButton assignButton = new TextButton("Route", skin);
             assignButton.addListener(new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    if (assignRouteListener != null) {
-                        hide();
-                        assignRouteListener.onAssignRoute(vehicle);
-                    }
+                @Override public void clicked(InputEvent event, float x, float y) {
+                    if (assignRouteListener != null) { hide(); assignRouteListener.onAssignRoute(vehicle); }
                 }
             });
+
+            // Unassigned vehicles can be sold instantly
+            TextButton sellButton = new TextButton("Sell", skin);
+            sellButton.addListener(new ClickListener() {
+                @Override public void clicked(InputEvent event, float x, float y) {
+                    world.executeSale(vehicle);
+                    show(); // refresh UI
+                }
+            });
+
+            actionTable.add(assignButton).width(75).height(35).padRight(5);
+            actionTable.add(sellButton).width(75).height(35);
 
             panel.add(nameLabel).expandX().left();
             panel.add(typeLabel).expandX().center();
             panel.add(statusLabel).expand().center();
-            panel.add(assignButton).width(120).height(35).right();
+            panel.add(actionTable).right();
             panel.row().padBottom(5);
         }
 
@@ -178,7 +213,7 @@ public class VehicleWindow {
         panel.add(purchaseButton).colspan(2).width(200).height(45).padTop(15);
         panel.add(closeButton).width(100).height(45).padTop(15);
 
-        outer.add(panel).width(500);
+        outer.add(panel).width(750);
     }
 
     //Renders the vehicle window if visible, called every frame from GameScreen after all other rendering.

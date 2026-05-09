@@ -1,10 +1,21 @@
 package io.github.transport_tycoon.model;
 
-//A truck vehicle that has high capacity and lower speed.
-
 public class Truck extends Vehicle {
 
-    public Truck(String name, GoodType cargoType) {
-        super(name, 60, 1.0f, cargoType);
+    private int modelVariant;
+
+    public Truck(String name, int variant, GoodType cargoType) {
+        // Variant 1: Light Freight
+        // Variant 2: Heavy Hauler
+        super(name, variant == 1 ? 40 : 80, variant == 1 ? 1.2f : 0.8f, cargoType);
+        this.modelVariant = variant;
+
+        // Update maintenance cost based on variant
+        setMaintenanceCost(variant == 1 ? 10f : 5f);
+    }
+
+    @Override
+    public int getModelVariant() {
+        return modelVariant;
     }
 }

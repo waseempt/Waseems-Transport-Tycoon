@@ -39,6 +39,10 @@ public abstract class Vehicle {
     private Tile currentTile = null;
     private GameWorld world;
 
+    private float purchasePrice = 0f;
+    private boolean pendingSale = false;
+    private boolean pendingRetirement = false;
+
     public Vehicle(String name, int capacity, float speed, GoodType cargoType) {
         this.name = name;
         this.capacity = capacity;
@@ -58,6 +62,11 @@ public abstract class Vehicle {
     public void setPosition(float x, float y) {
         this.worldX = x;
         this.worldY = y;
+    }
+
+    protected void setMaintenanceCost(float cost) {
+        if (cost <=0 ) return;
+        this.maintenanceCost = cost;
     }
 
     public String getName() {
@@ -92,9 +101,21 @@ public abstract class Vehicle {
         return currentTile;
     }
 
+    public int getModelVariant() {
+        return 0;
+    }
+
     public void assignRoute(Route route) {
+        if (this.assignedRoute == null){
+            this.currentStopIndex = 0;
+            this.currentPath.clear();
+            this.currentTile = null;
+            this.isMoving = false;
+            this.movementProgress = 0f;
+        }
         this.assignedRoute = route;
-        System.out.println("Vehicle: " + name + " assigned to route with " + route.getStopCount() + " stops.");
+        this.pendingSale = false;
+        this.pendingRetirement = false;
     }
 
     public boolean hasRoute() {
@@ -104,6 +125,15 @@ public abstract class Vehicle {
     public void setWorld(GameWorld world) {
         this.world = world;
     }
+
+    public void setPurchasePrice(float price) { this.purchasePrice = price; }
+    public float getPurchasePrice() { return purchasePrice; }
+
+    public void sellAfterDelivery() { this.pendingSale = true; }
+    public void retireAfterDelivery() { this.pendingRetirement = true; }
+
+    public boolean isPendingSale() { return pendingSale; }
+    public boolean isPendingRetirement() { return pendingRetirement; }
 
     protected void loadCargo(Zone zone) {
         if (currentLoad < capacity) {
@@ -129,25 +159,26 @@ public abstract class Vehicle {
 
     protected void unloadCargo(Zone destination) {
         if (currentLoad > 0) {
-            // Keep track of how much we are dropping off for the calculation
             int amountUnloaded = currentLoad;
+            boolean cargoAccepted = false;
 
             if (destination instanceof City) {
-                ((City) destination).consumeGoods(cargoType, amountUnloaded);
+                if (lastLoadedZone != destination) {
+                    ((City) destination).consumeGoods(cargoType, amountUnloaded);
+                    cargoAccepted = true;
+                }
             } else if (destination instanceof Facility) {
                 Facility f = (Facility) destination;
                 if (f.getConsumes() == cargoType) {
                     f.setStoredInput(f.getStoredInput() + amountUnloaded);
+                    cargoAccepted = true;
                 }
             }
 
-
-            if (lastLoadedZone != null && lastLoadedZone != destination) {
+            if (cargoAccepted && lastLoadedZone != null && lastLoadedZone != destination) {
                 world.calculateDeliveryProfit(lastLoadedZone, destination, cargoType, amountUnloaded);
+                currentLoad = 0;
             }
-
-            // Empty the truck
-            currentLoad = 0;
         }
     }
 
@@ -155,7 +186,7 @@ public abstract class Vehicle {
         maintenanceTimer += delta;
         while (maintenanceTimer >= 5f) {
             maintenanceTimer -= 5f;
-            world.setPlayerBalance(world.getPlayerBalance() - maintenanceCost);
+            world.changePlayerBalance(-maintenanceCost);
         }
 
         if (assignedRoute == null || assignedRoute.getStopCount() == 0) return;
@@ -178,10 +209,16 @@ public abstract class Vehicle {
                 StopTile targetStop = assignedRoute.getStops().get(currentStopIndex);
                 if (currentTile == targetStop.getTile()) {
                     Zone zone = targetStop.getLinkedZone();
-                    if (zone != null) {
-                        unloadCargo(zone);
-                        loadCargo(zone);
+                    if (zone != null) unloadCargo(zone);
+
+                    if (pendingSale) {
+                        world.executeSale(this);
+                        return;
+                    } else if (pendingRetirement) {
+                        world.executeRetirement(this);
+                        return;
                     }
+                    if (zone != null) loadCargo(zone);
                     currentStopIndex = (currentStopIndex + 1) % assignedRoute.getStopCount();
                 }
             } else {
@@ -215,10 +252,17 @@ public abstract class Vehicle {
 
         if (startTile == targetStop.getTile() && currentPath.isEmpty()) {
             Zone zone = targetStop.getLinkedZone();
-            if (zone != null) {
-                unloadCargo(zone);
-                loadCargo(zone);
+            if (zone != null) unloadCargo(zone);
+
+            if (pendingSale) {
+                world.executeSale(this);
+                return;
+            } else if (pendingRetirement) {
+                world.executeRetirement(this);
+                return;
             }
+
+            if (zone != null) loadCargo(zone);
             currentStopIndex = (currentStopIndex + 1) % assignedRoute.getStopCount();
             currentTile = startTile;
             return;

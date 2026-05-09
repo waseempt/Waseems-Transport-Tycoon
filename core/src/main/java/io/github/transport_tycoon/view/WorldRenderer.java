@@ -28,13 +28,11 @@ public class WorldRenderer {
     private TextureRegion fourTreeRegion;
 
     // Cities
-    private TextureRegion cityRegion;
     private TextureRegion sThreeCityRegion;
     private TextureRegion sFourCityRegion;
     private TextureRegion sFiveCityRegion;
 
     // Facilities
-    private TextureRegion facilityRegion;
     private TextureRegion ironMineRegion;
     private TextureRegion lumberCampRegion;
     private TextureRegion steelMillRegion;
@@ -57,8 +55,11 @@ public class WorldRenderer {
     private TextureRegion stopRegion;
 
     // Vehicles
-    private TextureRegion busRegion;
-    private TextureRegion truckRegion;
+    private TextureRegion expressBusRegion;
+    private TextureRegion transitBusRegion;
+
+    private TextureRegion lightTruckRegion;
+    private TextureRegion heavyTruckRegion;
 
     // Grid Size
     private final float TILE_SIZE = 64f;
@@ -87,13 +88,11 @@ public class WorldRenderer {
         this.fourTreeRegion = atlas.findRegion("forest4");
 
         // Define cities
-        this.cityRegion = atlas.findRegion("city");
         this.sThreeCityRegion = atlas.findRegion("3x3city");
         this.sFourCityRegion = atlas.findRegion("4x4city");
         this.sFiveCityRegion = atlas.findRegion("5x5city");
 
         // Define facilities
-        this.facilityRegion = atlas.findRegion("facility");
         this.ironMineRegion = atlas.findRegion("iron-mine");
         this.lumberCampRegion = atlas.findRegion("lumber-camp");
         this.steelMillRegion = atlas.findRegion("steel-mill");
@@ -116,8 +115,10 @@ public class WorldRenderer {
         this.stopRegion = atlas.findRegion("stop");
 
         // Define vehicles
-        this.busRegion = atlas.findRegion("bus1");
-        this.truckRegion = atlas.findRegion("truck1");
+        this.expressBusRegion = atlas.findRegion("bus2");
+        this.lightTruckRegion = atlas.findRegion("truck1");
+        this.transitBusRegion = atlas.findRegion("bus1");
+        this.heavyTruckRegion = atlas.findRegion("truck2");
         this.shapeRenderer = new ShapeRenderer();
 
         System.out.println("View: WorldRenderer initialized with Camera and Assets.");
@@ -306,8 +307,14 @@ public class WorldRenderer {
             }
         }
 
+        // Draw vehicles
         for (Vehicle vehicle : world.getActiveVehicles()) {
-            TextureRegion vRegion = (vehicle instanceof Bus) ? busRegion : truckRegion;
+            TextureRegion vRegion;
+            if (vehicle instanceof Bus)
+                vRegion = vehicle.getModelVariant() == 1 ? expressBusRegion : transitBusRegion;
+            else
+                vRegion = vehicle.getModelVariant() == 1 ? lightTruckRegion : heavyTruckRegion;
+
             if (vRegion != null) {
                 // Calculate width and heigh
                 float vWidth = 22f;

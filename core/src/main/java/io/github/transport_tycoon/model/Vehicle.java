@@ -60,6 +60,11 @@ public abstract class Vehicle {
         this.worldY = y;
     }
 
+    protected void setMaintenanceCost(float cost) {
+        if (cost <=0 ) return;
+        this.maintenanceCost = cost;
+    }
+
     public String getName() {
         return name;
     }
@@ -90,6 +95,10 @@ public abstract class Vehicle {
 
     public Tile getCurrentTile() {
         return currentTile;
+    }
+
+    public int getModelVariant() {
+        return 0;
     }
 
     public void assignRoute(Route route) {

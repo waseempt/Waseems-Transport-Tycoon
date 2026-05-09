@@ -11,9 +11,9 @@ class VehicleTest {
 
     @BeforeEach
     void setUp() {
-        bus = new Bus("City Express");
+        bus = new Bus("City Express", 1);
         city = new City("Testville");
-        vehicle = new Bus("Test Bus");
+        vehicle = new Bus("Test Bus", 1);
     }
 
     @Test

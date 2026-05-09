@@ -93,22 +93,24 @@ public class GameScreen implements Screen {
             vehicleWindow.show();
         });
 
-        purchaseVehicleScreen.setConfirmListener((name, type, cargo) -> {
+        purchaseVehicleScreen.setConfirmListener((name, type, variant, price, cargo) -> {
             GameWorld world = controller.getWorld();
 
-            if (world.getPlayerBalance() < 200) {
-                System.out.println("Model: Not enough money to build a vehicle.");
+            // Check against the dynamic price rather than a hardcoded 200
+            if (world.getPlayerBalance() < price) {
+                System.out.println("Model: Not enough money to purchase this vehicle.");
                 return;
             }
 
-            world.setPlayerBalance(world.getPlayerBalance() - 200);
+            // Deduct the exact cost of the selected model
+            world.setPlayerBalance(world.getPlayerBalance() - price);
+            hud.showBalanceChange(-price);
 
-            hud.showBalanceChange(-200);
-
-            Vehicle newVehicle = type.equals("Bus") ? new Bus(name) : new Truck(name, cargo);
+            // Pass the model variant into the new constructors
+            Vehicle newVehicle = type.equals("Bus") ? new Bus(name, variant) : new Truck(name, variant, cargo);
             world.addVehicle(newVehicle);
 
-            System.out.println("Model: Purchased " + name + " for $200.");
+            System.out.println("Model: Purchased " + name + " (" + type + " Model " + variant + ") for $" + price + ".");
 
             purchaseVehicleScreen.hide();
             vehicleWindow.show();

@@ -7,7 +7,7 @@ class BasicModelTest {
 
     @Test
     void testBusInitialization() {
-        Bus bus = new Bus("City Line");
+        Bus bus = new Bus("City Line", 1);
         assertEquals("City Line", bus.getName());
         assertEquals(40, bus.getCapacity());
         assertEquals(1.5f, bus.getSpeed());
@@ -16,7 +16,7 @@ class BasicModelTest {
 
     @Test
     void testTruckInitialization() {
-        Truck truck = new Truck("Heavy Hauler", GoodType.STEEL);
+        Truck truck = new Truck("Heavy Hauler", 1,GoodType.STEEL);
         assertEquals("Heavy Hauler", truck.getName());
         assertEquals(60, truck.getCapacity());
         assertEquals(1.0f, truck.getSpeed());

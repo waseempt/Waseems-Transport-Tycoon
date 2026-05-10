@@ -142,6 +142,10 @@ public class GameWorld {
             return false;
         }
 
+        // Must not be a tile belonging to a zone
+        if (tile.getParentZone() != null)
+            return false;
+
         float totalCost = 60 + (tile.getTreeCount() * TREE_CLEAR_COST);
 
         // Check funds
@@ -412,6 +416,7 @@ public class GameWorld {
             for (int y = startY; y < startY + height; y++) {
                 Tile tile = gameMap.getTile(x, y);
                 if (tile != null) {
+                    tile.setParentZone(zone);
                     zone.getTiles().add(tile);
                 }
             }
@@ -628,9 +633,19 @@ public class GameWorld {
     public void buildRoad(int x, int y) {
         Tile tile = gameMap.getTile(x, y);
 
+        if (tile.getParentZone() != null)
+            return;
+
         if (!isValidBuildLocation(x, y)) {
             System.out.println("Cannot build here, roads connect to an existing road, city or facility.");
-            return; // Stop the method instantly
+            return;
+        }
+
+        for (StopTile stop : stopTiles){
+            if (stop.getTile() == tile) {
+                System.out.println("Cannot build over a stop tile.");
+                return;
+            }
         }
 
         float totalCost = ROAD_COST + (tile.getTreeCount() * TREE_CLEAR_COST);
@@ -658,6 +673,11 @@ public class GameWorld {
 
         // check that tile is actually a road tile
         if (tile != null && tile.hasRoad()) {
+            // Block removal if zone tile
+            if (tile.getParentZone() != null){
+                return;
+            }
+
             // Block removal if any active vehicle is on this tile
             for (Vehicle vehicle : activeVehicles) {
                 int vGridX = (int)(vehicle.getWorldX() / 64f);

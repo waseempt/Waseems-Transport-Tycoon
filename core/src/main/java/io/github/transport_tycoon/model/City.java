@@ -21,6 +21,7 @@ public class City extends Zone {
         this.demands.put(GoodType.WOOD, 20);
         this.demands.put(GoodType.IRON, 10);
         this.demands.put(GoodType.STEEL, 30);
+        this.demands.put(GoodType.COAL, 40);
     }
 
     public City() {}
@@ -53,6 +54,7 @@ public class City extends Zone {
             demands.put(GoodType.WOOD, demands.get(GoodType.WOOD) + 2);
             demands.put(GoodType.IRON, demands.get(GoodType.IRON) + 1);
             demands.put(GoodType.STEEL, demands.get(GoodType.STEEL) + 2);
+            demands.put(GoodType.COAL, demands.get(GoodType.COAL) + 2);
         }
     }
 

@@ -236,9 +236,24 @@ public class HUD {
         // Resize the background to perfectly wrap around the newly stacked labels
         tooltipTable.pack();
 
-        // Position it near the mouse
-        float stageY = Gdx.graphics.getHeight() - screenY;
-        tooltipTable.setPosition(screenX + 15, stageY - 15 - tooltipTable.getHeight());
+        Vector2 stageCoords = stage.screenToStageCoordinates(new Vector2(screenX, screenY));
+
+        float targetX = stageCoords.x + 15;
+        float targetY = stageCoords.y - 15 - tooltipTable.getHeight();
+
+        // Prevent clipping on the right edge of the screen
+        if (targetX + tooltipTable.getWidth() > stage.getWidth()) {
+            // Flip the tooltip to the left side of the cursor
+            targetX = stageCoords.x - 15 - tooltipTable.getWidth();
+        }
+
+        // Prevent clipping on the bottom edge of the screen
+        if (targetY < 0) {
+            // Flip the tooltip above the cursor
+            targetY = stageCoords.y + 15;
+        }
+
+        tooltipTable.setPosition(targetX, targetY);
         tooltipTable.setVisible(true);
     }
 

@@ -14,7 +14,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 
 public class SkinManager {
 
@@ -46,8 +45,8 @@ public class SkinManager {
         Skin skin = new Skin();
 
         // Fonts
-        BitmapFont defaultFont = generateFont("fonts/Nunito-Bold.ttf", 16);
-        BitmapFont titleFont = generateFont("fonts/Nunito-SemiBold.ttf", 42);
+        BitmapFont defaultFont = generateFont("fonts/Nunito-SemiBold.ttf", 16);
+        BitmapFont titleFont = generateFont("fonts/Nunito-Bold.ttf", 42);
         BitmapFont tooltipTitleFont = generateFont("fonts/Nunito-SemiBold.ttf", 24);
 
         skin.add("default", defaultFont);
@@ -80,9 +79,9 @@ public class SkinManager {
         skin.add("title", titleLabel);
 
         Label.LabelStyle tooltipTitleLabel = new Label.LabelStyle();
-        titleLabel.font = skin.getFont("tooltip-title");
-        titleLabel.fontColor = TEXT_MAIN;
-        skin.add("tooltip-title", titleLabel);
+        tooltipTitleLabel.font = skin.getFont("tooltip-title");
+        tooltipTitleLabel.fontColor = TEXT_MAIN;
+        skin.add("tooltip-title", tooltipTitleLabel);
 
         Label.LabelStyle errorLabel = new Label.LabelStyle();
         errorLabel.font = skin.getFont("default");

@@ -2,7 +2,7 @@ package io.github.transport_tycoon.control;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import io.github.transport_tycoon.model.GameWorld;
-import io.github.transport_tycoon.model.Vehicle;
+import io.github.transport_tycoon.view.GameOverScreen;
 import io.github.transport_tycoon.view.WorldRenderer;
 
 public class GameController {

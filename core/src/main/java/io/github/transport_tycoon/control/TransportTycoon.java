@@ -2,6 +2,7 @@ package io.github.transport_tycoon.control;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import io.github.transport_tycoon.view.MainMenuScreen;
 
 public class TransportTycoon extends Game {
 

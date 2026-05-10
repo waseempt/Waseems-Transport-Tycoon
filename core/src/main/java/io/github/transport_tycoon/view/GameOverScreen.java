@@ -1,4 +1,4 @@
-package io.github.transport_tycoon.control;
+package io.github.transport_tycoon.view;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -12,7 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import io.github.transport_tycoon.view.SkinManager;
+import io.github.transport_tycoon.control.TransportTycoon;
 
 public class GameOverScreen implements Screen {
 

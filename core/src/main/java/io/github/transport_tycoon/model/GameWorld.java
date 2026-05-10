@@ -9,7 +9,7 @@ public class GameWorld {
     private float timeScale = 1.0f; // Default 1x speed
     private float forestGrowthTimer = 0f;
     //speed for tree
-    private static final float FOREST_GROWTH_INTERVAL = 60f;
+    private static final float FOREST_GROWTH_INTERVAL = 90f;
     //game time
     private float elapsedGameTime = 0f;
     //

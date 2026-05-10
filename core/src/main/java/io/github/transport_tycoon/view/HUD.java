@@ -96,10 +96,10 @@ public class HUD {
         background.add(timeLabel).expandX().center();
         background.add(buildModeIndicator).expandX().center();
         background.add(stopBuildModeIndicator).expandX().center();
-        background.add(pauseButton).expandX().right();
 
-        //placeholder labels
-        panel.add(background).growX().height(40);
+
+        background.add(pauseButton).width(140).height(35).expandX().right();
+        panel.add(background).growX().height(55);
     }
 
     public void updateBalance(float balanceAmount) {

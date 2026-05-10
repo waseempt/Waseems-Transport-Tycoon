@@ -144,6 +144,7 @@ public class ControlPanel {
         });
 
         //the size of the panel
+        background.defaults().height(35).left().padRight(15);
         panel.add(background).width(1100).height(60);
     }
 

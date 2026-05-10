@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import io.github.transport_tycoon.model.GoodType;
 
@@ -50,8 +51,8 @@ public class PurchaseVehicle {
     }
 
     public PurchaseVehicle(SpriteBatch batch) {
-        this.stage = new Stage(new ScreenViewport(), batch);
-        this.skin = createBasicSkin();
+        this.stage = new Stage(new ExtendViewport(1920, 1080), batch);
+        this.skin = SkinManager.getSkin();
     }
 
     public void show() {
@@ -255,64 +256,9 @@ public class PurchaseVehicle {
 
     public void dispose() {
         stage.dispose();
-        skin.dispose();
     }
 
     public Stage getStage() {
         return stage;
-    }
-
-    private Skin createBasicSkin() {
-        Skin tempSkin = new Skin();
-        BitmapFont font = new BitmapFont();
-        BitmapFont titleFont = new BitmapFont();
-        tempSkin.add("default", font);
-        tempSkin.add("title", titleFont);
-
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(Color.WHITE);
-        pixmap.fill();
-        tempSkin.add("background", new Texture(pixmap));
-        pixmap.dispose();
-
-        Label.LabelStyle defaultStyle = new Label.LabelStyle();
-        defaultStyle.font = tempSkin.getFont("default");
-        defaultStyle.fontColor = Color.WHITE;
-        tempSkin.add("default", defaultStyle);
-
-        Label.LabelStyle titleStyle = new Label.LabelStyle();
-        titleStyle.font = tempSkin.getFont("title");
-        titleStyle.fontColor = Color.WHITE;
-        tempSkin.add("title", titleStyle);
-
-        Label.LabelStyle errorStyle = new Label.LabelStyle();
-        errorStyle.font = tempSkin.getFont("default");
-        errorStyle.fontColor = Color.RED;
-        tempSkin.add("error", errorStyle);
-
-        TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
-        buttonStyle.up   = tempSkin.newDrawable("background", Color.DARK_GRAY);
-        buttonStyle.down = tempSkin.newDrawable("background", Color.GRAY);
-        buttonStyle.over = tempSkin.newDrawable("background", Color.LIGHT_GRAY);
-        buttonStyle.font = tempSkin.getFont("default");
-        tempSkin.add("default", buttonStyle);
-
-        TextButton.TextButtonStyle selectedStyle = new TextButton.TextButtonStyle();
-        selectedStyle.up   = tempSkin.newDrawable("background", new Color(0.15f, 0.55f, 0.15f, 1f));
-        selectedStyle.down = tempSkin.newDrawable("background", new Color(0.20f, 0.65f, 0.20f, 1f));
-        selectedStyle.over = tempSkin.newDrawable("background", new Color(0.20f, 0.65f, 0.20f, 1f));
-        selectedStyle.font = tempSkin.getFont("default");
-        tempSkin.add("selected", selectedStyle);
-
-        TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle();
-        textFieldStyle.font             = tempSkin.getFont("default");
-        textFieldStyle.fontColor        = Color.WHITE;
-        textFieldStyle.background       = tempSkin.newDrawable("background", Color.DARK_GRAY);
-        textFieldStyle.cursor           = tempSkin.newDrawable("background", Color.WHITE);
-        textFieldStyle.messageFontColor = Color.GRAY;
-        textFieldStyle.messageFont      = tempSkin.getFont("default");
-        tempSkin.add("default", textFieldStyle);
-
-        return tempSkin;
     }
 }

@@ -78,6 +78,9 @@ project(":core") {
     testImplementation 'org.mockito:mockito-core:5.3.1'
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // Font dependency
+    api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
   }
 
   // Use JUnit 5 when running the test command

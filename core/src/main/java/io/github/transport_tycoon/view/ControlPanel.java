@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class ControlPanel {
@@ -33,118 +34,116 @@ public class ControlPanel {
 
 
     public ControlPanel(SpriteBatch batch) {
-        this.stage = new Stage(new ScreenViewport(), batch);
-        this.skin = createBasicSkin();
+        this.stage = new Stage(new ExtendViewport(1920, 1080), batch);
+        this.skin = SkinManager.getSkin();
         buildUI();
         System.out.println("View: ControlPanel initialized.");
     }
 
     private void buildUI() {
-        //the layout container
+        // The layout container
         Table panel = new Table();
         panel.setFillParent(true);
         panel.bottom().left();
         panel.pad(10);
         stage.addActor(panel);
 
-        //the visible dark panel
+        // The visible dark panel
         Table background = new Table(skin);
         background.setBackground(skin.newDrawable("background", new Color(0.1f, 0.1f, 0.1f, 0.85f)));
-        background.pad(12);
-        background.defaults().left().padRight(20);
+        background.pad(12, 25, 12, 25); // Added some side padding so buttons don't hit the very edge
 
-        //where the speed shows
+        // Speed on the left
+        Table speedTable = new Table();
+        speedTable.defaults().height(35).padRight(10);
+
         Label speedLabel = new Label("Speed:", skin);
-        background.add(speedLabel);
-
         TextButton pauseButton = new TextButton("Pause", skin);
-        background.add(pauseButton);
-
         TextButton normalSpeedButton = new TextButton("x1", skin);
-        background.add(normalSpeedButton);
-
         TextButton fastSpeedButton = new TextButton("x2", skin);
-        background.add(fastSpeedButton);
-
         TextButton veryFastSpeedButton = new TextButton("x4", skin);
-        background.add(veryFastSpeedButton);
 
-        //shows the build mode
+        speedTable.add(speedLabel);
+        speedTable.add(pauseButton);
+        speedTable.add(normalSpeedButton);
+        speedTable.add(fastSpeedButton);
+        speedTable.add(veryFastSpeedButton).padRight(0); // No padding on the last item
+
+        // Controls centered
+        Table buildTable = new Table();
+        buildTable.defaults().height(35).padRight(10);
+
+        Label buildLabel = new Label("Build:", skin);
         TextButton buildButton = new TextButton("Build Roads", skin);
-        background.add(buildButton);
-
-        // Build Stops button — costs $60 per stop placed
         TextButton buildStopButton = new TextButton("Build Stops", skin);
+
+        buildTable.add(buildLabel);
+        buildTable.add(buildButton);
+        buildTable.add(buildStopButton).padRight(0); // Removed the old 50px hack
+
+        // Vehicles on the right
+        Table vehiclesTable = new Table();
+        TextButton vehiclesButton = new TextButton("Vehicles", skin);
+        vehiclesTable.add(vehiclesButton).height(35);
+
+
+        // Listeners
         buildStopButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (buildStopListener != null) {
-                    buildStopListener.onBuildStop();
-                }
+                if (buildStopListener != null) buildStopListener.onBuildStop();
             }
         });
-        background.add(buildStopButton);
 
-        // opens the vehicle list window
-        TextButton vehiclesButton = new TextButton("Vehicles", skin);
         vehiclesButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (vehicleWindowListener != null) {
-                    vehicleWindowListener.onVehicleWindow();
-                }
+                if (vehicleWindowListener != null) vehicleWindowListener.onVehicleWindow();
             }
         });
-        background.add(vehiclesButton);
 
         pauseButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (speedChangeListener != null) {
-                    speedChangeListener.onPauseToggle();
-                }
+                if (speedChangeListener != null) speedChangeListener.onPauseToggle();
             }
         });
 
         normalSpeedButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (speedChangeListener != null) {
-                    speedChangeListener.onSpeedSelected(1f);
-                }
+                if (speedChangeListener != null) speedChangeListener.onSpeedSelected(1f);
             }
         });
 
         fastSpeedButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (speedChangeListener != null) {
-                    speedChangeListener.onSpeedSelected(2f);
-                }
+                if (speedChangeListener != null) speedChangeListener.onSpeedSelected(2f);
             }
         });
 
         veryFastSpeedButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (speedChangeListener != null) {
-                    speedChangeListener.onSpeedSelected(4f);
-                }
+                if (speedChangeListener != null) speedChangeListener.onSpeedSelected(4f);
             }
         });
 
-        // Build mode ClickListener
         buildButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (buildListener != null) {
-                    buildListener.onBuildToggle();
-                }
+                if (buildListener != null) buildListener.onBuildToggle();
             }
         });
 
-        //the size of the panel
-        panel.add(background).width(1100).height(60);
+        // Add groups to the panel
+        background.add(speedTable).expandX().left();
+        background.add(buildTable).expandX().center();
+        background.add(vehiclesTable).expandX().right();
+
+
+        panel.add(background).width(1200).height(60);
     }
 
     //updates all the UI logic
@@ -192,32 +191,5 @@ public class ControlPanel {
 
     public void dispose() {
         stage.dispose();
-        skin.dispose();
-    }
-
-    private Skin createBasicSkin() {
-        Skin tempSkin = new Skin();
-        tempSkin.add("default", new BitmapFont());
-
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(Color.WHITE);
-        pixmap.fill();
-        tempSkin.add("background", new Texture(pixmap));
-        pixmap.dispose();
-
-        Label.LabelStyle labelStyle = new Label.LabelStyle();
-        labelStyle.font = tempSkin.getFont("default");
-        labelStyle.fontColor = Color.WHITE;
-        tempSkin.add("default", labelStyle);
-
-        TextButton.TextButtonStyle buttonStyle =
-            new TextButton.TextButtonStyle();
-        buttonStyle.up = tempSkin.newDrawable("background", Color.DARK_GRAY);
-        buttonStyle.down = tempSkin.newDrawable("background", Color.GRAY);
-        buttonStyle.over = tempSkin.newDrawable("background", Color.LIGHT_GRAY);
-        buttonStyle.font = tempSkin.getFont("default");
-        tempSkin.add("default", buttonStyle);
-
-        return tempSkin;
     }
 }

@@ -13,9 +13,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import io.github.transport_tycoon.view.SkinManager;
 
 
 public class SetupScreen implements Screen {
@@ -33,8 +35,8 @@ public class SetupScreen implements Screen {
 
     public SetupScreen(TransportTycoon game) {
         this.game = game;
-        this.stage = new Stage(new ScreenViewport(), game.batch);
-        this.skin = createBasicSkin();
+        this.stage = new Stage(new ExtendViewport(1280, 720), game.batch);
+        this.skin = SkinManager.getSkin();
         buildUI();
     }
 
@@ -107,58 +109,6 @@ public class SetupScreen implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
-        skin.dispose();
-    }
-
-    //builds minimal Skin
-    private Skin createBasicSkin() {
-        Skin tempSkin = new Skin();
-        BitmapFont font = new BitmapFont();
-        BitmapFont titleFont = new BitmapFont();
-        tempSkin.add("default", font);
-        tempSkin.add("title", titleFont);
-
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(Color.WHITE);
-        pixmap.fill();
-        tempSkin.add("background", new Texture(pixmap));
-        pixmap.dispose();
-
-        //styles for the labels
-        Label.LabelStyle defaultLabelStyle = new Label.LabelStyle();
-        defaultLabelStyle.font = tempSkin.getFont("default");
-        defaultLabelStyle.fontColor = Color.WHITE;
-        tempSkin.add("default", defaultLabelStyle);
-
-        Label.LabelStyle titleLabelStyle = new Label.LabelStyle();
-        titleLabelStyle.font = tempSkin.getFont("title");
-        titleLabelStyle.fontColor = Color.WHITE;
-        tempSkin.add("title", titleLabelStyle);
-
-        //the styles for the buttons
-        TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
-        buttonStyle.up = tempSkin.newDrawable("background", Color.DARK_GRAY);
-        buttonStyle.down = tempSkin.newDrawable("background", Color.GRAY);
-        buttonStyle.over = tempSkin.newDrawable("background", Color.LIGHT_GRAY);
-        buttonStyle.font = tempSkin.getFont("default");
-        tempSkin.add("default", buttonStyle);
-
-        //how the text field should look like
-        TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle();
-        textFieldStyle.font = tempSkin.getFont("default");
-        textFieldStyle.fontColor = Color.WHITE;
-        textFieldStyle.background = tempSkin.newDrawable("background", Color.DARK_GRAY);
-        textFieldStyle.cursor = tempSkin.newDrawable("background", Color.WHITE);
-        textFieldStyle.messageFontColor = Color.GRAY;
-        textFieldStyle.messageFont = tempSkin.getFont("default");
-        tempSkin.add("default", textFieldStyle);
-
-        Label.LabelStyle errorLabelStyle = new Label.LabelStyle();
-        errorLabelStyle.font = tempSkin.getFont("default");
-        errorLabelStyle.fontColor = Color.RED;
-        tempSkin.add("error", errorLabelStyle);
-
-        return tempSkin;
     }
 
     @Override public void show() {

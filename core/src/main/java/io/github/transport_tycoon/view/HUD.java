@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -41,8 +42,8 @@ public class HUD {
     private Table tooltipTable;
 
     public HUD(SpriteBatch batch) {
-        this.stage = new Stage(new ScreenViewport(), batch);
-        this.skin = createBasicSkin();
+        this.stage = new Stage(new ExtendViewport(1920, 1080), batch);
+        this.skin = SkinManager.getSkin();
         buildUI();
         System.out.println("View: HUD initialized.");
     }
@@ -96,10 +97,10 @@ public class HUD {
         background.add(timeLabel).expandX().center();
         background.add(buildModeIndicator).expandX().center();
         background.add(stopBuildModeIndicator).expandX().center();
-        background.add(pauseButton).expandX().right();
 
-        //placeholder labels
-        panel.add(background).growX().height(40);
+
+        background.add(pauseButton).width(140).height(35).expandX().right();
+        panel.add(background).growX().height(55);
     }
 
     public void updateBalance(float balanceAmount) {
@@ -168,8 +169,7 @@ public class HUD {
             City c = (City) zone;
 
             // Title Label
-            Label title = new Label(c.getName() + " (City)", skin);
-            title.setFontScale(1.3f);
+            Label title = new Label(c.getName() + " (City)", skin, "tooltip-title");
             title.setColor(Color.GOLD);
             tooltipTable.add(title).left().padBottom(5).row();
 
@@ -205,8 +205,7 @@ public class HUD {
             Facility f = (Facility) zone;
 
             // Title Label
-            Label title = new Label(f.getFacilityType() + " (Facility)", skin);
-            title.setFontScale(1.3f);
+            Label title = new Label(f.getFacilityType() + " (Facility)", skin, "tooltip-title");
             title.setColor(Color.CYAN);
             tooltipTable.add(title).left().padBottom(5).row();
 
@@ -237,9 +236,24 @@ public class HUD {
         // Resize the background to perfectly wrap around the newly stacked labels
         tooltipTable.pack();
 
-        // Position it near the mouse
-        float stageY = Gdx.graphics.getHeight() - screenY;
-        tooltipTable.setPosition(screenX + 15, stageY - 15 - tooltipTable.getHeight());
+        Vector2 stageCoords = stage.screenToStageCoordinates(new Vector2(screenX, screenY));
+
+        float targetX = stageCoords.x + 15;
+        float targetY = stageCoords.y - 15 - tooltipTable.getHeight();
+
+        // Prevent clipping on the right edge of the screen
+        if (targetX + tooltipTable.getWidth() > stage.getWidth()) {
+            // Flip the tooltip to the left side of the cursor
+            targetX = stageCoords.x - 15 - tooltipTable.getWidth();
+        }
+
+        // Prevent clipping on the bottom edge of the screen
+        if (targetY < 0) {
+            // Flip the tooltip above the cursor
+            targetY = stageCoords.y + 15;
+        }
+
+        tooltipTable.setPosition(targetX, targetY);
         tooltipTable.setVisible(true);
     }
 
@@ -261,7 +275,6 @@ public class HUD {
 
     public void dispose() {
         stage.dispose();
-        skin.dispose();
     }
 
     //notifies the GameScreen when the pause button is clicked
@@ -271,31 +284,5 @@ public class HUD {
 
     public interface PauseListener {
         void onPause();
-    }
-
-    private Skin createBasicSkin() {
-        Skin tempSkin = new Skin();
-        tempSkin.add("default", new BitmapFont());
-
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(Color.WHITE);
-        pixmap.fill();
-        tempSkin.add("background", new Texture(pixmap));
-        pixmap.dispose();
-
-        Label.LabelStyle labelStyle = new Label.LabelStyle();
-        labelStyle.font = tempSkin.getFont("default");
-        labelStyle.fontColor = Color.WHITE;
-        tempSkin.add("default", labelStyle);
-
-        //defines how buttons look in their 3 stages
-        TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
-        buttonStyle.up = tempSkin.newDrawable("background", Color.DARK_GRAY);
-        buttonStyle.down = tempSkin.newDrawable("background", Color.GRAY);
-        buttonStyle.over = tempSkin.newDrawable("background", Color.LIGHT_GRAY);
-        buttonStyle.font = tempSkin.getFont("default");
-        tempSkin.add("default", buttonStyle);
-
-        return tempSkin;
     }
 }

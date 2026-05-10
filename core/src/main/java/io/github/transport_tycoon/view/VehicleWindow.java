@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import io.github.transport_tycoon.model.GameWorld;
 import io.github.transport_tycoon.model.Vehicle;
@@ -49,8 +50,8 @@ public class VehicleWindow {
 
     public VehicleWindow(SpriteBatch batch, GameWorld world) {
         this.world = world;
-        this.stage = new Stage(new ScreenViewport(), batch);
-        this.skin = createBasicSkin();
+        this.stage = new Stage(new ExtendViewport(1920, 1080), batch);
+        this.skin = SkinManager.getSkin();
         System.out.println("View: VehicleWindow initialized.");
     }
 
@@ -233,40 +234,5 @@ public class VehicleWindow {
 
     public void dispose() {
         stage.dispose();
-        skin.dispose();
-    }
-
-    private Skin createBasicSkin() {
-        Skin tempSkin = new Skin();
-        BitmapFont font = new BitmapFont();
-        BitmapFont titleFont = new BitmapFont();
-        tempSkin.add("default", font);
-        tempSkin.add("title", titleFont);
-
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(Color.WHITE);
-        pixmap.fill();
-        tempSkin.add("background", new Texture(pixmap));
-        pixmap.dispose();
-
-        Label.LabelStyle defaultStyle = new Label.LabelStyle();
-        defaultStyle.font = tempSkin.getFont("default");
-        defaultStyle.fontColor = Color.WHITE;
-        tempSkin.add("default", defaultStyle);
-
-        Label.LabelStyle titleStyle = new Label.LabelStyle();
-        titleStyle.font = tempSkin.getFont("title");
-        titleStyle.fontColor = Color.WHITE;
-        tempSkin.add("title", titleStyle);
-
-        // Defines how buttons look in their 3 states
-        TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
-        buttonStyle.up = tempSkin.newDrawable("background", Color.DARK_GRAY);
-        buttonStyle.down = tempSkin.newDrawable("background", Color.GRAY);
-        buttonStyle.over = tempSkin.newDrawable("background", Color.LIGHT_GRAY);
-        buttonStyle.font = tempSkin.getFont("default");
-        tempSkin.add("default", buttonStyle);
-
-        return tempSkin;
     }
 }

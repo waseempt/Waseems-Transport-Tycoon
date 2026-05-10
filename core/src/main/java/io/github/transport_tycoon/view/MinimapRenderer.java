@@ -50,7 +50,9 @@ public class MinimapRenderer {
                 float drawX = startX + x * MINI_TILE_SIZE;
                 float drawY = startY + y * MINI_TILE_SIZE;
 
-                if (tile.hasForest()) {
+                if (tile.hasRoad()) {
+                    shapeRenderer.setColor(Color.GRAY);
+                } else if (tile.hasForest()) {
                     switch (tile.getTreeCount()) {
                         case 1: shapeRenderer.setColor(0.15f, 0.55f, 0.15f, 1f); break;
                         case 2: shapeRenderer.setColor(0.12f, 0.50f, 0.12f, 1f); break;
@@ -65,7 +67,7 @@ public class MinimapRenderer {
             }
         }
 
-        shapeRenderer.setColor(Color.GRAY);
+        shapeRenderer.setColor(Color.DARK_GRAY);
         for (Facility facility : world.getFacilities()) {
             for (Tile tile : facility.getTiles()) {
                 float drawX = startX + tile.getGridX() * MINI_TILE_SIZE;

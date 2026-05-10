@@ -14,7 +14,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import io.github.transport_tycoon.view.SkinManager;
 
 public class MainMenuScreen implements Screen {
 
@@ -26,13 +28,13 @@ public class MainMenuScreen implements Screen {
         this.game = game;
 
         // Container for menu elements
-        this.stage = new Stage(new ScreenViewport(), game.batch);
+        this.stage = new Stage(new ExtendViewport(1280, 720), game.batch);
 
         // Routes mouse clicks to the menu stage to handle
         Gdx.input.setInputProcessor(stage);
 
         // Generate a basic temporary skin for buttons and text
-        this.skin = createBasicSkin();
+        this.skin = SkinManager.getSkin();
 
         buildUI();
     }
@@ -44,8 +46,7 @@ public class MainMenuScreen implements Screen {
         stage.addActor(table);
 
         // Title Label
-        Label titleLabel = new Label("Transport Tycoon", skin);
-        titleLabel.setFontScale(2.0f); // Make the title bigger
+        Label titleLabel = new Label("Transport Tycoon", skin, "title");
 
         // Buttons
         TextButton newGameButton = new TextButton("New Game", skin);
@@ -92,33 +93,6 @@ public class MainMenuScreen implements Screen {
         stage.draw();
     }
 
-    // --- Temporary Helper to generate UI styles without needing asset files ---
-    private Skin createBasicSkin() {
-        Skin tempSkin = new Skin();
-        tempSkin.add("default", new BitmapFont()); // Default LibGDX font
-
-        // Create a 1x1 pixel grey texture for the button backgrounds
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(Color.LIGHT_GRAY);
-        pixmap.fill();
-        tempSkin.add("background", new Texture(pixmap));
-
-        // Create the Button Style
-        TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
-        buttonStyle.up = tempSkin.newDrawable("background", Color.DARK_GRAY);
-        buttonStyle.down = tempSkin.newDrawable("background", Color.GRAY);
-        buttonStyle.over = tempSkin.newDrawable("background", Color.LIGHT_GRAY);
-        buttonStyle.font = tempSkin.getFont("default");
-        tempSkin.add("default", buttonStyle);
-
-        // Create the Label Style
-        Label.LabelStyle labelStyle = new Label.LabelStyle();
-        labelStyle.font = tempSkin.getFont("default");
-        tempSkin.add("default", labelStyle);
-
-        return tempSkin;
-    }
-
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
@@ -127,7 +101,6 @@ public class MainMenuScreen implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
-        skin.dispose();
     }
 
     // Unused Screen methods

@@ -32,7 +32,7 @@ public abstract class Vehicle {
     private int currentLoad = 0;
     private Zone lastLoadedZone = null;
     private float maintenanceTimer = 0f;
-    private float maintenanceCost = 10f;
+    private float maintenanceCost = 100f;
     private Queue<Tile> currentPath = new LinkedList<>();
     private float rotation = 0f;
     private float intendedRotation = 0f;
@@ -186,8 +186,8 @@ public abstract class Vehicle {
 
     public void update(float delta) {
         maintenanceTimer += delta;
-        while (maintenanceTimer >= 5f) {
-            maintenanceTimer -= 5f;
+        while (maintenanceTimer >= 30) {
+            maintenanceTimer -= 30f;
             world.changePlayerBalance(-maintenanceCost);
         }
 

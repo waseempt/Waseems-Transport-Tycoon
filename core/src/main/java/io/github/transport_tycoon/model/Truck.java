@@ -11,7 +11,7 @@ public class Truck extends Vehicle {
         this.modelVariant = variant;
 
         // Update maintenance cost based on variant
-        setMaintenanceCost(variant == 1 ? 10f : 5f);
+        setMaintenanceCost(variant == 1 ? 100f : 50f);
     }
 
     public Truck() {}

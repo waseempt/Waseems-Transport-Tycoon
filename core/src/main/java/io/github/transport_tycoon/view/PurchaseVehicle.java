@@ -163,12 +163,12 @@ public class PurchaseVehicle {
             String stats;
             if ("Bus".equals(selectedType)) {
                 stats = (selectedModel == 1) ?
-                    "Capacity: 30 | Speed: Fast | Maint: $10" :
-                    "Capacity: 60 | Speed: Slow | Maint: $5";
+                    "Capacity: 30 | Speed: Fast | Maint: $100" :
+                    "Capacity: 60 | Speed: Slow | Maint: $50";
             } else {
                 stats = (selectedModel == 1) ?
-                    "Capacity: 40 | Speed: Fast | Maint: $10" :
-                    "Capacity: 80 | Speed: Slow | Maint: $5";
+                    "Capacity: 40 | Speed: Fast | Maint: $100" :
+                    "Capacity: 80 | Speed: Slow | Maint: $50";
             }
             Label statsLabel = new Label(stats, skin);
             statsLabel.setColor(Color.LIGHT_GRAY);

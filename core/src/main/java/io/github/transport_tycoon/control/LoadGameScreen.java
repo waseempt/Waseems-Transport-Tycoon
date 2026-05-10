@@ -18,6 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import io.github.transport_tycoon.model.GameWorld;
+import io.github.transport_tycoon.view.SkinManager;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,7 +35,7 @@ public class LoadGameScreen implements Screen {
     public LoadGameScreen(TransportTycoon game) {
         this.game = game;
         this.stage = new Stage(new ScreenViewport(), game.batch);
-        this.skin = createBasicSkin();
+        this.skin = SkinManager.getSkin();
         Gdx.input.setInputProcessor(stage);
         buildUI();
     }
@@ -181,35 +182,9 @@ public class LoadGameScreen implements Screen {
     }
 
     @Override public void resize(int width, int height) { stage.getViewport().update(width, height, true); }
-    @Override public void dispose() { stage.dispose(); skin.dispose(); }
+    @Override public void dispose() { stage.dispose(); }
     @Override public void show() {}
     @Override public void pause() {}
     @Override public void resume() {}
     @Override public void hide() {}
-
-    private Skin createBasicSkin() {
-        Skin tempSkin = new Skin();
-        tempSkin.add("default", new BitmapFont());
-
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(Color.DARK_GRAY);
-        pixmap.fill();
-        tempSkin.add("background", new Texture(pixmap));
-
-        TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
-        buttonStyle.up = tempSkin.newDrawable("background", Color.DARK_GRAY);
-        buttonStyle.down = tempSkin.newDrawable("background", Color.GRAY);
-        buttonStyle.over = tempSkin.newDrawable("background", Color.LIGHT_GRAY);
-        buttonStyle.font = tempSkin.getFont("default");
-        tempSkin.add("default", buttonStyle);
-
-        Label.LabelStyle labelStyle = new Label.LabelStyle();
-        labelStyle.font = tempSkin.getFont("default");
-        tempSkin.add("default", labelStyle);
-
-        ScrollPane.ScrollPaneStyle scrollStyle = new ScrollPane.ScrollPaneStyle();
-        tempSkin.add("default", scrollStyle);
-
-        return tempSkin;
-    }
 }

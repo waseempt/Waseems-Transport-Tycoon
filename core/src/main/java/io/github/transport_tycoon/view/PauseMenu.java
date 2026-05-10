@@ -36,7 +36,7 @@ public class PauseMenu {
 
     public PauseMenu(SpriteBatch batch) {
         this.stage = new Stage(new ScreenViewport(), batch);
-        this.skin = createBasicSkin();
+        this.skin = SkinManager.getSkin();
         buildUI();
         System.out.println("View: PauseMenu initialized.");
     }
@@ -175,39 +175,5 @@ public class PauseMenu {
 
     public void dispose() {
         stage.dispose();
-        skin.dispose();
-    }
-
-    private Skin createBasicSkin() {
-        Skin tempSkin = new Skin();
-        BitmapFont font = new BitmapFont();
-        BitmapFont titleFont = new BitmapFont();
-        tempSkin.add("default", font);
-        tempSkin.add("title", titleFont);
-
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(Color.WHITE);
-        pixmap.fill();
-        tempSkin.add("background", new Texture(pixmap));
-        pixmap.dispose();
-
-        Label.LabelStyle defaultStyle = new Label.LabelStyle();
-        defaultStyle.font = tempSkin.getFont("default");
-        defaultStyle.fontColor = Color.WHITE;
-        tempSkin.add("default", defaultStyle);
-
-        Label.LabelStyle titleStyle = new Label.LabelStyle();
-        titleStyle.font = tempSkin.getFont("title");
-        titleStyle.fontColor = Color.WHITE;
-        tempSkin.add("title", titleStyle);
-
-        TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
-        buttonStyle.up = tempSkin.newDrawable("background", Color.DARK_GRAY);
-        buttonStyle.down = tempSkin.newDrawable("background", Color.GRAY);
-        buttonStyle.over = tempSkin.newDrawable("background", Color.LIGHT_GRAY);
-        buttonStyle.font = tempSkin.getFont("default");
-        tempSkin.add("default", buttonStyle);
-
-        return tempSkin;
     }
 }

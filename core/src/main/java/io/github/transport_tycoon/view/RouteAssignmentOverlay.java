@@ -37,7 +37,7 @@ public class RouteAssignmentOverlay {
 
     public RouteAssignmentOverlay(SpriteBatch batch) {
         this.stage = new Stage(new ScreenViewport(), batch);
-        this.skin  = createBasicSkin();
+        this.skin  = SkinManager.getSkin();
         buildUI();
     }
 
@@ -49,7 +49,7 @@ public class RouteAssignmentOverlay {
         stage.addActor(root);
 
         Table panel = new Table(skin);
-        panel.setBackground(skin.newDrawable("bg", new Color(0.05f, 0.05f, 0.4f, 0.92f)));
+        panel.setBackground(skin.newDrawable("background", new Color(0.05f, 0.05f, 0.4f, 0.92f)));
         panel.pad(12, 20, 12, 20);
         panel.defaults().padRight(16);
 
@@ -117,39 +117,5 @@ public class RouteAssignmentOverlay {
 
     public void dispose() {
         stage.dispose();
-        skin.dispose();
-    }
-
-    private Skin createBasicSkin() {
-        Skin s = new Skin();
-        s.add("default", new BitmapFont());
-
-        Pixmap px = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        px.setColor(Color.WHITE);
-        px.fill();
-        s.add("bg", new Texture(px));
-        px.dispose();
-
-        Label.LabelStyle ls = new Label.LabelStyle();
-        ls.font      = s.getFont("default");
-        ls.fontColor = Color.WHITE;
-        s.add("default", ls);
-
-        TextButton.TextButtonStyle normal = new TextButton.TextButtonStyle();
-        normal.up   = s.newDrawable("bg", Color.DARK_GRAY);
-        normal.down = s.newDrawable("bg", Color.GRAY);
-        normal.over = s.newDrawable("bg", Color.LIGHT_GRAY);
-        normal.font = s.getFont("default");
-        s.add("default", normal);
-
-        TextButton.TextButtonStyle confirm = new TextButton.TextButtonStyle();
-        confirm.up       = s.newDrawable("bg", new Color(0.1f, 0.55f, 0.1f, 1f));
-        confirm.down     = s.newDrawable("bg", new Color(0.15f, 0.65f, 0.15f, 1f));
-        confirm.over     = s.newDrawable("bg", new Color(0.15f, 0.65f, 0.15f, 1f));
-        confirm.disabled = s.newDrawable("bg", new Color(0.25f, 0.25f, 0.25f, 1f));
-        confirm.font     = s.getFont("default");
-        s.add("confirm", confirm);
-
-        return s;
     }
 }

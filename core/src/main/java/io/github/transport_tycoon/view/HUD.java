@@ -42,7 +42,7 @@ public class HUD {
 
     public HUD(SpriteBatch batch) {
         this.stage = new Stage(new ScreenViewport(), batch);
-        this.skin = createBasicSkin();
+        this.skin = SkinManager.getSkin();
         buildUI();
         System.out.println("View: HUD initialized.");
     }
@@ -261,7 +261,6 @@ public class HUD {
 
     public void dispose() {
         stage.dispose();
-        skin.dispose();
     }
 
     //notifies the GameScreen when the pause button is clicked
@@ -271,31 +270,5 @@ public class HUD {
 
     public interface PauseListener {
         void onPause();
-    }
-
-    private Skin createBasicSkin() {
-        Skin tempSkin = new Skin();
-        tempSkin.add("default", new BitmapFont());
-
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(Color.WHITE);
-        pixmap.fill();
-        tempSkin.add("background", new Texture(pixmap));
-        pixmap.dispose();
-
-        Label.LabelStyle labelStyle = new Label.LabelStyle();
-        labelStyle.font = tempSkin.getFont("default");
-        labelStyle.fontColor = Color.WHITE;
-        tempSkin.add("default", labelStyle);
-
-        //defines how buttons look in their 3 stages
-        TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
-        buttonStyle.up = tempSkin.newDrawable("background", Color.DARK_GRAY);
-        buttonStyle.down = tempSkin.newDrawable("background", Color.GRAY);
-        buttonStyle.over = tempSkin.newDrawable("background", Color.LIGHT_GRAY);
-        buttonStyle.font = tempSkin.getFont("default");
-        tempSkin.add("default", buttonStyle);
-
-        return tempSkin;
     }
 }

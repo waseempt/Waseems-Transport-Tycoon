@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import io.github.transport_tycoon.model.GameWorld;
 import io.github.transport_tycoon.model.Vehicle;
@@ -49,7 +50,7 @@ public class VehicleWindow {
 
     public VehicleWindow(SpriteBatch batch, GameWorld world) {
         this.world = world;
-        this.stage = new Stage(new ScreenViewport(), batch);
+        this.stage = new Stage(new ExtendViewport(1920, 1080), batch);
         this.skin = SkinManager.getSkin();
         System.out.println("View: VehicleWindow initialized.");
     }

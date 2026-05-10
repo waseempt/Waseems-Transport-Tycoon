@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class ControlPanel {
@@ -33,7 +34,7 @@ public class ControlPanel {
 
 
     public ControlPanel(SpriteBatch batch) {
-        this.stage = new Stage(new ScreenViewport(), batch);
+        this.stage = new Stage(new ExtendViewport(1920, 1080), batch);
         this.skin = SkinManager.getSkin();
         buildUI();
         System.out.println("View: ControlPanel initialized.");

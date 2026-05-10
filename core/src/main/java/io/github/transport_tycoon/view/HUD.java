@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -41,7 +42,7 @@ public class HUD {
     private Table tooltipTable;
 
     public HUD(SpriteBatch batch) {
-        this.stage = new Stage(new ScreenViewport(), batch);
+        this.stage = new Stage(new ExtendViewport(1920, 1080), batch);
         this.skin = SkinManager.getSkin();
         buildUI();
         System.out.println("View: HUD initialized.");
@@ -168,8 +169,7 @@ public class HUD {
             City c = (City) zone;
 
             // Title Label
-            Label title = new Label(c.getName() + " (City)", skin);
-            title.setFontScale(1.3f);
+            Label title = new Label(c.getName() + " (City)", skin, "tooltip-title");
             title.setColor(Color.GOLD);
             tooltipTable.add(title).left().padBottom(5).row();
 
@@ -205,8 +205,7 @@ public class HUD {
             Facility f = (Facility) zone;
 
             // Title Label
-            Label title = new Label(f.getFacilityType() + " (Facility)", skin);
-            title.setFontScale(1.3f);
+            Label title = new Label(f.getFacilityType() + " (Facility)", skin, "tooltip-title");
             title.setColor(Color.CYAN);
             tooltipTable.add(title).left().padBottom(5).row();
 

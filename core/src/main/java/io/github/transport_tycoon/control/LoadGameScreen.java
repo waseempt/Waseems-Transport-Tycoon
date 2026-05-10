@@ -16,6 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import io.github.transport_tycoon.model.GameWorld;
 import io.github.transport_tycoon.view.SkinManager;
@@ -34,7 +35,7 @@ public class LoadGameScreen implements Screen {
 
     public LoadGameScreen(TransportTycoon game) {
         this.game = game;
-        this.stage = new Stage(new ScreenViewport(), game.batch);
+        this.stage = new Stage(new ExtendViewport(1280, 720), game.batch);
         this.skin = SkinManager.getSkin();
         Gdx.input.setInputProcessor(stage);
         buildUI();
@@ -48,8 +49,7 @@ public class LoadGameScreen implements Screen {
         outer.setFillParent(true);
         stage.addActor(outer);
 
-        Label titleLabel = new Label("Save Manager", skin);
-        titleLabel.setFontScale(1.5f);
+        Label titleLabel = new Label("Save Manager", skin, "title");
         outer.add(titleLabel).padBottom(20).row();
 
         // The inner table that holds the grid

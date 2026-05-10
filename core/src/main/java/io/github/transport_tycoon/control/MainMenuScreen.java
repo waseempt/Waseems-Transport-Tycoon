@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import io.github.transport_tycoon.view.SkinManager;
 
@@ -27,7 +28,7 @@ public class MainMenuScreen implements Screen {
         this.game = game;
 
         // Container for menu elements
-        this.stage = new Stage(new ScreenViewport(), game.batch);
+        this.stage = new Stage(new ExtendViewport(1280, 720), game.batch);
 
         // Routes mouse clicks to the menu stage to handle
         Gdx.input.setInputProcessor(stage);
@@ -45,8 +46,7 @@ public class MainMenuScreen implements Screen {
         stage.addActor(table);
 
         // Title Label
-        Label titleLabel = new Label("Transport Tycoon", skin);
-        titleLabel.setFontScale(2.0f); // Make the title bigger
+        Label titleLabel = new Label("Transport Tycoon", skin, "title");
 
         // Buttons
         TextButton newGameButton = new TextButton("New Game", skin);

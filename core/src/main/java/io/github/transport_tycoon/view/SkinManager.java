@@ -12,6 +12,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 
 public class SkinManager {
 
@@ -43,12 +46,13 @@ public class SkinManager {
         Skin skin = new Skin();
 
         // Fonts
-        BitmapFont defaultFont = new BitmapFont();
-        BitmapFont titleFont = new BitmapFont();
-        titleFont.getData().setScale(1.5f);
+        BitmapFont defaultFont = generateFont("fonts/Nunito-Bold.ttf", 16);
+        BitmapFont titleFont = generateFont("fonts/Nunito-SemiBold.ttf", 42);
+        BitmapFont tooltipTitleFont = generateFont("fonts/Nunito-SemiBold.ttf", 24);
 
         skin.add("default", defaultFont);
         skin.add("title", titleFont);
+        skin.add("tooltip-title", tooltipTitleFont);
 
         // Rounded Elements
         skin.add("bg_dark", createRoundedDrawable(BG_DARK, 6), Drawable.class);
@@ -74,6 +78,11 @@ public class SkinManager {
         titleLabel.font = skin.getFont("title");
         titleLabel.fontColor = TEXT_MAIN;
         skin.add("title", titleLabel);
+
+        Label.LabelStyle tooltipTitleLabel = new Label.LabelStyle();
+        titleLabel.font = skin.getFont("tooltip-title");
+        titleLabel.fontColor = TEXT_MAIN;
+        skin.add("tooltip-title", titleLabel);
 
         Label.LabelStyle errorLabel = new Label.LabelStyle();
         errorLabel.font = skin.getFont("default");
@@ -163,6 +172,26 @@ public class SkinManager {
         drawable.setRightWidth(12);
 
         return drawable;
+    }
+
+    private static BitmapFont generateFont(String fontPath, int size) {
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal(fontPath));
+        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+
+        float oversample = 3f;
+        parameter.size = (int)(size * oversample);
+
+        parameter.genMipMaps = true;
+        parameter.minFilter = Texture.TextureFilter.MipMapLinearLinear;
+        parameter.magFilter = Texture.TextureFilter.Linear;
+
+        BitmapFont font = generator.generateFont(parameter);
+
+        font.getData().setScale(1f / oversample);
+
+        generator.dispose();
+
+        return font;
     }
 
     public static void dispose() {

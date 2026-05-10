@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import io.github.transport_tycoon.control.InputHandler;
 
@@ -35,7 +36,7 @@ public class PauseMenu {
 
 
     public PauseMenu(SpriteBatch batch) {
-        this.stage = new Stage(new ScreenViewport(), batch);
+        this.stage = new Stage(new ExtendViewport(1920, 1080), batch);
         this.skin = SkinManager.getSkin();
         buildUI();
         System.out.println("View: PauseMenu initialized.");
@@ -60,21 +61,21 @@ public class PauseMenu {
 
         //resume button
         TextButton resumeButton = new TextButton("Resume", skin);
-        panel.add(resumeButton).width(200).height(50).row();
+        panel.add(resumeButton).width(400).height(50).row();
 
         //save button
         TextButton saveButton = new TextButton("Save Game", skin);
-        panel.add(saveButton).width(200).height(50).row();
+        panel.add(saveButton).width(400).height(50).row();
 
         //exit button
         TextButton exitButton = new TextButton("Exit to Menu", skin);
-        panel.add(exitButton).width(200).height(50).row();
+        panel.add(exitButton).width(400).height(50).row();
 
         saveFeedbackLabel = new Label("", skin);
         saveFeedbackLabel.getColor().a = 0; // Start fully transparent
         panel.add(saveFeedbackLabel).padTop(15).row();
 
-        outer.add(panel);
+        outer.add(panel).width(700);
 
         //ResumeListener callback when clicked, it handles restoring time and hiding the menu
         resumeButton.addListener(new ClickListener() {

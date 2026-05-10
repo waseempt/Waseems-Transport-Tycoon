@@ -87,6 +87,13 @@ public class GameScreen implements Screen {
 
         // Opens vehicle window when Vehicles button clicked
         controlPanel.setVehicleWindowListener(() -> {
+            isBuildMode = false;
+            if (inputHandler.getBuildStopMode()){
+                inputHandler.setBuildStopMode(false);
+                hud.setStopBuildModeActive(false);
+            }
+            hud.setBuildModeActive(isBuildMode);
+            inputHandler.setBuildMode(isBuildMode);
             vehicleWindow.show();
         });
 

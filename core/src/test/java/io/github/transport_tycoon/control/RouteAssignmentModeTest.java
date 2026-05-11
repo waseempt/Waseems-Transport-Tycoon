@@ -1,58 +1,68 @@
 package io.github.transport_tycoon.control;
 
-import io.github.transport_tycoon.model.Bus;
 import io.github.transport_tycoon.model.StopTile;
-import io.github.transport_tycoon.model.Tile;
 import io.github.transport_tycoon.model.Vehicle;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class RouteAssignmentModeTest {
 
-    private RouteAssignmentMode mode;
-    private StopTile stop;
+    @Test
+    void testConstructorProperties() {
+        Vehicle vehicle = mock(Vehicle.class);
+        RouteAssignmentMode mode = new RouteAssignmentMode(vehicle);
 
-    @BeforeEach
-    void setUp() {
-        Vehicle bus = new Bus("Test Bus", 1);
-        mode = new RouteAssignmentMode(bus);
-        stop = new StopTile(new Tile(0, 0), null);
+        assertSame(vehicle, mode.getVehicle());
+        assertTrue(mode.getSelectedStops().isEmpty());
+        assertFalse(mode.canConfirm());
     }
 
     @Test
-    void testToggleStopAddsIfNotPresent() {
-        // add stop
-        boolean result = mode.toggleStop(stop);
+    void testToggleStopAddsAndRemovesStop() {
+        RouteAssignmentMode mode = new RouteAssignmentMode(mock(Vehicle.class));
+        StopTile stop = mock(StopTile.class);
 
-        // should be added
-        assertTrue(result);
+        assertTrue(mode.toggleStop(stop));
         assertTrue(mode.isSelected(stop));
-    }
+        assertEquals(1, mode.getSelectedStops().size());
 
-    @Test
-    void testToggleStopRemovesIfAlreadyPresent() {
-        // add first
-        mode.toggleStop(stop);
-
-        // click again, remove
-        boolean result = mode.toggleStop(stop);
-
-        assertFalse(result);
+        assertFalse(mode.toggleStop(stop));
         assertFalse(mode.isSelected(stop));
+        assertTrue(mode.getSelectedStops().isEmpty());
     }
 
     @Test
-    void testCanConfirmRequiresTwoStops() {
-        // no stops, cannot confirm
+    void testMultipleStopsCanConfirm() {
+        RouteAssignmentMode mode = new RouteAssignmentMode(mock(Vehicle.class));
+        StopTile first = mock(StopTile.class);
+        StopTile second = mock(StopTile.class);
+        StopTile third = mock(StopTile.class);
+
+        mode.toggleStop(first);
         assertFalse(mode.canConfirm());
 
-        // add 1 stop, still no
-        mode.toggleStop(new StopTile(new Tile(1, 1), null));
-        assertFalse(mode.canConfirm());
-
-        // add 2 stops, now yes
-        mode.toggleStop(new StopTile(new Tile(2, 2), null));
+        mode.toggleStop(second);
         assertTrue(mode.canConfirm());
+
+        mode.toggleStop(third);
+        assertEquals(3, mode.getSelectedStops().size());
+        assertTrue(mode.canConfirm());
+    }
+
+    @Test
+    void testRemovingOneStopKeepsOtherStopsSelected() {
+        RouteAssignmentMode mode = new RouteAssignmentMode(mock(Vehicle.class));
+        StopTile first = mock(StopTile.class);
+        StopTile second = mock(StopTile.class);
+
+        mode.toggleStop(first);
+        mode.toggleStop(second);
+        mode.toggleStop(first);
+
+        assertFalse(mode.isSelected(first));
+        assertTrue(mode.isSelected(second));
+        assertFalse(mode.canConfirm());
     }
 }

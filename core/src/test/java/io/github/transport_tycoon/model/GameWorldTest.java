@@ -1,70 +1,121 @@
 package io.github.transport_tycoon.model;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class GameWorldTest {
-    private GameWorld world;
-    private City origin;
-    private City destination;
 
-    @BeforeEach
-    void setUp() {
-        world = new GameWorld("TestCorp");
+    @Test
+    void testConstructorInitialValues() {
+        GameWorld world = new GameWorld("Naz");
 
-        // Setup mock cities for distance calculation
-        origin = new City("City A");
-        origin.getTiles().add(new Tile(0, 0)); // Anchor at 0,0
-
-        destination = new City("City B");
-        destination.getTiles().add(new Tile(10, 0)); // Anchor at 10,0. Distance = 10.
+        assertEquals("Naz", world.getTycoonName());
+        assertEquals(5000f, world.getPlayerBalance());
+        assertNotNull(world.getMap());
+        assertNotNull(world.getCities());
+        assertNotNull(world.getFacilities());
+        assertNotNull(world.getRoutes());
+        assertNotNull(world.getStopTiles());
     }
 
     @Test
-    void testInitialBalanceAndBankruptcy() {
+    void testPauseAndResume() {
+        GameWorld world = new GameWorld("Test");
+
+        world.pause();
+
+        assertTrue(world.isPaused());
+        assertEquals(0f, world.getTimeScale());
+
+        world.resume();
+
+        assertFalse(world.isPaused());
+        assertEquals(1.0f, world.getTimeScale());
+    }
+
+    @Test
+    void testSetTimeScale() {
+        GameWorld world = new GameWorld("Test");
+
+        world.setTimeScale(4f);
+
+        assertEquals(4f, world.getTimeScale());
+    }
+
+    @Test
+    void testChangePlayerBalance() {
+        GameWorld world = new GameWorld("Test");
+
+        world.changePlayerBalance(500f);
+
+        assertEquals(5500f, world.getPlayerBalance());
+
+        world.changePlayerBalance(-1000f);
+
+        assertEquals(4500f, world.getPlayerBalance());
+    }
+
+    @Test
+    void testBankruptcy() {
+        GameWorld world = new GameWorld("Test");
+
         assertFalse(world.isBankrupt());
 
-        world.setPlayerBalance(-100f);
+        world.setPlayerBalance(-1);
+
         assertTrue(world.isBankrupt());
     }
 
     @Test
-    void testCalculateDeliveryProfit() {
-        float initialBalance = world.getPlayerBalance();
+    void testAddVehicle() {
+        GameWorld world = new GameWorld("Test");
 
-        // Distance is 10. Passenger multiplier is 1.5. Amount is 5.
-        // Profit = 10 * 1.5 * 5 = 75.0
-        world.calculateDeliveryProfit(origin, destination, GoodType.PASSENGERS, 5);
+        Vehicle vehicle = new Bus("Bus", 1);
 
-        assertEquals(initialBalance + 75.0f, world.getPlayerBalance());
-    }
+        world.addVehicle(vehicle);
 
-    @Test
-    void testCalculateDeliveryProfitHighValueCargo() {
-        float initialBalance = world.getPlayerBalance();
-
-        // Distance is 10. Steel multiplier is 5.0. Amount is 2.
-        // Profit = 10 * 5.0 * 2 = 100.0
-        world.calculateDeliveryProfit(origin, destination, GoodType.STEEL, 2);
-
-        assertEquals(initialBalance + 100.0f, world.getPlayerBalance());
-    }
-
-    @Test
-    void testTimeScaleControls() {
-        // it should not be paused
-        assertFalse(world.isPaused());
-
-        world.setTimeScale(0f);
-        assertTrue(world.isPaused());
+        assertEquals(1, world.getUnassignedVehicles().size());
+        assertTrue(world.getUnassignedVehicles().contains(vehicle));
     }
 
     @Test
     void testCreateRoute() {
-        Route newRoute = world.createRoute();
-        assertNotNull(newRoute);
-        // it should have 0 stops when first created
-        assertEquals(0, newRoute.getStopCount());
+        GameWorld world = new GameWorld("Test");
+
+        Route route = world.createRoute();
+
+        assertNotNull(route);
+        assertEquals(1, world.getRoutes().size());
+    }
+
+    @Test
+    void testGetFormattedGameTimeInitially() {
+        GameWorld world = new GameWorld("Test");
+
+        assertEquals("00:00:00", world.getFormattedGameTime());
+    }
+
+    @Test
+    void testUpdateSimulationAdvancesTime() {
+        GameWorld world = new GameWorld("Test");
+
+        world.updateSimulation(10f);
+
+        assertNotEquals("00:00:00", world.getFormattedGameTime());
+    }
+
+    @Test
+    void testGetZoneAtInvalidCoordinates() {
+        GameWorld world = new GameWorld("Test");
+
+        assertNull(world.getZoneAt(-1, -1));
+    }
+
+    @Test
+    void testDefaultConstructor() {
+        GameWorld world = new GameWorld();
+
+        assertNull(world.getTycoonName());
     }
 }

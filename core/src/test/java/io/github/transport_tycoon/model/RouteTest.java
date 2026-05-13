@@ -1,40 +1,62 @@
 package io.github.transport_tycoon.model;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class RouteTest {
 
-    // Variables used in the test
-    private Route route;
-    private StopTile stop1;
-    private StopTile stop2;
+    @Test
+    void testConstructorInitialState() {
+        Route route = new Route();
 
-    @BeforeEach
-    void setUp() {
-        // This runs before each test
-
-        route = new Route(); // create an empty route
-
-        // create two stops with different positions
-        stop1 = new StopTile(new Tile(5, 5), null);
-        stop2 = new StopTile(new Tile(10, 10), null);
+        assertNotNull(route.getStops());
+        assertTrue(route.getStops().isEmpty());
+        assertEquals(0, route.getStopCount());
     }
 
     @Test
-    void testAddStop() {
+    void testAddSingleStop() {
+        Route route = new Route();
 
-        // check that route is empty at the beginning
-        assertEquals(0, route.getStopCount());
+        StopTile stop = new StopTile(
+            new Tile(1, 1),
+            new City("Budapest")
+        );
 
-        // add one stop to the route
-        route.addStop(stop1);
+        route.addStop(stop);
 
-        // now the number of stops should be 1
         assertEquals(1, route.getStopCount());
+        assertEquals(stop, route.getStops().get(0));
+    }
 
-        // check that the added stop is exactly stop1
+    @Test
+    void testAddMultipleStops() {
+        Route route = new Route();
+
+        StopTile stop1 = new StopTile(
+            new Tile(1, 1),
+            new City("City1")
+        );
+
+        StopTile stop2 = new StopTile(
+            new Tile(2, 2),
+            new City("City2")
+        );
+
+        route.addStop(stop1);
+        route.addStop(stop2);
+
+        assertEquals(2, route.getStopCount());
+
         assertEquals(stop1, route.getStops().get(0));
+        assertEquals(stop2, route.getStops().get(1));
+    }
+
+    @Test
+    void testStopsListReference() {
+        Route route = new Route();
+
+        assertSame(route.getStops(), route.getStops());
     }
 }

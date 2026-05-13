@@ -1,0 +1,31 @@
+package io.github.transport_tycoon.model;
+
+public class GameMap {
+    private int width;
+    private int height;
+    private Tile[][] grid;
+
+    public GameMap(int width, int height) {
+        this.width = width;
+        this.height = height;
+        this.grid = new Tile[width][height];
+        initializeMap();
+    }
+    public GameMap() {}
+
+    private void initializeMap() {
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                grid[x][y] = new Tile(x, y);
+            }
+        }
+        System.out.println("Model: GameMap generated with " + (width * height) + " tiles.");
+    }
+
+    public Tile getTile(int x, int y) {
+        if (x >= 0 && x < width && y >= 0 && y < height) {
+            return grid[x][y];
+        }
+        return null;
+    }
+}

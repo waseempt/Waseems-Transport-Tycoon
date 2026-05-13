@@ -78,6 +78,9 @@ project(":core") {
     testImplementation 'org.mockito:mockito-core:5.3.1'
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // Font dependency
+    api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
   }
 
   // Use JUnit 5 when running the test command
@@ -94,29 +97,6 @@ project(":core") {
       xml.required = true
       html.required = true
       csv.required = true
-    }
-
-    // Exclude UI and visual classes from the coverage report
-    afterEvaluate {
-      classDirectories.setFrom(files(classDirectories.files.collect {
-        fileTree(dir: it, exclude: [
-          '**/*Screen*',
-          '**/*Renderer*',
-          '**/*HUD*',
-          '**/*ControlPanel*',
-          '**/*TransportTycoon*',
-
-          // Missing UI files
-          '**/*PauseMenu*',
-          '**/*PurchaseVehicle*',
-          '**/*VehicleWindow*',
-          '**/*TrafficLightUI*',
-          '**/*RouteAssignmentOverlay*',
-
-          // The Input Manager relies on Camera and Screen coordinates
-          '**/*InputHandler*'
-        ])
-      }))
     }
   }
 }

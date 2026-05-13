@@ -1,0 +1,122 @@
+package io.github.transport_tycoon.view;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import io.github.transport_tycoon.control.RouteAssignmentMode;
+
+public class RouteAssignmentOverlay {
+
+    private Stage stage;
+    private Skin skin;
+    private boolean visible = false;
+
+    private Label instructionLabel;
+    private Label stopCountLabel;
+    private TextButton confirmButton;
+
+    public interface ConfirmListener { void onConfirm(); }
+    public interface CancelListener  { void onCancel();  }
+
+    private ConfirmListener confirmListener;
+    private CancelListener  cancelListener;
+
+    public void setConfirmListener(ConfirmListener l) { this.confirmListener = l; }
+    public void setCancelListener(CancelListener l)   { this.cancelListener  = l; }
+
+    public RouteAssignmentOverlay(SpriteBatch batch) {
+        this.stage = new Stage(new ExtendViewport(1920, 1080), batch);
+        this.skin  = SkinManager.getSkin();
+        buildUI();
+    }
+
+    private void buildUI() {
+        Table root = new Table();
+        root.setFillParent(true);
+        root.top().center();
+        root.padTop(50);
+        stage.addActor(root);
+
+        Table panel = new Table(skin);
+        panel.setBackground(skin.newDrawable("background", new Color(0.05f, 0.05f, 0.4f, 0.92f)));
+        panel.pad(12, 20, 12, 20);
+        panel.defaults().padRight(16);
+
+        instructionLabel = new Label("Assigning route for: ?", skin);
+        instructionLabel.setColor(Color.YELLOW);
+
+        stopCountLabel = new Label("Stops selected: 0", skin);
+        stopCountLabel.setColor(Color.WHITE);
+
+        confirmButton = new TextButton("Confirm Route", skin, "confirm");
+        confirmButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (!confirmButton.isDisabled() && confirmListener != null) {
+                    confirmListener.onConfirm();
+                }
+            }
+        });
+
+        TextButton cancelButton = new TextButton("Cancel", skin);
+        cancelButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (cancelListener != null) cancelListener.onCancel();
+            }
+        });
+
+        panel.add(instructionLabel);
+        panel.add(stopCountLabel);
+        panel.add(confirmButton).width(150).height(36);
+        panel.add(cancelButton).width(90).height(36).padRight(0);
+
+        root.add(panel);
+    }
+
+    public void refresh(RouteAssignmentMode mode) {
+        if (mode == null) return;
+        instructionLabel.setText("Assigning route for: " + mode.getVehicle().getName());
+        int count = mode.getSelectedStops().size();
+        stopCountLabel.setText("Stops selected: " + count);
+        confirmButton.setDisabled(!mode.canConfirm());
+    }
+
+    public void show(RouteAssignmentMode mode) {
+        refresh(mode);
+        visible = true;
+    }
+
+    public void hide() {
+        visible = false;
+    }
+
+    public boolean isVisible() { return visible; }
+    public Stage getStage()    { return stage;   }
+
+    public void render() {
+        if (!visible) return;
+        stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
+        stage.draw();
+    }
+
+    public void resize(int width, int height) {
+        stage.getViewport().update(width, height, true);
+    }
+
+    public void dispose() {
+        stage.dispose();
+    }
+}

@@ -1,43 +1,117 @@
 package io.github.transport_tycoon.model;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class IntersectionTest {
-    private Intersection fourWay;
 
-    @BeforeEach
-    void setUp() {
-        fourWay = new Intersection(15); // 4-way mask
-        fourWay.installLights();
+    @Test
+    void testFourWayIntersectionConstructor() {
+        Intersection intersection = new Intersection(15);
+
+        assertEquals(15, intersection.getRoadMask());
+        assertEquals(2, intersection.getPhaseCount());
+        assertFalse(intersection.hasLights());
     }
 
     @Test
-    void testClearanceBufferTriggersAllRed() {
-        // Timer starts at 10.0f. The first 1.5s (down to 8.5) is the clearance buffer.
-        // Fast forward 0.5 seconds. Timer is now 9.5f.
-        fourWay.updateLights(0.5f);
-        assertEquals("none", fourWay.getVisualState());
+    void testThreeWayIntersectionConstructor() {
+        Intersection intersection = new Intersection(14);
+
+        assertEquals(14, intersection.getRoadMask());
+        assertEquals(3, intersection.getPhaseCount());
     }
 
     @Test
-    void testInitialPhaseIsVertical() {
-        // Fast forward past the 1.5s clearance buffer
-        fourWay.updateLights(2.0f); // Timer is now 8.0f
-        assertEquals("v", fourWay.getVisualState());
+    void testInstallLights() {
+        Intersection intersection = new Intersection(15);
+
+        intersection.installLights();
+
+        assertTrue(intersection.hasLights());
     }
 
     @Test
-    void testPhaseSwitchesToHorizontal() {
-        // Fast forward exactly 10.0 seconds to finish Phase 0
-        fourWay.updateLights(10.0f);
+    void testSetAndGetPhaseDuration() {
+        Intersection intersection = new Intersection(15);
 
-        // We are now at the start of Phase 1.
-        // Fast forward 2.0 seconds to get past the new clearance buffer
-        fourWay.updateLights(2.0f);
+        intersection.setPhaseDuration(0, 20f);
 
-        // Should now be phase 1 ("h")
-        assertEquals("h", fourWay.getVisualState());
+        assertEquals(20f, intersection.getPhaseDuration(0));
+    }
+
+    @Test
+    void testInvalidPhaseReturnsDefaultValue() {
+        Intersection intersection = new Intersection(15);
+
+        assertEquals(10f, intersection.getPhaseDuration(99));
+    }
+
+    @Test
+    void testUpdateLightsChangesPhase() {
+        Intersection intersection = new Intersection(15);
+
+        intersection.installLights();
+
+        intersection.updateLights(11f);
+        intersection.updateLights(2f);
+
+        assertEquals("h", intersection.getVisualState());
+    }
+
+    @Test
+    void testVisualStateWithoutLights() {
+        Intersection intersection = new Intersection(15);
+
+        assertEquals("none", intersection.getVisualState());
+    }
+
+    @Test
+    void testVisualStateDuringClearanceBuffer() {
+        Intersection intersection = new Intersection(15);
+
+        intersection.installLights();
+
+        intersection.updateLights(0.5f);
+
+        assertEquals("none", intersection.getVisualState());
+    }
+
+    @Test
+    void testFourWayVerticalState() {
+        Intersection intersection = new Intersection(15);
+
+        intersection.installLights();
+
+        intersection.updateLights(2f);
+
+        assertEquals("v", intersection.getVisualState());
+    }
+
+    @Test
+    void testThreeWayStates() {
+        Intersection intersection = new Intersection(14);
+
+        intersection.installLights();
+
+        intersection.updateLights(2f);
+        assertEquals("l", intersection.getVisualState());
+
+        intersection.updateLights(11f);
+        intersection.updateLights(2f);
+        assertEquals("r", intersection.getVisualState());
+
+        intersection.updateLights(11f);
+        intersection.updateLights(2f);
+        assertEquals("b", intersection.getVisualState());
+    }
+
+    @Test
+    void testDefaultConstructor() {
+        Intersection intersection = new Intersection();
+
+        assertFalse(intersection.hasLights());
+        assertEquals(0, intersection.getRoadMask());
     }
 }

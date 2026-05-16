@@ -1,44 +1,91 @@
 package io.github.transport_tycoon.model;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-class PathFinderTest {
-    private GameMap map;
-    private Tile start;
-    private Tile end;
-
-    @BeforeEach
-    void setUp() {
-        map = new GameMap(10, 10);
-        start = map.getTile(0, 0);
-        end = map.getTile(3, 0);
-
-        // Build a straight road from (0,0) to (3,0)
-        map.getTile(1, 0).setHasRoad(true);
-        map.getTile(2, 0).setHasRoad(true);
-    }
+class PathFindTest {
 
     @Test
-    void testFindPathStraightLine() {
-        List<Tile> path = PathFinder.findPath(map, start, end);
+    void testSimpleStraightPath() {
+        GameMap map = new GameMap(5, 5);
 
-        // Path should contain: (0,0), (1,0), (2,0), (3,0)
-        assertEquals(4, path.size());
-        assertEquals(map.getTile(1, 0), path.get(1));
-        assertEquals(end, path.get(3));
-    }
+        Tile start = map.getTile(1, 1);
+        Tile middle = map.getTile(2, 1);
+        Tile end = map.getTile(3, 1);
 
-    @Test
-    void testFindPathFailsWhenBlocked() {
-        // Break the road
-        map.getTile(1, 0).setHasRoad(false);
+        start.setHasRoad(true);
+        middle.setHasRoad(true);
+        end.setHasRoad(true);
 
         List<Tile> path = PathFinder.findPath(map, start, end);
 
-        // Should return empty list because no valid road connects them
+        assertFalse(path.isEmpty());
+        assertEquals(start, path.get(0));
+        assertEquals(end, path.get(path.size() - 1));
+    }
+
+    @Test
+    void testPathAroundCorner() {
+        GameMap map = new GameMap(5, 5);
+
+        Tile start = map.getTile(1, 1);
+        Tile turn = map.getTile(1, 2);
+        Tile end = map.getTile(2, 2);
+
+        start.setHasRoad(true);
+        turn.setHasRoad(true);
+        end.setHasRoad(true);
+
+        List<Tile> path = PathFinder.findPath(map, start, end);
+
+        assertFalse(path.isEmpty());
+        assertEquals(3, path.size());
+    }
+
+    @Test
+    void testNoPathFound() {
+        GameMap map = new GameMap(5, 5);
+
+        Tile start = map.getTile(0, 0);
+        Tile end = map.getTile(4, 4);
+
+        start.setHasRoad(true);
+
+        List<Tile> path = PathFinder.findPath(map, start, end);
+
         assertTrue(path.isEmpty());
+    }
+
+    @Test
+    void testStartEqualsEnd() {
+        GameMap map = new GameMap(5, 5);
+
+        Tile start = map.getTile(2, 2);
+        start.setHasRoad(true);
+
+        List<Tile> path = PathFinder.findPath(map, start, start);
+
+        assertEquals(1, path.size());
+        assertEquals(start, path.get(0));
+    }
+
+    @Test
+    void testEndTileCanBeReachedWithoutRoad() {
+        GameMap map = new GameMap(5, 5);
+
+        Tile start = map.getTile(1, 1);
+        Tile middle = map.getTile(2, 1);
+        Tile end = map.getTile(3, 1);
+
+        start.setHasRoad(true);
+        middle.setHasRoad(true);
+
+        List<Tile> path = PathFinder.findPath(map, start, end);
+
+        assertFalse(path.isEmpty());
+        assertEquals(end, path.get(path.size() - 1));
     }
 }

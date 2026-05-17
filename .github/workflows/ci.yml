@@ -2,9 +2,14 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ "master", "main", "dev" ]
+    branches: [ "master", "dev" ]
+    tags:
+      - 'v*'
   pull_request:
-    branches: [ "master", "main", "dev" ]
+    branches: [ "master", "dev" ]
+
+permissions:
+  contents: write
 
 jobs:
   build-test-deploy:
@@ -55,15 +60,22 @@ jobs:
           retention-days: 30
 
       - name: Build Desktop Distribution
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')
         run: ./gradlew lwjgl3:dist
         env:
           GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
       - name: Upload Mini-Transport-Tycoon-Build
         uses: actions/upload-artifact@v4
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')
         with:
           name: Mini-Transport-Tycoon-Build
           path: lwjgl3/build/libs/*.jar
           retention-days: 7
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: lwjgl3/build/libs/*.jar
+          generate_release_notes: true
